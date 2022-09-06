@@ -1,0 +1,6 @@
+*.vsdx
+venv/
+test.*
+.idea/
+prestart.py
+__pycache__/

@@ -1,0 +1,14 @@
+import os
+import json
+
+import prestart
+prestart.init()
+
+group_data = json.loads(os.environ.get('GROUP_DATA'))[os.environ.get('BRANCH', 'dev')]
+creator_id = os.environ.get('CREATOR_ID')
+db_data = json.loads(os.environ.get('DB_DATA'))
+
+PIT_BOT = -182985865
+OVERSEER_BOT = -183040898
+GUILD_NAME = 'Темная сторона'
+IGNORE_LIST = [PIT_BOT, OVERSEER_BOT, 211500453]
