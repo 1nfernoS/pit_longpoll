@@ -16,6 +16,6 @@ def make_log():
 
 if __name__ == '__main__':
     bot = VkBot('kitty_dev[Test_Subj#001]', group_data['group_token'], group_data['group_id'])
-    bot.set_handler('MESSAGE_NEW', messages.sample_handler)
+    bot.set_handler('MESSAGE_NEW', messages.new_message)
 
     bot.start()

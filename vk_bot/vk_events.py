@@ -1,7 +1,5 @@
 from vk_api.bot_longpoll import VkBotEventType, VkBotEvent
 
-# import for typing hints
-from .vk_bot import VkBot
 
 
 class VkEvent:
@@ -12,7 +10,7 @@ class VkEvent:
             setattr(self, event_type, self._empty_handler)
         return
 
-    def _empty_handler(self, cls: VkBot, event: VkBotEvent) -> None:
+    def _empty_handler(self, cls, event: VkBotEvent) -> None:
         print(f"No handler for event {event.type.name}")
         return
 

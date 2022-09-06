@@ -1,8 +1,8 @@
 from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll
 
-from .vk_methods import VkMethods
-from .vk_events import VkEvent
+from vk_bot.vk_methods import VkMethods
+from vk_bot.vk_events import VkEvent
 from config import group_data, IGNORE_LIST
 
 
