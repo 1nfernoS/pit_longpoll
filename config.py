@@ -11,4 +11,5 @@ db_data = json.loads(os.environ.get('DB_DATA'))
 PIT_BOT = -182985865
 OVERSEER_BOT = -183040898
 GUILD_NAME = 'Темная сторона'
+GUILD_CHAT_ID = 1
 IGNORE_LIST = [PIT_BOT, OVERSEER_BOT, 211500453]
