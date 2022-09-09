@@ -3,7 +3,7 @@ from vk_api.bot_longpoll import VkBotLongPoll
 
 from vk_bot.vk_methods import VkMethods
 from vk_bot.vk_events import VkEvent
-from config import group_data, IGNORE_LIST
+from config import group_data
 
 
 class VkBot:
@@ -42,6 +42,6 @@ class VkBot:
 
 
 if __name__ == '__main__':
-    bot = VkBot('kitty_test', group_data['group_token'], group_data['group_id'])
+    bot = VkBot('kitty_main', group_data['group_token'], group_data['group_id'])
     bot.start()
     pass
