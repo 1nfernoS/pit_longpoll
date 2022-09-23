@@ -1,6 +1,8 @@
 from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll
 
+import traceback
+
 from vk_bot.vk_methods import VkMethods
 from vk_bot.vk_events import VkEvent
 from config import group_data
@@ -27,9 +29,21 @@ class VkBot:
 
     def start(self):
         print(f"Bot {self._name} successfully started!")
-        for event in self._long_poll.listen():
-            # Call def ith same name as event type
-            getattr(self._events, event.type.name)(self, event)
+        try:
+            while True:
+                for event in self._long_poll.check():
+                    # Call def ith same name as event type
+                    getattr(self._events, event.type.name)(self, event)
+        except KeyboardInterrupt:
+            print('Stopping . . .')
+            return
+        except:
+            print('Error:', end='')
+            traceback.print_last()
+            print('\n\nFull Trace')
+            traceback.format_exc()
+            print('\n\n\n\tRestarting . . .')
+            self.start()
         return
 
     def __repr__(self) -> str:

@@ -16,7 +16,7 @@ def make_log():
 
 
 if __name__ == '__main__':
-    bot = VkBot('kitty_dev[Test_Subj#001]', group_data['group_token'], group_data['group_id'])
+    bot = VkBot('kitty_prod[asstrickster_kitty]', group_data['group_token'], group_data['group_id'])
     bot.set_handler('MESSAGE_NEW', new_message)
     bot.set_handler('MESSAGE_EVENT', event_message)
 
