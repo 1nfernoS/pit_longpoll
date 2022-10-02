@@ -130,6 +130,11 @@ def get_equip():
     return answer
 
 
+def get_leaders() -> tuple:
+    # TODO: make query
+    return tuple([205486328, 16914430, 158154503])
+
+
 if __name__ == '__main__':
     # add_user(3934797, None, True, False, False, None, None)
     # update_user(3934797, is_active=False)

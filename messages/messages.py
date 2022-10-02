@@ -1,20 +1,25 @@
+# builtins
 import json
 from datetime import datetime
 
+# requirement's import
 from vk_api.bot_longpoll import CHAT_START_ID, VkBotEvent
 
+# config and packages
 from config import OVERSEER_BOT, PIT_BOT, GUILD_NAME, GUILD_CHAT_ID
 
-# import for typing hints
-from vk_bot.vk_bot import VkBot
-
-from profile_api import get_profile, get_books
+import commands
 
 from DB.items import get_item_by_name, get_item_by_id
 import DB.users as users
 import DB.user_data as user_data
 
+from profile_api import get_profile, get_books
+
 from .forwards import forward_parse
+
+# import for typing hints
+from vk_bot.vk_bot import VkBot
 
 
 def new_message(self: VkBot, event: VkBotEvent):
@@ -102,6 +107,16 @@ def new_message(self: VkBot, event: VkBotEvent):
                         users.add_user(data['id_vk'], None, True, False, data['is_officer'], None, data['class_id'])
 
                 self.api.send_chat_msg(event.chat_id, answer)
+
+        # Potential command parse
+        txt = event.message.text.lower().split()
+        if not txt[0][0].isalnum():
+            txt[0] = txt[0][1:]
+
+        for cmd in commands.command_list:
+            if txt[0] in cmd:
+                print(f'\t\tGOT COMMAND [{txt[0]}]')
+                commands.command_list[cmd](cmd, self, event)
 
     if len(event.message.fwd_messages) == 1:
         if int(event.message.fwd_messages[0]['from_id']) == int(PIT_BOT):

@@ -96,9 +96,6 @@ class VkMethods:
             self.send_chat_msg(chat_id, "Ошибка при удалении пользователя")
         return
 
-    def get_msg_id(self, peer_id: int, conv_msg_id: int) -> int:
-        res = self._api.messages.getByConversationMessageId(
-            peer_id=peer_id,
-            conversation_message_ids=conv_msg_id
-        )
-        return res['items'][0]['id'] if res['count'] > 0 else 0
+    def get_conversation_msg(self, peer_id: int, conversation_message_ids: int) -> dict:
+        res = self._api.messages.getByConversationMessageId(peer_id=peer_id, conversation_message_ids=conversation_message_ids)
+        return res['items'][0] if res['count'] > 0 else 0
