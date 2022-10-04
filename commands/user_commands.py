@@ -42,6 +42,7 @@ class Help(Command):
         for cmd in command_list:
             message += '[' + ', '.join(cmd) + '] - ' + command_list[cmd].get_description(command_list[cmd]) + '\n'
 
+        message += '\n ПРИМЕЧАНИЕ: После изпользования, сообщение с командой автоматически удаляется, чтобы уменьшить количество флуда'
         bot.api.send_chat_msg(event.chat_id, message)
         return
 

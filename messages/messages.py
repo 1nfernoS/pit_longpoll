@@ -1,6 +1,7 @@
 # builtins
 import json
 from datetime import datetime
+import traceback
 
 # requirement's import
 from vk_api.bot_longpoll import CHAT_START_ID, VkBotEvent
@@ -108,16 +109,18 @@ def new_message(self: VkBot, event: VkBotEvent):
 
                 self.api.send_chat_msg(event.chat_id, answer)
 
-        # Potential command parse
-        txt = event.message.text.lower().split()
-        if not txt[0][0].isalnum():
-            txt[0] = txt[0][1:]
+        if event.message.text:
+            # Potential command parse
+            txt = event.message.text.lower().split()
+            if not txt[0][0].isalnum():
+                txt[0] = txt[0][1:]
 
-        for cmd in commands.command_list:
-            if txt[0] in cmd:
-                print(f'\t\tGOT COMMAND [{txt[0]}]')
-                commands.command_list[cmd](cmd, self, event)
-
+            for cmd in commands.command_list:
+                if txt[0] in cmd:
+                    print(f'\t\tGOT COMMAND [{txt[0]}]')
+                    commands.command_list[cmd].run(cmd, self, event)
+                    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+                    self.api.del_msg(event.message.peer_id, msg_id)
     if len(event.message.fwd_messages) == 1:
         if int(event.message.fwd_messages[0]['from_id']) == int(PIT_BOT):
             forward_parse(self, event)
@@ -182,13 +185,13 @@ def datediff(d1: datetime, d2: datetime) -> str:
             res += ' часа '
         elif h % 10 == 1:
             res += ' час '
+    # even if d1==d2, result will be not empty
     m = diff.seconds % 3600 // 60
-    if m:
-        res += str(m)
-        if m // 10 == 1 or m % 10 > 4 or m % 10 == 0:
-            res += ' минут '
-        elif m % 10 > 1:
-            res += ' минуты '
-        elif m % 10 == 1:
-            res += ' минута '
+    res += str(m)
+    if m // 10 == 1 or m % 10 > 4 or m % 10 == 0:
+        res += ' минут '
+    elif m % 10 > 1:
+        res += ' минуты '
+    elif m % 10 == 1:
+        res += ' минута '
     return res.strip()

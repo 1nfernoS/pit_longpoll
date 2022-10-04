@@ -52,11 +52,14 @@ class VkMethods:
         )
 
     def del_msg(self, peer_id: int, msg_id: int) -> int:
-        return self._api.messages.delete(
-            peer_id=peer_id,
-            message_ids=msg_id,
-            delete_for_all=True
-        )
+        try:
+            return self._api.messages.delete(
+                peer_id=peer_id,
+                message_ids=msg_id,
+                delete_for_all=True
+            )
+        except ApiError:
+            return 0
 
     def send_event(self, peer_id: int, event_id: str, user_id: int, data: dict) -> int:
         return self._api.messages.sendMessageEventAnswer(
