@@ -69,6 +69,7 @@ def get_user(id_vk: int) -> (dict, None):
     res = DB().query(QUERY, (id_vk,))
 
     if res:
+        res = res[0]
         return {'id_vk': res[0], 'profile_key': res[1], 'is_active': res[2], 'is_leader': res[3], 'is_officer': res[4],
                 'equipment': res[5], 'class_id': res[6]}
     else:
@@ -77,16 +78,7 @@ def get_user(id_vk: int) -> (dict, None):
 
 def get_equip():
     QUERY = 'SELECT id_vk, equipment FROM users WHERE equipment IS NOT NULL AND is_active=TRUE;'
-    db = DB().connect()
-    cur = db.cursor()
-    try:
-        cur.execute(QUERY)
-        res = cur.fetchall()
-    except sql_err.ProgrammingError as exc:
-        raise ValueError(exc.msg)
-    finally:
-        cur.close()
-        db.close()
+    res = DB().query(QUERY)
     answer = []
     for row in res:
         answer.append((row[0], json.loads(row[1])))

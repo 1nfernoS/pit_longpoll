@@ -26,6 +26,8 @@ class DB(object):
     def query(self, query: str, data: tuple = None) -> (tuple, None):
         db = self.connect()
         cur = db.cursor()
+        res = None
+        
         try:
             cur.execute(query, data)
             res = cur.fetchall()
@@ -38,5 +40,4 @@ class DB(object):
         finally:
             cur.close()
             db.close()
-
-        return res if res else None
+        return res
