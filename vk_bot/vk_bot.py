@@ -10,7 +10,7 @@ from config import group_data
 
 
 class VkBot:
-    __slots__ = ['_events', '_name', '_token', '_group_id', '_vk', '_long_poll', 'api']
+    __slots__ = ['_events', '_name', '_token', '_group_id', '_vk', '_long_poll', 'api', 'before_start']
 
     def __init__(self, name: str, token: str, group_id: int) -> None:
         self._events = VkEvent()
@@ -21,6 +21,11 @@ class VkBot:
         self._vk = VkApi(token=self._token)
         self._long_poll = VkBotLongPoll(self._vk, self._group_id, 2)
         self.api = VkMethods(self._vk.get_api())
+        self.before_start = self.startup
+
+        return
+
+    def startup(self):
         return
 
     def set_handler(self, event_type: str, handler: callable):
@@ -31,13 +36,14 @@ class VkBot:
         return
 
     def start(self):
+        self.before_start()
         print(f"Bot {self._name} successfully started! Branch {os.environ.get('BRANCH', 'dev')}")
         try:
             while True:
                 for event in self._long_poll.check():
                     # Call def ith same name as event type
                     getattr(self._events, event.type.name)(self, event)
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, RecursionError):
             print('Stopping . . .')
             return
         except:
