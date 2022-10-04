@@ -18,8 +18,12 @@ class Command:
         self.is_active = None
         self.name = name
         self.alias = alias
+        self.desc = 'Empty Command'
         self.set_active(True)
         return
+
+    def get_description(self) -> str:
+        return self.desc
 
     def run(self, bot: VkBot, event: VkBotEvent):
         return
@@ -27,7 +31,7 @@ class Command:
     def set_active(self, state: bool):
         self.is_active = state
         if state:
-            command_list[self.alias] = self.__class__.run
+            command_list[self.alias] = self.__class__
         else:
             command_list.pop(self.alias)
         return
@@ -44,7 +48,7 @@ for m in [cmd[:-3] for cmd in os.listdir('commands') if not cmd.startswith('__')
     [getattr(module, i)() for i in dir(module)
      if not i.startswith('__') and type(getattr(module, i)) == type and i not in ('Command', 'VkBot', 'VkBotEvent')]
 
-print(command_list)
+print('\n'.join(f"{i}: {command_list[i]}" for i in command_list))
 
 
 if __name__ == '__main__':
