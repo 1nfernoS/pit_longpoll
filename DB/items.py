@@ -8,18 +8,9 @@ def check_items():
     QUERY = 'INSERT INTO `items` VALUES (%s, %s);'
     items = json.loads(open(os.environ.get('ITEM_FILE'), 'r').read())
 
-    db = DB().connect()
-    cur = db.cursor()
     for i in items:
         data = (i, items[i])
-        try:
-            cur.execute(QUERY, data)
-            db.commit()
-            # print(f'Added item {i}')
-        except sql_err.IntegrityError as exc:
-            db.rollback()
-    cur.close()
-    db.close()
+        DB().query(QUERY, data)
     return
 
 
@@ -31,18 +22,9 @@ def get_item_by_id(item_id: int):
     except ValueError:
         raise TypeError(f"`item_id` must be int, got {item_id} instead")
 
-    db = DB().connect()
-    cur = db.cursor()
-    try:
-        cur.execute(QUERY, (item_id,))
-        res = cur.fetchone()
-    except sql_err.ProgrammingError as exc:
-        raise ValueError(exc.msg)
-    finally:
-        cur.close()
-        db.close()
-
+    res = DB().query(QUERY, (item_id,))
     if res:
+        res = res[0]
         return res[0]
     else:
         return
@@ -51,18 +33,10 @@ def get_item_by_id(item_id: int):
 def get_item_by_name(name: str):
     QUERY = 'SELECT item_id FROM items WHERE item_name LIKE %s;'
 
-    db = DB().connect()
-    cur = db.cursor()
-    try:
-        cur.execute(QUERY, (name,))
-        res = cur.fetchone()
-    except sql_err.ProgrammingError as exc:
-        raise ValueError(exc.msg)
-    finally:
-        cur.close()
-        db.close()
+    res = DB().query(QUERY, (name,))
 
     if res:
+        res = res[0]
         return res[0]
     else:
         return

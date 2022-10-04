@@ -4,6 +4,7 @@ import mysql.connector.errors as sql_err
 
 
 def add_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, agile: int, end: int, luck: int, acc: (int, None), conc: (int, None)):
+
     QUERY = 'INSERT INTO `user_data` VALUE ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s , %s );'
 
     try:
@@ -60,22 +61,13 @@ def add_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, a
 
     data = (id_vk, lvl, atk, defence, strength, agile, end, luck, acc, conc, dt.now())
 
-    db = DB().connect()
-    cur = db.cursor()
-    try:
-        cur.execute(QUERY, data)
-        db.commit()
-    except sql_err.IntegrityError as exc:
-        db.rollback()
-        raise KeyError(exc.msg)
-    finally:
-        cur.close()
-        db.close()
+    DB().query(QUERY, data)
 
     return
 
 
 def update_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, agile: int, end: int, luck: int, acc: (int, None), conc: (int, None)):
+
     QUERY = 'UPDATE `user_data` SET level = %s, attack = %s, defence = %s, strength = %s, agility = %s, endurance = %s, luck = %s, accuracy = %s, concentration = %s, last_update = %s WHERE id_vk = %s;'
 
     try:
@@ -132,20 +124,13 @@ def update_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int
 
     data = (lvl, atk, defence, strength, agile, end, luck, acc, conc, dt.now(), id_vk)
 
-    db = DB().connect()
-    cur = db.cursor()
-    try:
-        cur.execute(QUERY, data)
-        db.commit()
-    except sql_err.ProgrammingError as exc:
-        db.rollback()
-        raise KeyError(exc.msg)
-    finally:
-        cur.close()
-        db.close()
+    DB().query(QUERY, data)
+
+    return
 
 
 def get_user_data(id_vk: int):
+
     QUERY = 'SELECT id_vk, `level`, attack, defence, strength, agility, endurance, luck, accuracy, concentration, last_update FROM user_data WHERE user_data.id_vk = %s;'
 
     try:
@@ -153,18 +138,10 @@ def get_user_data(id_vk: int):
     except ValueError:
         raise TypeError(f"`id_vk` must be int, got {id_vk} instead")
 
-    db = DB().connect()
-    cur = db.cursor()
-    try:
-        cur.execute(QUERY, (id_vk,))
-        res = cur.fetchone()
-    except sql_err.ProgrammingError as exc:
-        raise ValueError(exc.msg)
-    finally:
-        cur.close()
-        db.close()
+    res = DB().query(QUERY, (id_vk,))
 
     if res:
+        res = res[0]
         return {'id_vk': res[0], 'level': res[1], 'attack': res[2], 'defence': res[3], 'strength': res[4],
                 'agility': res[5], 'endurance': res[6], 'luck': res[7], 'accuracy': res[8], 'concentration': res[9], 'last_update': res[10]}
     else:
@@ -174,5 +151,5 @@ def get_user_data(id_vk: int):
 if __name__ == '__main__':
     # add_user_data(123141, 90, 120, 55, 123, 122, 129, 10, None, None)
     # update_user_data(123141, 90, 120, 55, 123, 122, 129, 10, 15, 45)
-    print(get_user_data(123141))
+    print(get_user_data(3902377))
 

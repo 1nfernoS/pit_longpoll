@@ -73,7 +73,7 @@ def _stats(auth_key: str, user_id: int) -> dict:
     t5 = t4.find_all('span')
     stat = []
     for i in range(0, len(t5), 2):
-        stat.append(int(t5[i].text))
+        stat.append(int(t5[i].text.replace(u'\xa0', '')))
     res = {'level': stat[0], 'attack': stat[1], 'defence': stat[2],
            'strength': stat[3], 'agility': stat[4], 'endurance': stat[5],
            'luck': stat[6], 'accuracy': stat[7], 'concentration': stat[8]}
