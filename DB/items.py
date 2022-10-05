@@ -31,7 +31,7 @@ def get_item_by_id(item_id: int):
 
 
 def get_item_by_name(name: str):
-    QUERY = 'SELECT item_id FROM items WHERE item_name LIKE %s;'
+    QUERY = "SELECT item_id FROM items WHERE item_name LIKE CONCAT('%', %s, '%');"
 
     res = DB().query(QUERY, (name,))
 
@@ -42,7 +42,30 @@ def get_item_by_name(name: str):
         return
 
 
+def search_item(name: str):
+    QUERY = "SELECT COUNT(*) FROM items WHERE item_name LIKE CONCAT('Книга - ', %s, '%');"
+
+    cnt = DB().query(QUERY, (name,))[0][0]
+    if cnt > 0:
+        QUERY = "SELECT * FROM items WHERE item_name LIKE CONCAT('Книга - ', %s, '%');"
+    else:
+        pass
+
+    # QUERY = "SELECT * FROM items WHERE item_name LIKE CONCAT('%', %s, '%');"
+
+    res = DB().query(QUERY, (name,))
+    if res:
+        data = {'count': 0, 'result': []}
+        for row in res:
+            data['result'].append({'item_id': row[0], 'item_name': row[1]})
+        data['count'] = len(data['result'])
+        return data
+    else:
+        return
+
+
 if __name__ == '__main__':
     print(get_item_by_name('Книга - Браконьер'))
     print(get_item_by_id(14972))
+    print(search_item('рас'))
     # check_items()

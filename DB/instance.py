@@ -41,3 +41,9 @@ class DB(object):
             cur.close()
             db.close()
         return res
+
+
+if __name__ == '__main__':
+    item = 'Рассечение'
+    query = "SELECT * FROM items WHERE item_name LIKE CONCAT('Книга - ', %s, '%');"
+    print(DB().query(query, (item,)))
