@@ -48,7 +48,7 @@ for m in [cmd[:-3] for cmd in os.listdir('commands') if not cmd.startswith('__')
     [getattr(module, i)() for i in dir(module)
      if not i.startswith('__') and type(getattr(module, i)) == type and i not in ('Command', 'VkBot', 'VkBotEvent')]
 
-print('\n'.join(f"{i}: {command_list[i]}" for i in command_list))
+print('\n'+40*'-', '\nLoaded commands: ', ', '.join(f"{command_list[i].__name__}" for i in command_list), '\n'+40*'-', '\n')
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 from commands import Command, command_list
 
-from DB.user_data import get_user_data
+from DB import user_data
 
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
@@ -17,7 +17,7 @@ class Stats(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        data = get_user_data(event.message.from_id)
+        data = user_data.get_user_data(event.message.from_id)
         if data:
             message = f"{data['level']}&#128128;: до пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}&#128074;/&#128400; или " \
                       f"{data['level'] * 3 + 45 - data['endurance']}&#10084;"
