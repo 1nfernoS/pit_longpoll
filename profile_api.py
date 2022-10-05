@@ -16,6 +16,18 @@ def _id_tag(tag, search, skip=0) -> int:
                 return j
 
 
+def get_name(item_id: int) -> str:
+    url = f'https://vip3.activeusers.ru/app.php?act=item&id={item_id}&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
+    soup = BeautifulSoup(requests.get(url).content, 'html.parser')
+    t1 = soup.body
+    t2 = t1.find_all('div')[_id_tag(t1, 'app_item')].div.div.div.div
+    try:
+        t3 = t2.find_all('div')[_id_tag(t2, 'shop_res-title')]
+        return t3.contents[0].strip()
+    except:
+        return ''
+
+
 def _active(auth_key: str, user_id: int) -> List[List[Union[str, int, float]]]:
     url = f'https://vip3.activeusers.ru/app.php?act=pages&id=620&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214'
     print(f"[GET] Request to {url}")
@@ -130,21 +142,69 @@ def get_books(item_list: list) -> list:
     return res
 
 
+def get_build(item_list: list) -> dict:
+    BOOK_LIST = [13408, 13409, 13547, 13553, 13586, 13593, 13598, 13601, 13604, 13607, 13610, 13613, 13616, 13621,
+                 13625, 13627, 13638, 13641, 13643, 13645, 13647, 13649, 13651, 13653, 13655, 13657, 13659, 13661,
+                 13663, 13665, 13667, 13669, 13671, 13673, 13676, 13678, 13680, 13682, 13684, 13686, 13688, 13690,
+                 13692, 13694, 13696, 13698, 14506, 14508, 14778, 14780, 14971, 14973, 14987, 14989, 15220]
+    ADM_DICT = {
+        14128: [13651], 14130: [13645], 14132: [13659], 14134: [13641, 13638], 14136: [13667], 14138: [13682],
+        14140: [13643], 14142: [13680], 14144: [13649], 14302: [13651, 13645, 13659], 14304: [13641, 13638, 13667, 13682],
+        14306: [13643, 13680, 13649], 14573: [13696], 14575: [13671], 14577: [13692], 14579: [13696, 13671, 13692],
+        14869: [13657], 14920: [13684], 15019: [13690], 15021: [13661], 15023: [13663], 15025: [13690, 13661, 13663]
+    }
+    res = {'books': [], 'adms': []}
+    for item in item_list:
+        if item in BOOK_LIST:
+            res['books'].append(item)
+        if item in ADM_DICT.keys():
+            res['adms'] += ADM_DICT[item]
+    return res
+
+
 def price(item: int) -> int:
     url = f'https://vip3.activeusers.ru/app.php?act=item&id={item}&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
     print(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
-    t1 = soup.body
-    t2 = t1.find_all('div')[_id_tag(t1, 'app_item')]
-    t3 = t2.div.div
-    t4 = t3.find_all('div')[_id_tag(t3, 'section')]
-    t5 = t4.find_all('div')[_id_tag(t4, 'portlet')]
-    t6 = t5.find_all('div')[_id_tag(t5, 'row', 1)]
-    t7 = t6.div.div.div.find_all('script')[1]
-    t8 = str(t7)[str(t7).find('window.graph_data'):]
-    t9 = json.loads(t8[20:t8.find(';')])
-    price_list = list()
-    for i in t9:
-        price_list.append(i[1])
-    return round(sum(price_list) / 20)
+    try:
+        t1 = soup.body
+        t2 = t1.find_all('div')[_id_tag(t1, 'app_item')]
+        t3 = t2.div.div
+        t4 = t3.find_all('div')[_id_tag(t3, 'section')]
+        t5 = t4.find_all('div')[_id_tag(t4, 'portlet')]
+        t6 = t5.find_all('div')[_id_tag(t5, 'row', 1)]
+        t7 = t6.div.div.div.find_all('script')[1]
+        t8 = str(t7)[str(t7).find('window.graph_data'):]
+        t9 = json.loads(t8[20:t8.find(';')])
+        price_list = list()
+        for i in t9:
+            price_list.append(i[1])
+        return round(sum(price_list) / 20)
+    except TypeError:
+        return -1
+
+
+def upd_items():
+
+    import time
+    import json
+
+    items = json.loads(open('items.json', 'r').read())
+
+    for i in range(15000, 20000):
+        time.sleep(0.1)
+        n = get_name(i)
+        if n != '':
+            print('\n', i, ': ', n, sep='', end=' ')
+            items[i] = n
+        else:
+            print(i, end=' ')
+
+    open('items.json', 'w').write(json.dumps(items))
+
+    return
+
+
+if __name__ == '__main__':
+    upd_items()
