@@ -1,7 +1,8 @@
 # builtins
 import json
 from datetime import datetime
-import traceback
+import logging
+import time
 
 # requirement's import
 from vk_api.bot_longpoll import CHAT_START_ID, VkBotEvent
@@ -21,6 +22,8 @@ from .forwards import forward_parse
 
 # import for typing hints
 from vk_bot.vk_bot import VkBot
+
+logging.basicConfig(filename='logs\\messages_info.log', level=logging.INFO)
 
 
 def new_message(self: VkBot, event: VkBotEvent):
@@ -72,8 +75,27 @@ def new_message(self: VkBot, event: VkBotEvent):
         return
 
     if event.from_chat:
+
+        if event.message.text:
+            # Potential command parse
+            txt = event.message.text.lower().split()
+            if not txt[0][0].isalnum():
+                txt[0] = txt[0][1:]
+
+            for cmd in commands.command_list:
+                if txt[0] in cmd:
+                    logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\t[{event.chat_id}]({event.message.from_id}): {txt[0]}")
+
+                    commands.command_list[cmd].run(cmd, self, event)
+                    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+                    self.api.del_msg(event.message.peer_id, msg_id)
+
         if event.message.from_id == OVERSEER_BOT:
             if "Ваш профиль:" in event.message.text:
+                txt = event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | ')
+                logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\tProfile message: {txt}")
+                del txt
+
                 data = parse_profile(event.message.text)
                 data_old = user_data.get_user_data(data['id_vk'])
                 new_data = (data['id_vk'], data['level'], data['attack'], data['defence'],
@@ -109,20 +131,12 @@ def new_message(self: VkBot, event: VkBotEvent):
 
                 self.api.send_chat_msg(event.chat_id, answer)
 
-        if event.message.text:
-            # Potential command parse
-            txt = event.message.text.lower().split()
-            if not txt[0][0].isalnum():
-                txt[0] = txt[0][1:]
-
-            for cmd in commands.command_list:
-                if txt[0] in cmd:
-                    print(f'\t\tGOT COMMAND [{txt[0]}]')
-                    commands.command_list[cmd].run(cmd, self, event)
-                    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
-                    self.api.del_msg(event.message.peer_id, msg_id)
     if len(event.message.fwd_messages) == 1:
         if int(event.message.fwd_messages[0]['from_id']) == int(PIT_BOT):
+            txt = event.message.fwd_messages[0]['text'].encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | ')
+            logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\t[{event.chat_id}]({event.message.from_id}): {txt}")
+            del txt
+
             forward_parse(self, event)
             pass
         return

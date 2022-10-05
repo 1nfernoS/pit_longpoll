@@ -1,8 +1,12 @@
 from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll
 
+from requests.exceptions import ReadTimeout, ConnectTimeout
+
 import traceback
+import logging
 import os
+import time
 
 from vk_bot.vk_methods import VkMethods
 from vk_bot.vk_events import VkEvent
@@ -36,17 +40,24 @@ class VkBot:
         return
 
     def start(self):
+        logging.basicConfig(filename='logs\\BOT_ERROR.log', level=logging.ERROR)
         self.before_start()
-        print(f"Bot {self._name} successfully started! Branch {os.environ.get('BRANCH', 'dev')}")
+        print(f"Bot {self._name} successfully started! Branch {os.environ.get('BRANCH', 'dev')}\n")
         try:
             while True:
                 for event in self._long_poll.check():
                     # Call def ith same name as event type
                     getattr(self._events, event.type.name)(self, event)
-        except (KeyboardInterrupt, RecursionError):
+        except (KeyboardInterrupt):
             print('Stopping . . .')
             return
+        except (ReadTimeout, ConnectTimeout) as exc:
+            logging.error(f"{time.strftime('%d %m %Y %H:%M:%S')}\t{traceback.format_exc(-3)}")
+            print(f'\n\nTimeout error {exc}')
+            print('\n\tRestarting . . .\n')
+            self.start()
         except:
+            logging.error(f"{time.strftime('%d %m %Y %H:%M:%S')}\t{traceback.format_exc(-3)}")
             print('Error:', end='')
             print('\n\nFull Trace')
             print(traceback.format_exc())

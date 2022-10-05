@@ -8,7 +8,11 @@ from messages.events import event_message
 def startup():
     # All before start()
     # TODO: Check builds
-    print(' .'*20)
+    from DB import users, items
+    import os
+    # users.check_users()
+    # items.check_items()
+    print(' .'*20, '\n')
     return
 
 

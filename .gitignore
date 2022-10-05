@@ -5,3 +5,4 @@ test.*
 prestart.py
 __pycache__/
 DB/scripts/kitty_pit.sql
+logs
