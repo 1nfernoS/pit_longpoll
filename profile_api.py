@@ -28,7 +28,7 @@ def get_name(item_id: int) -> str:
         return ''
 
 
-def _active(auth_key: str, user_id: int) -> List[List[Union[str, int, float]]]:
+def lvl_active(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]]]:
     url = f'https://vip3.activeusers.ru/app.php?act=pages&id=620&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214'
     print(f"[GET] Request to {url}")
 
@@ -36,21 +36,22 @@ def _active(auth_key: str, user_id: int) -> List[List[Union[str, int, float]]]:
     t1 = soup.body
     t2 = t1.find_all('div')[_id_tag(t1, 'app_pages')]
     t3 = t2.div.div.div.div
-    res_list = list()
+    res_dict = dict()
 
     for i in t3.find_all('li'):
         z = list()
         for j in i.text.split():
             if j.endswith(':'):
-                z.append(' '.join(i.text.split()[:i.text.split().index(j) + 1]))
+                item = ' '.join(i.text.split()[:i.text.split().index(j) + 1])
+                z.append(item.replace(':', '').replace('.', ''))
             if j.isdigit():
                 z.append(int(j))
                 z.append((round((int(j) / 10) ** 0.5 * 10) + 100) / 100)
-        res_list.append(z)
-    return res_list
+        res_dict[z[0]] = [z[1], z[2]]
+    return res_dict
 
 
-def _passive(auth_key: str, user_id: int) -> List[List[Union[str, int, float]]]:
+def lvl_passive(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]]]:
     url = f'https://vip3.activeusers.ru/app.php?act=pages&id=622&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214'
     print(f"[GET] Request to {url}")
 
@@ -58,18 +59,19 @@ def _passive(auth_key: str, user_id: int) -> List[List[Union[str, int, float]]]:
     t1 = soup.body
     t2 = t1.find_all('div')[_id_tag(t1, 'app_pages')]
     t3 = t2.div.div.div.div
-    res_list = list()
+    res_dict = dict()
 
     for i in t3.find_all('li'):
         z = list()
         for j in i.text.split():
             if j.endswith(':'):
-                z.append(' '.join(i.text.split()[:i.text.split().index(j) + 1]))
+                item = ' '.join(i.text.split()[:i.text.split().index(j) + 1])
+                z.append(item.replace(':', '').replace('.', ''))
             if j.isdigit():
                 z.append(int(j))
                 z.append((round((int(j) / 10) ** 0.5 * 10) + 100) / 100)
-        res_list.append(z)
-    return res_list
+        res_dict[z[0]] = [z[1], z[2]]
+    return res_dict
 
 
 def _stats(auth_key: str, user_id: int) -> dict:
