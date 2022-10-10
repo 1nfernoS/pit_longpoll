@@ -16,6 +16,8 @@ from config import group_data
 class VkBot:
     __slots__ = ['_events', '_name', '_token', '_group_id', '_vk', '_long_poll', 'api', 'before_start']
 
+    # TODO: OnStartup, OnStop (decorators(?))
+
     def __init__(self, name: str, token: str, group_id: int) -> None:
         self._events = VkEvent()
         self._name = name
@@ -37,6 +39,9 @@ class VkBot:
             setattr(self._events, event_type, handler)
         else:
             raise AttributeError(f"{event_type} is not EVENT_TYPE")
+        return
+
+    def stop(self):
         return
 
     def start(self):

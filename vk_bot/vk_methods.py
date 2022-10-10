@@ -75,10 +75,10 @@ class VkMethods:
             message_id=self.send_chat_msg(chat_id, msg, **kwargs)
         )
 
-    def get_names(self, list_ids: list) -> str:
+    def get_names(self, list_ids: list, case: str = 'gen') -> str:
         return ', '.join(
             [f"[id{user['id']}|{user['first_name']}]"
-             for user in self._api.users.get(user_ids=list_ids, name_case='gen')]
+             for user in self._api.users.get(user_ids=list_ids, name_case=case)]
         )
 
     def get_members(self, chat_id: int) -> List[int]:
