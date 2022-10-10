@@ -12,7 +12,7 @@ class Stats(Command):
     desc = 'Узнать сколько статов осталось до насильного перехода на следующий этаж'
 
     def __init__(self):
-        super().__init__(__class__.__name__, ('статы', 'stats', 'пинок'))
+        super().__init__(__class__.__name__, ('stats', 'пинок'))
         # self.set_active(False)
         return
 

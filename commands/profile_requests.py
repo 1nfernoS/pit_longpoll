@@ -35,6 +35,7 @@ class Price(Command):
             for i in search['result']:
                 auc_price = profile_api.price(i['item_id'])
                 if auc_price > 0:
+                    # TODO: guild discount
                     answer += f"\n{gold_emoji}{auc_price} ({gold_emoji}{round(auc_price/0.9)}) {item_emoji}{i['item_name']}"
                     cnt += 1
             if cnt > 0:
@@ -68,14 +69,7 @@ class Equip(Command):
         if data['profile_key']:
 
             profile = profile_api.get_profile(data['profile_key'], event.message.from_id)
-            stats = profile['stats']
-
-            new_data = (event.message.from_id,
-                        stats['level'], stats['attack'], stats['defence'],
-                        stats['strength'], stats['agility'], stats['endurance'],
-                        stats['luck'], stats['accuracy'], stats['concentration'])
-            user_data.update_user_data(*new_data)
-
+            
             inv = [int(i) for i in profile['items']]
 
             class_id = inv[0] if inv[0] != 14108 else inv[1]
@@ -84,16 +78,30 @@ class Equip(Command):
                               class_id=class_id)
 
             build = profile_api.get_build(inv)
+
+            actives = profile_api.lvl_active(data['profile_key'], event.message.from_id)
+            passives = profile_api.lvl_passive(data['profile_key'], event.message.from_id)
+
             message = f'Билд {bot.api.get_names([event.message.from_id])}:'
             if build['books']:
                 message += '\nКниги:'
                 for item in build['books']:
-                    message += '\n'+f'{items.get_item_by_id(item)}'
+                    name = items.get_item_by_id(item)
+                    if name.startswith('(А)'):
+                        for i in actives:
+                            if name[4:].startswith(i):
+                                message += '\n'+f'{name.replace("(А) ", "&#128213;")} - {actives[i][0]}({actives[i][1]}%)'
+                    else:
+                        for i in passives:
+                            if name[4:].startswith(i):
+                                message += '\n'+f'{name.replace("(П) ", "&#128216;")} - {passives[i][0]}({passives[i][1]}%)'
             if build['adms']:
                 message += '\nВ адмах:'
                 for item in build['adms']:
-                    message += '\n' + f'{items.get_item_by_id(item)}'
-
+                    name = items.get_item_by_id(item)
+                    for i in passives:
+                        if name[4:].startswith(i):
+                            message += '\n' + f'{name.replace("(П) ", "&#128216;")} - {passives[i][0]}({passives[i][1]}%)'
         else:
             message = "Сдайте ссылку на профиль мне в лс!\n" \
                       "Проще всего это сделать через сайт, скопировав адрес ссылки кнопки 'Профиль' в приложении.\n" \

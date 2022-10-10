@@ -57,3 +57,20 @@ class Id(Command):
                 bot.api.send_chat_msg(event.chat_id, str(event.message.from_id))
         return
 
+
+class Emoji(Command):
+
+    desc = 'Код эмодзи. Только для создателя'
+
+    def __init__(self):
+        super().__init__(__class__.__name__, ('emoji', 'эмодзи', 'смайл'))
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        if event.message.from_id == int(creator_id):
+            msg = event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+            msg = msg.split(' ', 1)[1].replace('&#', '').replace(';', '')
+            bot.api.send_chat_msg(event.chat_id, msg)
+        return
+

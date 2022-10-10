@@ -49,7 +49,7 @@ def search_item(name: str):
     if cnt > 0:
         QUERY = "SELECT * FROM items WHERE item_name LIKE CONCAT('Книга - ', %s, '%');"
     else:
-        pass
+        QUERY = "SELECT * FROM items WHERE item_name LIKE CONCAT(%s, '%');"
 
     # QUERY = "SELECT * FROM items WHERE item_name LIKE CONCAT('%', %s, '%');"
 
