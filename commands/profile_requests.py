@@ -35,8 +35,8 @@ class Price(Command):
             for i in search['result']:
                 auc_price = profile_api.price(i['item_id'])
                 if auc_price > 0:
-                    # TODO: guild discount
-                    answer += f"\n{gold_emoji}{auc_price} ({gold_emoji}{round(auc_price/0.9)}) {item_emoji}{i['item_name']}"
+                    # TODO: guild discount {gold_emoji}{round(auc_price/0.9)}
+                    answer += f"\n{gold_emoji}{auc_price} () {item_emoji}{i['item_name']}"
                     cnt += 1
             if cnt > 0:
                 answer = f"Нашел следующее ({cnt}):" + answer
@@ -61,52 +61,58 @@ class Equip(Command):
 
     def run(self, bot: VkBot, event: VkBotEvent):
 
-        if event.message.from_id not in bot.api.get_members(GUILD_CHAT_ID):
-            message = f'Нет, это только для членов гильдии {GUILD_NAME}!'
+        if event.message.from_id in bot.api.get_members(GUILD_CHAT_ID):
 
-        data = users.get_user(event.message.from_id)
+            data = users.get_user(event.message.from_id)
 
-        if data['profile_key']:
+            if data['profile_key']:
 
-            profile = profile_api.get_profile(data['profile_key'], event.message.from_id)
-            
-            inv = [int(i) for i in profile['items']]
+                profile = profile_api.get_profile(data['profile_key'], event.message.from_id)
 
-            class_id = inv[0] if inv[0] != 14108 else inv[1]
-            build = profile_api.get_books(inv)
-            users.update_user(event.message.from_id, is_active=1, equipment=json.dumps(build),
-                              class_id=class_id)
+                inv = [int(i) for i in profile['items']]
 
-            build = profile_api.get_build(inv)
+                class_id = inv[0] if inv[0] != 14108 else inv[1]
+                build = profile_api.get_books(inv)
+                users.update_user(event.message.from_id, is_active=1, equipment=json.dumps(build),
+                                  class_id=class_id)
 
-            actives = profile_api.lvl_active(data['profile_key'], event.message.from_id)
-            passives = profile_api.lvl_passive(data['profile_key'], event.message.from_id)
+                build = profile_api.get_build(inv)
 
-            message = f'Билд {bot.api.get_names([event.message.from_id])}:'
-            if build['books']:
-                message += '\nКниги:'
-                for item in build['books']:
-                    name = items.get_item_by_id(item)
-                    if name.startswith('(А)'):
-                        for i in actives:
-                            if name[4:].startswith(i):
-                                message += '\n'+f'{name.replace("(А) ", "&#128213;")} - {actives[i][0]}({actives[i][1]}%)'
-                    else:
+                actives = profile_api.lvl_active(data['profile_key'], event.message.from_id)
+                passives = profile_api.lvl_passive(data['profile_key'], event.message.from_id)
+
+                message = f'Билд {bot.api.get_names([event.message.from_id])}:'
+                if build['books']:
+                    message += '\nКниги:'
+                    for item in build['books']:
+                        name = items.get_item_by_id(item)
+                        if name.startswith('(А)'):
+                            message += '\n' + f'{name.replace("(А) ", "&#8195;&#128213;")}'
+                            for i in actives:
+                                if name[4:].startswith(i):
+                                    message += f' - {actives[i][0]} ({int(actives[i][1]*100)}%)'
+                        else:
+                            message += '\n' + f'{name.replace("(П) ", "&#8195;&#128216;")}'
+                            for i in passives:
+                                if name[4:].startswith(i):
+                                    message += f' - {passives[i][0]} ({int(passives[i][1]*100)}%)'
+                if build['adms']:
+                    message += '\nВ адмах:'
+                    for item in build['adms']:
+                        name = items.get_item_by_id(item)
+                        message += '\n' + f'{name.replace("(П) ", "&#8195;&#128216;")}'
                         for i in passives:
                             if name[4:].startswith(i):
-                                message += '\n'+f'{name.replace("(П) ", "&#128216;")} - {passives[i][0]}({passives[i][1]}%)'
-            if build['adms']:
-                message += '\nВ адмах:'
-                for item in build['adms']:
-                    name = items.get_item_by_id(item)
-                    for i in passives:
-                        if name[4:].startswith(i):
-                            message += '\n' + f'{name.replace("(П) ", "&#128216;")} - {passives[i][0]}({passives[i][1]}%)'
+                                message += f' - {passives[i][0]} ({int(passives[i][1]*100)}%)'
+            else:
+                message = "Сдайте ссылку на профиль мне в лс!\n" \
+                          "Проще всего это сделать через сайт, скопировав адрес ссылки кнопки 'Профиль' в приложении.\n" \
+                          "Если получилась ссылка формата 'https:// vip3.activeusers .ru/блаблабла', то все получится)"
+
         else:
-            message = "Сдайте ссылку на профиль мне в лс!\n" \
-                      "Проще всего это сделать через сайт, скопировав адрес ссылки кнопки 'Профиль' в приложении.\n" \
-                      "Если получилась ссылка формата 'https:// vip3.activeusers .ru/блаблабла', то все получится)"
+            message = f'Нет, это только для членов гильдии {GUILD_NAME}!'
 
         bot.api.send_chat_msg(event.chat_id, message)
+
         return
 
