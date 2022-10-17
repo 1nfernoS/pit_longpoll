@@ -27,7 +27,7 @@ class DB(object):
         db = self.connect()
         cur = db.cursor()
         res = None
-        
+
         try:
             cur.execute(query, data)
             res = cur.fetchall()

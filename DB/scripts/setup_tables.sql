@@ -1,9 +1,9 @@
 CREATE TABLE `users`  (
   `id_vk` int NOT NULL,
   `profile_key` varchar(32) NULL UNIQUE COMMENT 'Profile auth key',
-  `is_active` bit NULL,
-  `is_leader` bit NULL,
-  `is_officer` bit NULL,
+  `is_active` tinyint(1) NULL,
+  `is_leader` tinyint(1) NULL,
+  `is_officer` tinyint(1) NULL,
   `equipment` varchar(255) NULL COMMENT 'Array of item_id\'s',
   `class_id` int NULL,
   PRIMARY KEY (`id_vk`)
@@ -27,6 +27,7 @@ CREATE TABLE `user_data`  (
 CREATE TABLE `items`  (
   `item_id` int NOT NULL,
   `item_name` varchar(64) NULL,
+  `has_price` tinyint(1) NULL,
   PRIMARY KEY (`item_id`)
 );
 

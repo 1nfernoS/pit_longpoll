@@ -1,6 +1,5 @@
 from datetime import datetime as dt
-from DB.instance import DB
-import mysql.connector.errors as sql_err
+from DB import DB
 
 
 def add_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, agile: int, end: int, luck: int, acc: (int, None), conc: (int, None)):

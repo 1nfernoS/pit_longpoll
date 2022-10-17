@@ -1,8 +1,7 @@
 import json
 from typing import List
 
-from DB.instance import DB
-import mysql.connector.errors as sql_err
+from DB import DB
 
 from profile_api import get_profile, get_books
 
