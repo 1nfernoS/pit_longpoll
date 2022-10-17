@@ -93,7 +93,7 @@ def new_message(self: VkBot, event: VkBotEvent):
         if event.message.from_id == OVERSEER_BOT:
             if "Ваш профиль:" in event.message.text:
                 txt = event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | ')
-                logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\tProfile message: {txt}")
+                logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\t[{event.chat_id}]Profile message: {txt}")
                 del txt
 
                 data = parse_profile(event.message.text)

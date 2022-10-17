@@ -14,9 +14,7 @@ from config import group_data
 
 
 class VkBot:
-    __slots__ = ['_events', '_name', '_token', '_group_id', '_vk', '_long_poll', 'api', 'before_start']
-
-    # TODO: OnStartup, OnStop (decorators(?))
+    __slots__ = ['_events', '_name', '_token', '_group_id', '_vk', '_long_poll', 'api', '_before_start', '_before_stop']
 
     def __init__(self, name: str, token: str, group_id: int) -> None:
         self._events = VkEvent()
@@ -27,12 +25,31 @@ class VkBot:
         self._vk = VkApi(token=self._token)
         self._long_poll = VkBotLongPoll(self._vk, self._group_id, 2)
         self.api = VkMethods(self._vk.get_api())
-        self.before_start = self.startup
 
+        self._before_start = None
+        self._before_stop = None
+
+        return
+
+    def set_start(self, func: callable):
+        self._before_start = func
         return
 
     def startup(self):
+        def wrapper(func: callable):
+            self.set_start(func)
+            return
+        return wrapper
+
+    def set_stop(self, func: callable):
+        self._before_stop = func
         return
+
+    def on_stop(self):
+        def wrapper(func: callable):
+            self.set_stop(func)
+            return
+        return wrapper
 
     def set_handler(self, event_type: str, handler: callable):
         if event_type in self._events.TYPES:
@@ -41,20 +58,30 @@ class VkBot:
             raise AttributeError(f"{event_type} is not EVENT_TYPE")
         return
 
-    def stop(self):
-        return
+    def event_handler(self, event_type: str):
+        # decorator for set_handler
+        def wrapper(handler: callable, *args, **kwargs):
+            self.set_handler(event_type, handler)
+
+        return wrapper
 
     def start(self):
         logging.basicConfig(filename='logs\\BOT_ERROR.log', level=logging.ERROR)
-        self.before_start()
+        if self._before_start:
+            print('Starting up . . .')
+            self._before_start(self)
+            print('Started up')
+
         print(f"Bot {self._name} successfully started! Branch {os.environ.get('BRANCH', 'dev')}\n")
         try:
             while True:
                 for event in self._long_poll.check():
-                    # Call def ith same name as event type
+                    # Call def with same name as event type
                     getattr(self._events, event.type.name)(self, event)
-        except (KeyboardInterrupt):
-            print('Stopping . . .')
+        except KeyboardInterrupt:
+            print('\n', 'Stopping . . .', '\n')
+            if self._before_stop:
+                self._before_stop(self)
             return
         except (ReadTimeout, ConnectTimeout) as exc:
             logging.error(f"{time.strftime('%d %m %Y %H:%M:%S')}\t{traceback.format_exc(-3)}")
