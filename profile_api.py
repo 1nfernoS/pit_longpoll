@@ -2,28 +2,14 @@ from bs4 import BeautifulSoup
 import requests
 import json
 
-
-# TODO: Add using for this
 from typing import List, Union, Dict
-
-
-def _id_tag(tag, search, skip=0) -> int:
-    for j in range(len(tag.find_all('div'))):
-        if search in tag.find_all('div')[j]['class']:
-            if skip > 0:
-                skip -= 1
-            else:
-                return j
 
 
 def get_name(item_id: int) -> str:
     url = f'https://vip3.activeusers.ru/app.php?act=item&id={item_id}&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
-    t1 = soup.body
-    t2 = t1.find_all('div')[_id_tag(t1, 'app_item')].div.div.div.div
     try:
-        t3 = t2.find_all('div')[_id_tag(t2, 'shop_res-title')]
-        return t3.contents[0].strip()
+        return soup.find_all('div', class_='shop_res-title')[0].contents[0].strip()
     except:
         return ''
 
@@ -33,12 +19,10 @@ def lvl_active(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]]
     print(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
-    t1 = soup.body
-    t2 = t1.find_all('div')[_id_tag(t1, 'app_pages')]
-    t3 = t2.div.div.div.div
+    t_res = soup.body.find_all('div', class_='portlet-body')[0]
     res_dict = dict()
 
-    for i in t3.find_all('li'):
+    for i in t_res.find_all('li'):
         z = list()
         for j in i.text.split():
             if j.endswith(':'):
@@ -56,12 +40,10 @@ def lvl_passive(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]
     print(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
-    t1 = soup.body
-    t2 = t1.find_all('div')[_id_tag(t1, 'app_pages')]
-    t3 = t2.div.div.div.div
+    t_res = soup.body.find_all('div', class_='portlet-body')[0]
     res_dict = dict()
 
-    for i in t3.find_all('li'):
+    for i in t_res.find_all('li'):
         z = list()
         for j in i.text.split():
             if j.endswith(':'):
@@ -80,14 +62,9 @@ def _stats(auth_key: str, user_id: int) -> dict:
     print(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
-    t1 = soup.body
-    t2 = t1.find_all('div')[_id_tag(t1, 'profile-content')]
-    t3 = t2.div.div.div.div
-    t4 = t3.find_all('div')[_id_tag(t3, 'portlet-body')]
-    t5 = t4.find_all('span')
     stat = []
-    for i in range(0, len(t5), 2):
-        stat.append(int(t5[i].text.replace(u'\xa0', '')))
+    for i in soup.body.find_all('span', class_='money-list-rescount'):
+        stat.append(int(i.text.replace(u'\xa0', '')))
     res = {'level': stat[0], 'attack': stat[1], 'defence': stat[2],
            'strength': stat[3], 'agility': stat[4], 'endurance': stat[5],
            'luck': stat[6], 'accuracy': stat[7], 'concentration': stat[8]}
@@ -100,15 +77,8 @@ def _inv(auth_key: str, user_id: int):
     print(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
-    t1 = soup.body
-    t2 = t1.find_all('div')[_id_tag(t1, 'app_user')]
-    t3 = t2.div.div
-    t4 = t3.find_all('div')[_id_tag(t3, 'progress-box')]
-    t5 = t4.find_all('div')[2].div
-    res_list = list()
-    for i in t5.find_all('a'):
-        res_list.append(int(i['href'][i['href'].find('id=') + 3:i['href'].find('id=') + 8]))
-    return res_list
+    t1 = soup.body.find_all('div', class_='resitems items clearfix')[2]
+    return [int(i['class'][1][1:]) for i in t1.find_all('a')]
 
 
 def get_profile(auth: str, id_vk: int) -> dict:
@@ -171,41 +141,54 @@ def price(item: int) -> int:
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     try:
         t1 = soup.body
-        t2 = t1.find_all('div')[_id_tag(t1, 'app_item')]
-        t3 = t2.div.div
-        t4 = t3.find_all('div')[_id_tag(t3, 'section')]
-        t5 = t4.find_all('div')[_id_tag(t4, 'portlet')]
-        t6 = t5.find_all('div')[_id_tag(t5, 'row', 1)]
-        t7 = t6.div.div.div.find_all('script')[1]
-        t8 = str(t7)[str(t7).find('window.graph_data'):]
-        t9 = json.loads(t8[20:t8.find(';')])
-        price_list = list()
-        for i in t9:
-            price_list.append(i[1])
-        return round(sum(price_list) / 20)
+        try:
+            t2 = t1.find_all('div', class_='portlet')[1]
+            t3 = t2.find_all('script')[1]
+            t4 = str(t3)[str(t3).find('window.graph_data'):]
+            t5 = json.loads(t4[20:t4.find(';')])
+            return round(sum([i[1] for i in t5]) / 20)
+        except IndexError:
+            return -1
     except TypeError:
         return -1
 
 
-def upd_items():
+def upd_items(start_id=12000, stop_id=20000):
 
     import time
     import json
 
     items = json.loads(open('items.json', 'r').read())
 
-    for i in range(15000, 20000):
+    for i in range(start_id, stop_id):
         time.sleep(0.1)
         n = get_name(i)
         if n != '':
             print('\n', i, ': ', n, sep='', end=' ')
-            items[i] = n
+            if price(i) > 0:
+                items[i] = {'name': n, 'sell': 1}
+            else:
+                items[i] = {'name': n, 'sell': 0}
         else:
             print(i, end=' ')
 
     open('items.json', 'w').write(json.dumps(items))
 
     return
+
+
+def foo():
+    url = 'https://vip3.activeusers.ru/app.php?act=user&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
+    soup = BeautifulSoup(requests.get(url).content, 'html.parser')
+    t1 = soup.find_all('li', class_='dropdown-submenu')
+    sellable = [t1[1], t1[2], t1[3], t1[4], t1[5], t1[7], t1[8], t1[9], t1[10]]
+    res = []
+    for t in sellable:
+        for i in t.find_all('li'):
+            if i.span.text.startswith(' +'):
+                data = i.a['href']
+                res.append(int(data[data.find('&id=') + 4:data.find('&auth_key=')]))
+    return res
 
 
 if __name__ == '__main__':
