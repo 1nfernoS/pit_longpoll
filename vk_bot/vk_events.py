@@ -1,7 +1,6 @@
 from vk_api.bot_longpoll import VkBotEventType, VkBotEvent
 
 
-
 class VkEvent:
     TYPES = [event.name for event in VkBotEventType.mro()[0]]
 

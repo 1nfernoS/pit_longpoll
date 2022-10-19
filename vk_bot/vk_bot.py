@@ -10,21 +10,21 @@ import time
 
 from vk_bot.vk_methods import VkMethods
 from vk_bot.vk_events import VkEvent
-from config import group_data
 
 
 class VkBot:
     __slots__ = ['_events', '_name', '_token', '_group_id', '_vk', '_long_poll', 'api', '_before_start', '_before_stop']
 
-    def __init__(self, name: str, token: str, group_id: int) -> None:
+    def __init__(self, token: str) -> None:
         self._events = VkEvent()
-        self._name = name
         self._token = token
-        self._group_id = group_id
 
         self._vk = VkApi(token=self._token)
-        self._long_poll = VkBotLongPoll(self._vk, self._group_id, 2)
         self.api = VkMethods(self._vk.get_api())
+        self._name = self.api.get_group_name()
+        self._group_id = self.api.group_id()
+
+        self._long_poll = VkBotLongPoll(self._vk, self._group_id, 2)
 
         self._before_start = None
         self._before_stop = None
@@ -66,6 +66,8 @@ class VkBot:
         return wrapper
 
     def start(self):
+        if 'logs' not in os.listdir():
+            os.mkdir('logs')
         logging.basicConfig(filename='logs\\BOT_ERROR.log', level=logging.ERROR)
         if self._before_start:
             print('Starting up . . .')
@@ -107,6 +109,8 @@ class VkBot:
 
 
 if __name__ == '__main__':
-    bot = VkBot('kitty_main', group_data['group_token'], group_data['group_id'])
+    import config
+    config.load('prod')
+    bot = VkBot(config.group_data['group_token'])
     bot.start()
     pass
