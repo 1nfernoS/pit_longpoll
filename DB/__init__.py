@@ -8,8 +8,14 @@ class DB(object):
     """
     Object of connection to DB. Have single instance for avoid multiple connections
     """
-    _connection = sql.connect(user=db_data['user'], password=db_data['password'],
-                              host=db_data['host'], database=db_data['database'])
+    try:
+        _connection = sql.connect(user=db_data['user'], password=db_data['password'],
+                                  host='host.docker.internal', database=db_data['database'])
+        print('connected docker', db_data)
+    except:
+        _connection = sql.connect(user=db_data['user'], password=db_data['password'],
+                                  host=db_data['host'], database=db_data['database'])
+        print('connected localhost')
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
@@ -19,8 +25,13 @@ class DB(object):
 
     def connect(self):
         if not self._connection.is_connected():
-            self._connection = sql.connect(user=db_data['user'], password=db_data['password'],
-                                           host=db_data['host'], database=db_data['database'])
+            try:
+                self._connection = sql.connect(user=db_data['user'], password=db_data['password'],
+                                          host='host.docker.internal', database=db_data['database'])
+            except:
+                self._connection = sql.connect(user=db_data['user'], password=db_data['password'],
+                                          host=db_data['host'], database=db_data['database'])
+
         return self._connection
 
     def query(self, query: str, data: tuple = None) -> (tuple, None):

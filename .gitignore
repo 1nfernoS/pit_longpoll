@@ -5,4 +5,7 @@ test.*
 prestart.py
 __pycache__/
 DB/scripts/kitty_pit.sql
-logs
+logs/
+get_logs.bat
+pic_bot.py
+start.bat
