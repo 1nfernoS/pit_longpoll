@@ -1,4 +1,4 @@
-from config import group_data
+import config
 from vk_bot.vk_bot import VkBot
 
 from messages.messages import new_message
@@ -6,7 +6,8 @@ from messages.events import event_message
 
 from vk_api.bot_longpoll import VkBotEvent
 
-bot = VkBot('kitty_prod[asstrickster_kitty]', group_data['group_token'], group_data['group_id'])
+config.load('prod')
+bot = VkBot(config.group_data['group_token'])
 
 
 @bot.startup()

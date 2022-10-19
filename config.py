@@ -13,3 +13,15 @@ OVERSEER_BOT = -183040898
 GUILD_NAME = 'Темная сторона'
 GUILD_CHAT_ID = 1
 IGNORE_LIST = [PIT_BOT, OVERSEER_BOT, 211500453]
+
+
+def load(branch: str):
+    global group_data
+    data = json.loads(os.environ.get('GROUP_DATA'))
+    group_data = data.get(branch)
+    if group_data:
+        os.environ['BRANCH'] = branch
+    else:
+        group_data = json.loads(os.environ.get('GROUP_DATA'))['dev']
+        print(f"No branch '{branch}', loaded 'dev' branch")
+    return
