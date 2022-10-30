@@ -16,7 +16,7 @@ def event_message(self: VkBot, event: VkBotEvent):
             )
             self.api.edit_msg(
                 event.message.peer_id,
-                self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id'],
+                event.message.conversation_message_id,
                 'Сделано!'
             )
         else:

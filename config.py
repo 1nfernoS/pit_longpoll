@@ -14,6 +14,9 @@ GUILD_NAME = 'Темная сторона'
 GUILD_CHAT_ID = 1
 IGNORE_LIST = [PIT_BOT, OVERSEER_BOT, 211500453]
 
+DISCOUNT_PERCENT = 20
+COMMISSION_PERCENT = 10
+
 
 def load(branch: str):
     global group_data

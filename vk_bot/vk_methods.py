@@ -20,10 +20,10 @@ class VkMethods:
     def __init__(self, api):
         self._api = api
 
-    def send_chat_msg(self, chat_id: int, msg: str, kbd: (dict, None) = None, **kwargs) -> int:
+    def send_chat_msg(self, chat_id: int, msg: str, kbd: (dict, None) = None, **kwargs) -> List[dict]:
         msg = _get_image() + msg
         return self._api.messages.send(
-            chat_id=chat_id,
+            peer_ids=[CHAT_START_ID + chat_id],
             message=msg,
             keyboard=json.dumps(kbd) if kbd else None,
             random_id=0,
@@ -42,12 +42,13 @@ class VkMethods:
             **kwargs
         )
 
-    def edit_msg(self, peer: int, msg_id: int, msg: str, kbd: (dict, None) = None) -> int:
+    def edit_msg(self, peer: int, conv_msg_id: int, msg: str, kbd: (dict, None) = None) -> int:
         msg = _get_image() + msg
         return self._api.messages.edit(
             peer_id=peer,
             message=msg,
-            message_id=msg_id,
+            conversation_message_id=conv_msg_id,
+            disable_mentions=True,
             keyboard=json.dumps(kbd) if kbd else None
         )
 
@@ -72,7 +73,7 @@ class VkMethods:
     def pin_msg(self, chat_id: int, msg: str, **kwargs) -> int:
         return self._api.messages.pin(
             peer_id=CHAT_START_ID + chat_id,
-            message_id=self.send_chat_msg(chat_id, msg, **kwargs)
+            message_id=self.send_chat_msg(chat_id, msg, **kwargs)[0]['message_id']
         )
 
     def get_names(self, list_ids: list, case: str = 'gen') -> str:

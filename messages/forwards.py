@@ -1,10 +1,10 @@
 import re
 
-from vk_api.bot_longpoll import VkBotEvent
+from vk_api.bot_longpoll import VkBotEvent, CHAT_START_ID
 
 from vk_bot.vk_bot import VkBot
 
-from config import GUILD_CHAT_ID
+from config import GUILD_CHAT_ID, DISCOUNT_PERCENT, COMMISSION_PERCENT
 
 import profile_api
 
@@ -19,6 +19,7 @@ def forward_parse(self: VkBot, event: VkBotEvent):
 
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     if fwd_txt.startswith(item_emoji+'1*'):
+        msg_id = self.api.send_chat_msg(event.chat_id, 'Проверяю торговца...')[0]
         fwd_split = fwd_txt.split('\n')
         item_name = fwd_split[0][11:]
         item_price = int(re.findall(r'\d+', fwd_split[1][9:])[0])
@@ -37,8 +38,15 @@ def forward_parse(self: VkBot, event: VkBotEvent):
                 in_equip.append(row[0])
 
         if auc_price > 0:
-            msg = f'Товар: {item_emoji}{item_name}\nЦена торговца: {gold_emoji}{item_price} ({gold_emoji}{round(item_price/0.9)})' + \
-                  f'\nЦена аукциона: {gold_emoji}{auc_price} (со скидкой гильдии 30%: {gold_emoji}{round(auc_price*0.7)}({gold_emoji}{round(auc_price*0.7/0.9)})\n\n'
+            commission_multiplier = (100-COMMISSION_PERCENT)/100
+            guild_multiplier = (100-DISCOUNT_PERCENT)/100
+            guild_commission_multiplier = guild_multiplier / commission_multiplier
+
+            msg = f'Товар: {item_emoji}{item_name}\nЦена торговца: {gold_emoji}{item_price} ' \
+                  f'({gold_emoji}{round(item_price/commission_multiplier)})' + \
+                  f'\nЦена аукциона: {gold_emoji}{auc_price} (со скидкой гильдии {DISCOUNT_PERCENT}%: ' \
+                  f'{gold_emoji}{round(auc_price*guild_multiplier)}' \
+                  f'({gold_emoji}{round(auc_price*guild_commission_multiplier)})\n\n'
 
             if int(event.chat_id) == GUILD_CHAT_ID:
                 if item_name.startswith('Книга - '):
@@ -48,6 +56,6 @@ def forward_parse(self: VkBot, event: VkBotEvent):
             msg = f'Товар: {item_emoji}{item_name}\nЦена торговца: {gold_emoji}{item_price} ({gold_emoji}{round(item_price/0.9)})' + \
                   f'\nВот только... Он не продается, Сам не знаю почему'
 
-        self.api.send_chat_msg(event.chat_id, msg)
+        self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
 
     return

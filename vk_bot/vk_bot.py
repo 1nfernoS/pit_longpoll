@@ -19,7 +19,7 @@ class VkBot:
         self._events = VkEvent()
         self._token = token
 
-        self._vk = VkApi(token=self._token)
+        self._vk = VkApi(token=self._token, api_version='5.131')
         self.api = VkMethods(self._vk.get_api())
         self._name = self.api.get_group_name()
         self._group_id = self.api.group_id()

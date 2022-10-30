@@ -5,7 +5,7 @@ import logging
 import time
 
 # requirement's import
-from vk_api.bot_longpoll import CHAT_START_ID, VkBotEvent
+from vk_api.bot_longpoll import VkBotEvent
 
 # config and packages
 from config import OVERSEER_BOT, PIT_BOT, GUILD_NAME, GUILD_CHAT_ID
@@ -26,110 +26,130 @@ from vk_bot.vk_bot import VkBot
 logging.basicConfig(filename='logs\\messages_info.log', level=logging.INFO)
 
 
+def user_message(self: VkBot, event: VkBotEvent):
+    # direct message from user
+    if len(event.message.attachments) != 0:
+        at = event.message.attachments[0]
+        if at['type'] == 'link':
+            if event.message.text == "":
+                event.message.text = at['link']['url']
+
+    if 'https://vip3.activeusers.ru/app.php?' in event.message.text:
+        if event.message.from_id not in self.api.get_members(GUILD_CHAT_ID):
+            ans = "Я надеюсь, ты понимаешь, что только что предоставил ПОЛНЫЙ доступ к своему профилю?\n" \
+                  "Ладно уж, я в него не полезу, но лучше так больше не делай"
+            self.api.send_user_msg(event.message.from_id, ans)
+            return
+
+        ans = 'Пару секунд, мне нужно изучить твои статы и экипировку... Один раз'
+        self.api.send_user_msg(event.message.from_id, ans)
+
+    s = event.message.text[event.message.text.find('act='):event.message.text.find('&group_id')]
+    auth = s[s.find('auth_key') + 9:s.find('auth_key') + 41]
+    profile = get_profile(auth, event.message.from_id)
+
+    stats = profile['stats']
+    new_data = (event.message.from_id,
+                stats['level'], stats['attack'], stats['defence'],
+                stats['strength'], stats['agility'], stats['endurance'],
+                stats['luck'], stats['accuracy'], stats['concentration'])
+
+    user_data.update_user_data(*new_data)
+
+    inv = [int(i) for i in profile['items']]
+    class_id = inv[0] if inv[0] != 14108 else inv[1]
+    build = get_books(inv)
+    data_old = users.get_user(event.message.from_id)
+    if data_old:
+        users.update_user(event.message.from_id, profile_key=auth, is_active=1, equipment=json.dumps(build),
+                          class_id=class_id)
+        ans = f"Обновил твой профиль! Значит, твой высший класс {get_item_by_id(class_id)}?\n" \
+              f"Похвально, я буду сообщать о тебе, когда твои книги будут на продаже"
+    else:
+        users.add_user(event.message.from_id, auth, True, False, False, json.dumps(build), class_id)
+        ans = f"В первый раз, значит? Чтож, проходи, сейчас запишу... \n" \
+              f"Так, высший класс {get_item_by_id(class_id)}, хорошо...\n" \
+              f"Готово, теперь я буду сообщать о тебе, когда твои книги будут на продаже"
+
+    self.api.send_user_msg(event.message.from_id, ans)
+    return
+
+
+def chat_message(self: VkBot, event: VkBotEvent):
+    # user message in chat
+
+    # Potential command parse
+    txt = event.message.text.lower().split()
+    if not txt[0][0].isalnum():
+        txt[0] = txt[0][1:]
+
+    for cmd in commands.command_list:
+        if txt[0] in cmd:
+            logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\t[{event.chat_id}]({event.message.from_id}): {txt[0]}")
+
+            commands.command_list[cmd].run(cmd, self, event)
+            msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+            self.api.del_msg(event.message.peer_id, msg_id)
+
+    return
+
+
+def bot_message(self: VkBot, event: VkBotEvent):
+    # group's message in chat
+
+    txt = event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | ')
+    logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\t\t[{event.chat_id}]\t #OVERSEER: {txt}")
+    del txt
+
+    if "Ваш профиль:" in event.message.text:
+        msg_id = self.api.send_chat_msg(event.chat_id, 'Читаю профиль...')[0]
+
+        data = parse_profile(event.message.text)
+        data_old = user_data.get_user_data(data['id_vk'])
+        new_data = (data['id_vk'], data['level'], data['attack'], data['defence'],
+                    data['strength'], data['agility'], data['endurance'],
+                    data['luck'], None, None)
+        if data_old:
+            answer = f"Статы обновлены! ({datediff(data_old['last_update'], datetime.now())} с {str_datetime(data_old['last_update'])})\n" \
+                     f"&#128128;{data['level']}({data['level'] - data_old['level']}) " \
+                     f"&#128481;{data['attack']}({data['attack'] - data_old['attack']}) " \
+                     f"&#128737;{data['defence']}({data['defence'] - data_old['defence']})\n" \
+                     f"&#128074;{data['strength']}({data['strength'] - data_old['strength']}) " \
+                     f"&#128400;{data['agility']}({data['agility'] - data_old['agility']}) " \
+                     f"&#10084;{data['endurance']}({data['endurance'] - data_old['endurance']})\n" \
+                     f"&#127808;{data['luck']}({data['luck'] - data_old['luck']})\n" \
+                     f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}&#128074;/&#128400; или " \
+                     f"{data['level'] * 3 + 45 - data['endurance']}&#10084;)"
+            user_data.update_user_data(*new_data)
+        else:
+            answer = f"Статы записаны!\n&#128128;{data['level']} &#128481;{data['attack']} &#128737;{data['defence']} " \
+                     f"&#128074;{data['strength']} &#128400;{data['agility']} &#10084;{data['endurance']} " \
+                     f"&#127808;{data['luck']}\n" \
+                     f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}&#128074;/&#128400; или " \
+                     f"{(data['level'] + 15) * 3 - data['endurance']}&#10084;)"
+            user_data.add_user_data(*new_data)
+
+        if data['guild'] == GUILD_NAME:
+            if users.get_user(data['id_vk']):
+                answer = 'Обновил информацию гильдии!\n' + answer
+                users.update_user(data['id_vk'], class_id=data['class_id'])
+            else:
+                answer = 'Записал информацию гильдии!\n' + answer
+                users.add_user(data['id_vk'], None, True, False, False, None, data['class_id'])
+
+        self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer)
+
+    return
+
+
 def new_message(self: VkBot, event: VkBotEvent):
     if event.from_user:
-        if len(event.message.attachments) != 0:
-            at = event.message.attachments[0]
-            if at['type'] == 'link':
-                if event.message.text == "":
-                    event.message.text = at['link']['url']
-
-        if 'https://vip3.activeusers.ru/app.php?' in event.message.text:
-            if event.message.from_id not in self.api.get_members(GUILD_CHAT_ID):
-                ans = "Я надеюсь, ты понимаешь, что только что предоставил ПОЛНЫЙ доступ к своему профилю?\n" \
-                      "Ладно уж, я в него не полезу, но лучше так больше не делай"
-                self.api.send_user_msg(event.message.from_id, ans)
-                return
-
-            ans = 'Пару секунд, мне нужно изучить твои статы и экипировку... Один раз'
-            self.api.send_user_msg(event.message.from_id, ans)
-
-        s = event.message.text[event.message.text.find('act='):event.message.text.find('&group_id')]
-        auth = s[s.find('auth_key') + 9:s.find('auth_key') + 41]
-        profile = get_profile(auth, event.message.from_id)
-
-        stats = profile['stats']
-        new_data = (event.message.from_id,
-                    stats['level'], stats['attack'], stats['defence'],
-                    stats['strength'], stats['agility'], stats['endurance'],
-                    stats['luck'], stats['accuracy'], stats['concentration'])
-
-        user_data.update_user_data(*new_data)
-
-        inv = [int(i) for i in profile['items']]
-        class_id = inv[0] if inv[0] != 14108 else inv[1]
-        build = get_books(inv)
-        data_old = users.get_user(event.message.from_id)
-        if data_old:
-            users.update_user(event.message.from_id, profile_key=auth, is_active=1, equipment=json.dumps(build),
-                              class_id=class_id)
-            ans = f"Обновил твой профиль! Значит, твой высший класс {get_item_by_id(class_id)}?\n" \
-                  f"Похвально, я буду сообщать о тебе, когда твои книги будут на продаже"
-        else:
-            users.add_user(event.message.from_id, auth, True, False, False, json.dumps(build), class_id)
-            ans = f"В первый раз, значит? Чтож, проходи, сейчас запишу... \n" \
-                  f"Так, высший класс {get_item_by_id(class_id)}, хорошо...\n" \
-                  f"Готово, теперь я буду сообщать о тебе, когда твои книги будут на продаже"
-
-        self.api.send_user_msg(event.message.from_id, ans)
-        return
-
+        user_message(self, event)
     if event.from_chat:
-
-        if event.message.text:
-            # Potential command parse
-            txt = event.message.text.lower().split()
-            if not txt[0][0].isalnum():
-                txt[0] = txt[0][1:]
-
-            for cmd in commands.command_list:
-                if txt[0] in cmd:
-                    logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\t[{event.chat_id}]({event.message.from_id}): {txt[0]}")
-
-                    commands.command_list[cmd].run(cmd, self, event)
-                    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
-                    self.api.del_msg(event.message.peer_id, msg_id)
-
         if event.message.from_id == OVERSEER_BOT:
-            if "Ваш профиль:" in event.message.text:
-                txt = event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | ')
-                logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\t[{event.chat_id}]Profile message: {txt}")
-                del txt
-
-                data = parse_profile(event.message.text)
-                data_old = user_data.get_user_data(data['id_vk'])
-                new_data = (data['id_vk'], data['level'], data['attack'], data['defence'],
-                            data['strength'], data['agility'], data['endurance'],
-                            data['luck'], None, None)
-                if data_old:
-                    answer = f"Статы обновлены! ({datediff(data_old['last_update'], datetime.now())} с {str_datetime(data_old['last_update'])})\n" \
-                             f"&#128128;{data['level']}({data['level'] - data_old['level']}) " \
-                             f"&#128481;{data['attack']}({data['attack'] - data_old['attack']}) " \
-                             f"&#128737;{data['defence']}({data['defence'] - data_old['defence']})\n" \
-                             f"&#128074;{data['strength']}({data['strength'] - data_old['strength']}) " \
-                             f"&#128400;{data['agility']}({data['agility'] - data_old['agility']}) " \
-                             f"&#10084;{data['endurance']}({data['endurance'] - data_old['endurance']})\n" \
-                             f"&#127808;{data['luck']}({data['luck'] - data_old['luck']})\n" \
-                             f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}&#128074;/&#128400; или " \
-                             f"{data['level'] * 3 + 45 - data['endurance']}&#10084;)"
-                    user_data.update_user_data(*new_data)
-                else:
-                    answer = f"Статы записаны!\n&#128128;{data['level']} &#128481;{data['attack']} &#128737;{data['defence']} " \
-                             f"&#128074;{data['strength']} &#128400;{data['agility']} &#10084;{data['endurance']} " \
-                             f"&#127808;{data['luck']}\n" \
-                             f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}&#128074;/&#128400; или " \
-                             f"{data['level'] * 3 + 45 - data['endurance']}&#10084;)"
-                    user_data.add_user_data(*new_data)
-
-                if data['guild'] == GUILD_NAME:
-                    if users.get_user(data['id_vk']):
-                        answer = 'Обновил информацию гильдии!\n' + answer
-                        users.update_user(data['id_vk'], is_officer=data['is_officer'], class_id=data['class_id'])
-                    else:
-                        answer = 'Записал информацию гильдии!\n' + answer
-                        users.add_user(data['id_vk'], None, True, False, data['is_officer'], None, data['class_id'])
-
-                self.api.send_chat_msg(event.chat_id, answer)
+            bot_message(self, event)
+        elif event.message.text:
+            chat_message(self, event)
 
     if len(event.message.fwd_messages) == 1:
         if int(event.message.fwd_messages[0]['from_id']) == int(PIT_BOT):
