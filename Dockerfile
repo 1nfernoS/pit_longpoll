@@ -1,5 +1,8 @@
 FROM python:3.7
 
+ENV TZ="Europe/Moscow"
+
+
 EXPOSE 3306
 
 RUN mkdir /bot
