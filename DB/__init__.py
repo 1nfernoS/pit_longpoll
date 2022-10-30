@@ -11,11 +11,9 @@ class DB(object):
     try:
         _connection = sql.connect(user=db_data['user'], password=db_data['password'],
                                   host='host.docker.internal', database=db_data['database'])
-        print('connected docker', db_data)
     except:
         _connection = sql.connect(user=db_data['user'], password=db_data['password'],
                                   host=db_data['host'], database=db_data['database'])
-        print('connected localhost')
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):

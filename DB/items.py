@@ -30,7 +30,7 @@ def get_item_by_id(item_id: int):
 
 
 def get_item_by_name(name: str, has_price: bool = True):
-    QUERY = "SELECT item_id FROM items WHERE item_name LIKE CONCAT('%', %s, '%')"
+    QUERY = "SELECT item_id FROM items WHERE item_name LIKE CONCAT(%s, '%')"
 
     if has_price:
         QUERY += " AND has_price = 1"
@@ -46,7 +46,7 @@ def get_item_by_name(name: str, has_price: bool = True):
 
 def search_item(name: str, has_price: bool = True):
     QUERY = "SELECT COUNT(*) FROM items WHERE item_name LIKE CONCAT('Книга - ', %s, '%')"
-    QUERY = "SELECT * FROM items WHERE item_name REGEXP CONCAT('(Книга -|^[[:alnum:]]+|^) ', %s, '.*$')"
+    QUERY = "SELECT * FROM items WHERE item_name REGEXP CONCAT('(Книга - |^[[:alnum:]]+ |^)', %s, '.*$')"
 
     if has_price:
         QUERY += " AND has_price = 1"
