@@ -95,7 +95,7 @@ class VkMethods:
                 chat_id=chat_id,
                 user_id=user_id
             )
-            self.send_chat_msg(chat_id, f"Пользоваель @id{user_id} успешно кикнут")
+            self.send_chat_msg(chat_id, f"Пользователь @id{user_id} успешно кикнут")
         except ApiError:
             self.send_chat_msg(chat_id, "Ошибка при удалении пользователя")
         return

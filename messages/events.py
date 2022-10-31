@@ -32,4 +32,3 @@ def event_message(self: VkBot, event: VkBotEvent):
             )
             pass
     return
-

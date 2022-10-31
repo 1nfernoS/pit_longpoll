@@ -1,6 +1,6 @@
 import re
 
-from vk_api.bot_longpoll import VkBotEvent, CHAT_START_ID
+from vk_api.bot_longpoll import VkBotEvent
 
 from vk_bot.vk_bot import VkBot
 

@@ -67,7 +67,7 @@ def user_message(self: VkBot, event: VkBotEvent):
               f"Похвально, я буду сообщать о тебе, когда твои книги будут на продаже"
     else:
         users.add_user(event.message.from_id, auth, True, False, False, json.dumps(build), class_id)
-        ans = f"В первый раз, значит? Чтож, проходи, сейчас запишу... \n" \
+        ans = f"В первый раз, значит? Что ж, проходи, сейчас запишу... \n" \
               f"Так, высший класс {get_item_by_id(class_id)}, хорошо...\n" \
               f"Готово, теперь я буду сообщать о тебе, когда твои книги будут на продаже"
 
@@ -87,7 +87,7 @@ def chat_message(self: VkBot, event: VkBotEvent):
         if txt[0] in cmd:
             logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\t[{event.chat_id}]({event.message.from_id}): {txt[0]}")
 
-            commands.command_list[cmd].run(cmd, self, event)
+            commands.command_list[cmd].run(self, event)
             msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
             self.api.del_msg(event.message.peer_id, msg_id)
 

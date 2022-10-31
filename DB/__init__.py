@@ -25,26 +25,26 @@ class DB(object):
         if not self._connection.is_connected():
             try:
                 self._connection = sql.connect(user=db_data['user'], password=db_data['password'],
-                                          host='host.docker.internal', database=db_data['database'])
+                                               host='host.docker.internal', database=db_data['database'])
             except:
                 self._connection = sql.connect(user=db_data['user'], password=db_data['password'],
-                                          host=db_data['host'], database=db_data['database'])
+                                               host=db_data['host'], database=db_data['database'])
 
         return self._connection
 
-    def query(self, query: str, data: tuple = None) -> (tuple, None):
+    def query(self, query_str: str, data: tuple = None) -> (tuple, None):
         db = self.connect()
         cur = db.cursor()
         res = None
 
         try:
-            cur.execute(query, data)
+            cur.execute(query_str, data)
             res = cur.fetchall()
             db.commit()
         except sql_err.ProgrammingError as exc:
             db.rollback()
             raise KeyError(exc.msg)
-        except sql_err.IntegrityError as exc:
+        except sql_err.IntegrityError:
             db.rollback()
         finally:
             cur.close()

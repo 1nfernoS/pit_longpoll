@@ -39,7 +39,7 @@ def add_user(id_vk: int, profile_key: (str, None), is_active: bool, is_leader: b
 
     data = (id_vk, profile_key if profile_key else None, is_active, is_leader, is_officer, equipment if equipment else None, class_id if class_id else None)
 
-    db = DB().query(QUERY, data)
+    DB().query(QUERY, data)
     return
 
 
@@ -53,7 +53,7 @@ def update_user(id_vk: int, **kwargs):
 
     data = tuple(kwargs.values())
 
-    db = DB().query(QUERY, (*data, id_vk))
+    DB().query(QUERY, (*data, id_vk))
     return
 
 
