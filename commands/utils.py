@@ -6,13 +6,13 @@ from config import creator_id
 from vk_api.bot_longpoll import VkBotEvent
 from vk_bot.vk_bot import VkBot
 
+from DB import users
+
 
 class Ping(Command):
-
-    desc = 'Проверка живой я или нет'
-
     def __init__(self):
         super().__init__(__class__.__name__, ('ping', 'пинг', 'тык'))
+        self.desc = 'Проверка живой я или нет'
         # self.set_active(False)
         return
 
@@ -22,29 +22,27 @@ class Ping(Command):
 
 
 class Role(Command):
-
-    desc = 'Узнать роль свою или по реплаю/форварду. Только для создателя'
-
     def __init__(self):
         super().__init__(__class__.__name__, ('роль', 'role'))
+        self.set_access('creator')
+        self.desc = 'Узнать роль свою или по реплаю/форварду. Только для создателя'
         self.set_active(False)
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
         if event.message.from_id == int(creator_id):
             if 'reply_message' in event.message.keys():
-                bot.api.send_chat_msg(event.chat_id, 'Ты роли пропиши сначала... Зря # TODO чтоль прописывал?')
+                bot.api.send_chat_msg(event.chat_id, 'Ты роли пропиши сначала... Зря # TODO что ли прописывал?')
             else:
-                bot.api.send_chat_msg(event.chat_id, 'Нет ролей не команды, ты знаешь правила')
+                bot.api.send_chat_msg(event.chat_id, 'Нет ролей нет команды, ты знаешь правила')
         return
 
 
 class Id(Command):
-
-    desc = 'Узнать ид свой или по реплаю. Только для создателя'
-
     def __init__(self):
         super().__init__(__class__.__name__, ('ид', 'id'))
+        self.set_access('creator')
+        self.desc = 'Узнать ид свой или по реплаю. Только для создателя'
         # self.set_active(False)
         return
 
@@ -59,11 +57,10 @@ class Id(Command):
 
 
 class Emoji(Command):
-
-    desc = 'Код эмодзи. Только для создателя'
-
     def __init__(self):
         super().__init__(__class__.__name__, ('emoji', 'эмодзи', 'смайл'))
+        self.set_access('creator')
+        self.desc = 'Код эмодзи. Только для создателя'
         # self.set_active(False)
         return
 
@@ -74,3 +71,36 @@ class Emoji(Command):
             bot.api.send_chat_msg(event.chat_id, msg)
         return
 
+
+class SetLeader(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('лид', 'leader', 'lead', 'лидер'))
+        self.set_access('creator')
+        self.desc = 'Изменить роль лидера. Только для создателю'
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        if event.message.from_id == int(creator_id):
+            if 'reply_message' in event.message.keys():
+                state = users.get_user(event.message.reply_message['from_id'])['is_leader']
+                users.update_user(event.message.reply_message['from_id'], is_leader=not state)
+                bot.api.send_chat_msg(event.chat_id, f"Установил статус лидера {not state}")
+        return
+
+
+class SetOfficer(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('офицер', 'officer'))
+        self.set_access('creator')
+        self.desc = 'Изменить роль лидера. Только для создателю'
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        if event.message.from_id == int(creator_id):
+            if 'reply_message' in event.message.keys():
+                state = users.get_user(event.message.reply_message['from_id'])['is_officer']
+                users.update_user(event.message.reply_message['from_id'], is_officer=not state)
+                bot.api.send_chat_msg(event.chat_id, f"Установил статус лидера {not state}")
+        return

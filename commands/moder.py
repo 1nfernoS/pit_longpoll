@@ -9,10 +9,10 @@ from vk_bot.vk_bot import VkBot
 
 class Kick(Command):
 
-    desc = 'Кикнуть из чата. Доступно только лидерам гильдии'
-
     def __init__(self):
-        super().__init__(__class__.__name__, ('kick', 'кик'))
+        super().__init__(__class__.__name__, ('kick', 'кик'), 'leader')
+        self.set_access('leader')
+        self.desc = 'Кикнуть из чата. Доступно только лидерам гильдии'
         # self.set_active(False)
         return
 
@@ -21,6 +21,8 @@ class Kick(Command):
             if 'reply_message' in event.message.keys():
                 if event.message.reply_message['from_id'] != event.message.from_id:
                     bot.api.kick(event.chat_id, event.message.reply_message['from_id'])
+                    users.update_user(event.message.reply_message['from_id'], is_active=False)
                     pass
-        users.update_user(event.message.reply_message['from_id'], is_active=False)
+            else:
+                bot.api.send_chat_msg(event.chat_id, 'Некого кикать... (по реплаю)')
         return

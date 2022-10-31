@@ -2,9 +2,9 @@ from commands import Command
 
 import json
 
-from config import GUILD_CHAT_ID, GUILD_NAME
+from config import GUILD_CHAT_ID, GUILD_NAME, DISCOUNT_PERCENT, COMMISSION_PERCENT
 
-from DB import items, users, user_data
+from DB import items, users
 
 import profile_api
 
@@ -14,15 +14,16 @@ from vk_bot.vk_bot import VkBot
 
 
 class Price(Command):
-
-    desc = 'Узнать цену предмета на аукционе и внутри гильдии'
-
     def __init__(self):
         super().__init__(__class__.__name__, ('цена',))
+        self.desc = 'Узнать цену предмета на аукционе и внутри гильдии'
         # self.set_active(False)
         return
 
     def run(self, bot: VkBot, event: VkBotEvent, text: str = None):
+
+        msg_id = bot.api.send_chat_msg(event.chat_id, 'Ищу ценники . . .')[0]
+
         item_name = event.message.text.split(' ', 1)[1]
 
         search = items.search_item(item_name)
@@ -30,13 +31,20 @@ class Price(Command):
             item_emoji = '&#128093;'
             gold_emoji = '&#127765;'
 
+            commission_multiplier = (100-COMMISSION_PERCENT)/100
+            guild_multiplier = (100-DISCOUNT_PERCENT)/100
+            guild_commission_multiplier = guild_multiplier / commission_multiplier
+
             answer = ''
             cnt = 0
             for i in search['result']:
                 auc_price = profile_api.price(i['item_id'])
                 if auc_price > 0:
                     # TODO: guild discount {gold_emoji}{round(auc_price/0.9)}
-                    answer += f"\n{gold_emoji}{auc_price} () {item_emoji}{i['item_name']}"
+                    answer += f"\n{gold_emoji}{auc_price} " \
+                              f"[-{DISCOUNT_PERCENT}%:{gold_emoji}{round(auc_price*guild_multiplier)}" \
+                              f"({gold_emoji}{round(auc_price*guild_commission_multiplier)})] " \
+                              f"{item_emoji}{i['item_name']}"
                     cnt += 1
             if cnt > 0:
                 answer = f"Нашел следующее ({cnt}):" + answer
@@ -45,17 +53,15 @@ class Price(Command):
         else:
             answer = 'Ничего не нашлось...'
 
-        bot.api.send_chat_msg(event.chat_id, answer)
+        bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer)
 
         return
 
 
 class Equip(Command):
-
-    desc = 'Показать свою экипировку. Достпно членам гильдии, которые сдавали ссылку на профиль в лс бота'
-
     def __init__(self):
         super().__init__(__class__.__name__, ('экип', 'билд', 'equip', 'build'))
+        self.desc = 'Показать свою экипировку. Доступно членам гильдии, которые сдавали ссылку на профиль в лс бота'
         # self.set_active(False)
         return
 
@@ -66,6 +72,8 @@ class Equip(Command):
             data = users.get_user(event.message.from_id)
 
             if data['profile_key']:
+
+                msg_id = bot.api.send_chat_msg(event.chat_id, 'Поднимаю записи . . .')[0]
 
                 profile = profile_api.get_profile(data['profile_key'], event.message.from_id)
 
@@ -104,6 +112,10 @@ class Equip(Command):
                         for i in passives:
                             if name[4:].startswith(i):
                                 message += f' - {passives[i][0]} ({int(passives[i][1]*100)}%)'
+
+                bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], message)
+                return
+
             else:
                 message = "Сдайте ссылку на профиль мне в лс!\n" \
                           "Проще всего это сделать через сайт, скопировав адрес ссылки кнопки 'Профиль' в приложении.\n" \
@@ -115,4 +127,3 @@ class Equip(Command):
         bot.api.send_chat_msg(event.chat_id, message)
 
         return
-
