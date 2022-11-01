@@ -1,6 +1,6 @@
 from commands import Command, command_list
 
-from config import creator_id
+from config import creator_id, GUILD_CHAT_ID
 
 from DB import user_data, users
 
@@ -44,8 +44,9 @@ class Help(Command):
             creator = event.message.from_id == int(creator_id)
             officer = bool(data['is_officer']) if not creator else True
             leader = bool(data['is_leader']) if not creator else True
+            guild = event.message.from_id in bot.api.get_members(GUILD_CHAT_ID) if not creator else True
         else:
-            creator = leader = officer = False
+            creator = leader = officer = guild = False
         for cmd in command_list:
             if creator:
                 message += '[' + ', '.join(cmd) + '] - ' + command_list[cmd].desc + '\n'
@@ -55,8 +56,11 @@ class Help(Command):
             elif officer:
                 if not command_list[cmd].require_creator and not command_list[cmd].require_leader:
                     message += '[' + ', '.join(cmd) + '] - ' + command_list[cmd].desc + '\n'
-            else:
+            elif guild:
                 if not command_list[cmd].require_creator and not command_list[cmd].require_leader and not command_list[cmd].require_officer:
+                    message += '[' + ', '.join(cmd) + '] - ' + command_list[cmd].desc + '\n'
+            else:  # other
+                if not command_list[cmd].require_creator and not command_list[cmd].require_leader and not command_list[cmd].require_officer and not command_list[cmd].require_guild:
                     message += '[' + ', '.join(cmd) + '] - ' + command_list[cmd].get_description() + '\n'
 
         message += '\n ПРИМЕЧАНИЕ: После использования, сообщение с командой автоматически удаляется, чтобы уменьшить количество флуда'

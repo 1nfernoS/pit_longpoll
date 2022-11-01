@@ -23,8 +23,12 @@ class Price(Command):
     def run(self, bot: VkBot, event: VkBotEvent, text: str = None):
 
         msg_id = bot.api.send_chat_msg(event.chat_id, 'Ищу ценники . . .')[0]
-
-        item_name = event.message.text.split(' ', 1)[1]
+        try:
+            item_name = event.message.text.split(' ', 1)[1]
+        except IndexError:
+            answer = 'А что искать...'
+            bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer)
+            return
 
         search = items.search_item(item_name)
         if search:
@@ -62,6 +66,7 @@ class Equip(Command):
     def __init__(self):
         super().__init__(__class__.__name__, ('экип', 'билд', 'equip', 'build'))
         self.desc = 'Показать свою экипировку. Доступно членам гильдии, которые сдавали ссылку на профиль в лс бота'
+        self.set_access('guild')
         # self.set_active(False)
         return
 

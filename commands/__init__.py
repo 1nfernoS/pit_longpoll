@@ -16,10 +16,11 @@ class Command:
     require_leader = False
     require_officer = False
     require_creator = False
+    require_guild = False
 
     def __init__(self, name: str, alias: Tuple[str, ...], access: str = 'all'):
 
-        self.access_list = ('all', 'officer', 'leader', 'creator')
+        self.access_list = ('all', 'guild', 'officer', 'leader', 'creator')
 
         self.set_access(access)
         self.is_active = None
@@ -42,18 +43,27 @@ class Command:
             self.require_creator = False
             self.require_leader = False
             self.require_officer = False
+            self.require_guild = False
+        if role == 'guild':
+            self.require_creator = False
+            self.require_leader = False
+            self.require_officer = False
+            self.require_guild = True
         elif role == 'officer':
             self.require_creator = False
             self.require_leader = False
             self.require_officer = True
+            self.require_guild = True
         elif role == 'leader':
             self.require_creator = False
             self.require_leader = True
             self.require_officer = True
+            self.require_guild = True
         elif role == 'creator':
             self.require_creator = True
             self.require_leader = True
             self.require_officer = True
+            self.require_guild = True
         return
 
     def set_active(self, state: bool):
