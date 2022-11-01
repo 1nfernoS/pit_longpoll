@@ -30,6 +30,12 @@ def new_msg(b: bot, e: VkBotEvent):
     return new_message(b, e)
 
 
+@bot.event_handler('MESSAGE_EDIT')
+def edit(b: bot, e: VkBotEvent):
+    # empty def for avoid logs about no handler
+    return
+
+
 @bot.event_handler('MESSAGE_EVENT')
 def event(b: bot, e: VkBotEvent):
     return event_message(b, e)
