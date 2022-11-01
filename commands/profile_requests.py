@@ -23,39 +23,37 @@ class Price(Command):
     def run(self, bot: VkBot, event: VkBotEvent, text: str = None):
 
         msg_id = bot.api.send_chat_msg(event.chat_id, 'Ищу ценники . . .')[0]
-        try:
-            item_name = event.message.text.split(' ', 1)[1]
-        except IndexError:
+        msg = event.message.text.split(' ', 1)
+        if len(msg) == 1:
             answer = 'А что искать...'
-            bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer)
-            return
+        else:
+            item_name = msg[1]
+            search = items.search_item(item_name)
+            if search:
+                item_emoji = '&#128093;'
+                gold_emoji = '&#127765;'
 
-        search = items.search_item(item_name)
-        if search:
-            item_emoji = '&#128093;'
-            gold_emoji = '&#127765;'
+                commission_multiplier = (100-COMMISSION_PERCENT)/100
+                guild_multiplier = (100-DISCOUNT_PERCENT)/100
+                guild_commission_multiplier = guild_multiplier / commission_multiplier
 
-            commission_multiplier = (100-COMMISSION_PERCENT)/100
-            guild_multiplier = (100-DISCOUNT_PERCENT)/100
-            guild_commission_multiplier = guild_multiplier / commission_multiplier
-
-            answer = ''
-            cnt = 0
-            for i in search['result']:
-                auc_price = profile_api.price(i['item_id'])
-                if auc_price > 0:
-                    # TODO: guild discount {gold_emoji}{round(auc_price/0.9)}
-                    answer += f"\n{gold_emoji}{auc_price} " \
-                              f"[-{DISCOUNT_PERCENT}%:{gold_emoji}{round(auc_price*guild_multiplier)}" \
-                              f"({gold_emoji}{round(auc_price*guild_commission_multiplier)})] " \
-                              f"{item_emoji}{i['item_name']}"
-                    cnt += 1
-            if cnt > 0:
-                answer = f"Нашел следующее ({cnt}):" + answer
+                answer = ''
+                cnt = 0
+                for i in search['result']:
+                    auc_price = profile_api.price(i['item_id'])
+                    if auc_price > 0:
+                        # TODO: guild discount {gold_emoji}{round(auc_price/0.9)}
+                        answer += f"\n{gold_emoji}{auc_price} " \
+                                  f"[-{DISCOUNT_PERCENT}%:{gold_emoji}{round(auc_price*guild_multiplier)}" \
+                                  f"({gold_emoji}{round(auc_price*guild_commission_multiplier)})] " \
+                                  f"{item_emoji}{i['item_name']}"
+                        cnt += 1
+                if cnt > 0:
+                    answer = f"Нашел следующее ({cnt}):" + answer
+                else:
+                    answer = 'Ничего не нашлось...'
             else:
                 answer = 'Ничего не нашлось...'
-        else:
-            answer = 'Ничего не нашлось...'
 
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer)
 
