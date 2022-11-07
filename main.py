@@ -1,10 +1,8 @@
-import os
-
 import config
 from vk_bot.vk_bot import VkBot
 
-from messages.messages import new_message
-from messages.events import event_message
+from handlers.new_message import new_message
+from handlers.events import event_message
 
 from vk_api.bot_longpoll import VkBotEvent
 
@@ -22,14 +20,14 @@ bot = VkBot(config.group_data['group_token'])
 
 @bot.startup()
 def before_start(b: VkBot):
-    b.api.send_chat_msg(1, 'Ну, я проснулся')
+    b.api.send_chat_msg(config.GUILD_CHAT_ID, 'Ну, я проснулся')
     # All stuff dor startup
     return
 
 
 @bot.on_stop()
 def before_stop(b: VkBot):
-    b.api.send_chat_msg(1, 'Я спать, тыкайте [id158154503|его], если что')
+    b.api.send_chat_msg(config.GUILD_CHAT_ID, 'Я спать, тыкайте [id158154503|его], если что')
     return
 
 
