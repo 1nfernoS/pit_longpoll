@@ -1,3 +1,5 @@
+import os
+
 import config
 from vk_bot.vk_bot import VkBot
 
@@ -10,18 +12,24 @@ config.load('prod')
 bot = VkBot(config.group_data['group_token'])
 
 
+# TODO:
+#   - logging
+#   - puzzle hints (reply  with answer)
+#   - APO system
+#   - logs for economics
+#   - SIGTERM handler for shell
+#   - rework profile price with usage of `has_price`
+
 @bot.startup()
 def before_start(b: VkBot):
+    b.api.send_chat_msg(1, 'Ну, я проснулся')
     # All stuff dor startup
     return
 
 
-# TODO: make decorator work,
-#  rework profile price with usage of `has_price`
-
 @bot.on_stop()
 def before_stop(b: VkBot):
-    # All before exiting
+    b.api.send_chat_msg(1, 'Я спать, тыкайте [id158154503|его], если что')
     return
 
 
