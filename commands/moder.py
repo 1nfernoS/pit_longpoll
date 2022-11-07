@@ -26,3 +26,20 @@ class Kick(Command):
             else:
                 bot.api.send_chat_msg(event.chat_id, 'Некого кикать... (по реплаю)')
         return
+
+
+class Pin(Command):
+
+    def __init__(self):
+        super().__init__(__class__.__name__, ('pin', 'пин', 'закреп'), 'leader')
+        self.desc = 'Закрепить сообщение. Доступно только лидерам гильдии'
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        if event.message.from_id in users.get_leaders():
+            if 'reply_message' in event.message.keys():
+                bot.api.pin_msg(event.chat_id, event.message.reply_message['conversation_message_id'])
+            else:
+                bot.api.send_chat_msg(event.chat_id, 'Нет реплая для закрепа...')
+        return
