@@ -70,10 +70,10 @@ class VkMethods:
             event_data=json.dumps(data)
         )
 
-    def pin_msg(self, chat_id: int, msg: str, **kwargs) -> int:
+    def pin_msg(self, chat_id: int, conv_msg_id: int, **kwargs) -> int:
         return self._api.messages.pin(
             peer_id=CHAT_START_ID + chat_id,
-            message_id=self.send_chat_msg(chat_id, msg, **kwargs)[0]['message_id']
+            conversation_message_id=conv_msg_id
         )
 
     def get_names(self, list_ids: list, case: str = 'gen') -> str:
