@@ -41,12 +41,14 @@ def bot_message(self: VkBot, event: VkBotEvent):
         self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer, attachment=photo if photo else None)
 
     if 'положили' in event.message.text or 'взяли' in event.message.text:
-        logger.info('Storage\t'+event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | '))
-        pass
+        if event.chat_id == GUILD_CHAT_ID:
+            logger.info('Storage\t'+event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | '))
+            pass
 
     if 'от игрока' in event.message.text:
-        logger.info('Transfer\t'+event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | '))
-        pass
+        if event.chat_id == GUILD_CHAT_ID:
+            logger.info('Transfer\t'+event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | '))
+            pass
     return
 
 
