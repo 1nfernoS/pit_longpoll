@@ -42,14 +42,15 @@ class VkMethods:
             **kwargs
         )
 
-    def edit_msg(self, peer: int, conv_msg_id: int, msg: str, kbd: (dict, None) = None) -> int:
+    def edit_msg(self, peer: int, conv_msg_id: int, msg: str, kbd: (dict, None) = None, **kwargs) -> int:
         msg = _get_image() + msg
         return self._api.messages.edit(
             peer_id=peer,
             message=msg,
             conversation_message_id=conv_msg_id,
             disable_mentions=True,
-            keyboard=json.dumps(kbd) if kbd else None
+            keyboard=json.dumps(kbd) if kbd else None,
+            **kwargs
         )
 
     def del_msg(self, peer_id: int, msg_id: int) -> int:
