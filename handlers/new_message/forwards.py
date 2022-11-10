@@ -11,12 +11,28 @@ import profile_api
 from DB.items import get_item_by_name
 from DB.users import get_equip
 
+from logger import get_logger
+
+
+logger = get_logger(__name__, 'forwards')
+
 
 def forward_parse(self: VkBot, event: VkBotEvent):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     if fwd_txt.startswith('&#128093;1*'):
+        logger.info('dark_vendor\t'+fwd_txt)
         dark_vendor(self, event)
         return
+
+    if fwd_txt.startswith('&#9989;'):
+        logger.info('siege\t'+fwd_txt)
+        pass
+
+    if 'обменяли элитные трофеи' in fwd_txt:
+        logger.info('elites\t'+fwd_txt)
+        pass
+
+    # puzzles
 
     return
 
