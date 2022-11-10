@@ -71,7 +71,7 @@ class VkBot:
         return wrapper
 
     def start(self):
-        logger = get_logger(__name__, '_BOT_EVENTS')
+        logger = get_logger(__name__, '_BOT_EVENTS', 'midnight')
         if self._before_start:
             print('Starting up . . .')
             self._before_start(self)
@@ -90,11 +90,19 @@ class VkBot:
             print('\n', 'Stopping . . .', '\n')
             self.__not_kill = False
             return
-        except (ReadTimeout, ConnectTimeout, timeout, ReadTimeoutError) as exc:
-            logger.warning("Connect Timeout", exc_info=True)
-            # logging.error(f"{time.strftime('%d %m %Y %H:%M:%S')}\t{traceback.format_exc(-3)}")
-            print(f'\n\nTimeout error {exc}')
-            print('\n\tRestarting . . .\n')
+        except ReadTimeout as exc:
+            logger.warning("ReadTimeout")
+            # print(f'\n\nTimeout error {exc}')
+            # print('\n\tRestarting . . .\n')
+            self.start()
+        except ConnectTimeout as exc:
+            logger.warning("ConnectTimeout")
+            self.start()
+        except timeout as exc:
+            logger.warning("timeout")
+            self.start()
+        except ReadTimeoutError as exc:
+            logger.warning("ReadTimeoutError")
             self.start()
         except:
             logger.error("Un-handled exception ! ! !", exc_info=True)
