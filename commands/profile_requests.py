@@ -20,7 +20,7 @@ class Price(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent, text: str = None):
+    def run(self, bot: VkBot, event: VkBotEvent):
 
         msg_id = bot.api.send_chat_msg(event.chat_id, 'Ищу ценники . . .')[0]
         msg = event.message.text.split(' ', 1)
