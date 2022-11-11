@@ -1,4 +1,5 @@
 # builtins
+import re
 from datetime import datetime
 import logging
 import time
@@ -7,12 +8,12 @@ import time
 from vk_api.bot_longpoll import VkBotEvent
 
 # config and packages
-from config import GUILD_NAME, GUILD_CHAT_ID
+from config import GUILD_NAME, GUILD_CHAT_ID, COMMISSION_PERCENT
 
 import DB.users as users
 import DB.user_data as user_data
 
-from utils.parsers import parse_profile
+from utils.parsers import parse_profile, parse_storage_action
 from utils.formatters import str_datetime, datediff
 
 from logger import get_logger
@@ -43,6 +44,7 @@ def bot_message(self: VkBot, event: VkBotEvent):
     if 'положили' in event.message.text or 'взяли' in event.message.text:
         if event.chat_id == GUILD_CHAT_ID:
             logger.info('Storage\t'+event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | '))
+            storage_reactions(self, event)
             pass
 
     if 'от игрока' in event.message.text:
@@ -89,3 +91,36 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
             answer = 'Записал информацию гильдии!\n' + answer
             users.add_user(data['id_vk'], None, True, False, False, None, data['class_id'])
     return answer
+
+
+def storage_reactions(self: VkBot, event: VkBotEvent):
+
+    gold_emoji = '&#127765;'
+
+    data = parse_storage_action(event.message.text)
+    if data['item_type'] == 'book':
+        cur_balance = users.change_balance(data['id_vk'], data['result_price']*data['count'])
+        if data['result_price'] > 0:
+            msg = f"О, [id{data['id_vk']}|Вы] взяли {data['count']} штук {data['item_name']}!\n"
+        else:
+            msg = f"О, [id{data['id_vk']}|Вы] положили {data['count']} штук {data['item_name']}!\n"
+
+        msg += f"Я вижу, они стоят в среднем {gold_emoji}{data['price']}({abs(data['result_price'])}), так что я "
+        msg += "пополняю баланс на" if data['result_price'] > 0 else "списываю с баланса"
+        msg += f" {abs(data['result_price']*data['count'])}{gold_emoji}\n"
+
+        msg += f"Ваш долг: {gold_emoji}{-cur_balance}(Положить {round(-cur_balance/(100-COMMISSION_PERCENT)/100)})" if cur_balance < 0 else f"Сейчас на счету: {gold_emoji}{cur_balance}"
+        self.api.send_chat_msg(event.chat_id, msg)
+        return
+
+    if data['item_type'] == 'gold':
+        cur_balance = users.change_balance(data['id_vk'], data['count'])
+        if data['count'] < 0:
+            msg = f"О, [id{data['id_vk']}|Вы] взяли {-data['count']} золота!\n"
+        else:
+            msg = f"О, [id{data['id_vk']}|Вы] положили {data['count']} золота!\n"
+        msg += f"Ваш долг: {gold_emoji}{-cur_balance}(Положить {round(cur_balance/(100-COMMISSION_PERCENT)/100)})" if cur_balance < 0 else f"Сейчас на счету: {gold_emoji}{cur_balance}"
+        self.api.send_chat_msg(event.chat_id, msg)
+        return
+
+    return
