@@ -6,6 +6,7 @@ CREATE TABLE `users`  (
   `is_officer` tinyint(1) NULL,
   `equipment` varchar(255) NULL COMMENT 'Array of item_id\'s',
   `class_id` int NULL,
+  `balance` int NULL DEFAULT 0,
   PRIMARY KEY (`id_vk`)
 );
 

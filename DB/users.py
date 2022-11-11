@@ -109,7 +109,32 @@ def check_active(members: List[int]) -> None:
     return
 
 
+def change_balance(id_vk: int, amount: int) -> (int, None):
+
+    try:
+        id_vk = int(id_vk)
+    except ValueError:
+        raise TypeError(f"`id_vk` must be int, got {id_vk} instead")
+
+    try:
+        amount = int(amount)
+    except ValueError:
+        raise TypeError(f"`amount` must be int, got {amount} instead")
+
+    user = DB().query('SELECT balance FROM users WHERE is_active = 1 AND id_vk = %s;', (id_vk,))
+    if not user:
+        return
+
+    balance = user[0][0]
+
+    DB().query('UPDATE users SET balance = %s WHERE id_vk = %s;', (balance+amount, id_vk))
+
+    return balance+amount
+
+
 if __name__ == '__main__':
+    # print(change_balance(158154503, -1000))
     # add_user(3934797, None, True, False, False, None, None)
     # update_user(3934797, is_active=False)
-    print(get_equip())
+    # print(get_equip())
+    pass
