@@ -20,16 +20,17 @@ logger = get_logger(__name__, 'forwards')
 def forward_parse(self: VkBot, event: VkBotEvent):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     if fwd_txt.startswith('&#128093;1*'):
-        logger.info('dark_vendor\t'+fwd_txt)
+        logger.info('dark_vendor\t'+fwd_txt.replace('\n', ' | '))
         dark_vendor(self, event)
         return
 
-    if fwd_txt.startswith('&#9989;'):
-        logger.info('siege\t'+fwd_txt)
+    if fwd_txt.startswith('&#9989;') and '&#128100;' in fwd_txt:
+        logger.info('siege\t'+fwd_txt.replace('\n', ' | '))
         pass
 
-    if 'обменяли элитные трофеи' in fwd_txt:
-        logger.info('elites\t'+fwd_txt)
+    # 'обменяли элитные трофеи' in fwd_txt and
+    if '&#127941;' in fwd_txt:
+        logger.info('elites\t'+fwd_txt.replace('\n', ' | '))
         pass
 
     # puzzles
