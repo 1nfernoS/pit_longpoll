@@ -1,9 +1,7 @@
 from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll
 
-from requests.exceptions import ReadTimeout, ConnectTimeout
-from socket import timeout
-from urllib3.exceptions import ReadTimeoutError
+from requests.exceptions import ReadTimeout
 
 import traceback
 import os
@@ -94,15 +92,6 @@ class VkBot:
             logger.warning("ReadTimeout")
             # print(f'\n\nTimeout error {exc}')
             # print('\n\tRestarting . . .\n')
-            self.start()
-        except ConnectTimeout as exc:
-            logger.warning("ConnectTimeout")
-            self.start()
-        except timeout as exc:
-            logger.warning("timeout")
-            self.start()
-        except ReadTimeoutError as exc:
-            logger.warning("ReadTimeoutError")
             self.start()
         except:
             logger.error("Un-handled exception ! ! !", exc_info=True)
