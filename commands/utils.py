@@ -236,3 +236,20 @@ class SetOfficer(Command):
                 users.update_user(event.message.reply_message['from_id'], is_officer=not state)
                 bot.api.send_chat_msg(event.chat_id, f"Установил статус лидера {not state}")
         return
+
+
+class Bill(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('налоговая',))
+        self.set_access('creator')
+        self.desc = 'Списать налог с баланса. Только для создателя'
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        if event.message.from_id == int(creator_id):
+            from utils.scripts import withdraw_bill
+            withdraw_bill(bot)
+            bot.api.send_chat_msg(event.chat_id, f"Списал налог с баланса, проверять можно командой баланс")
+
+        return

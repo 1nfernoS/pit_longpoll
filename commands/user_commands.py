@@ -1,6 +1,6 @@
 from commands import Command, command_list
 
-from config import creator_id, GUILD_CHAT_ID
+from config import COMMISSION_PERCENT, creator_id, GUILD_CHAT_ID
 
 from DB import user_data, users
 
@@ -67,3 +67,25 @@ class Help(Command):
         message += f'\n За идеями/ошибками/вопросами обращаться [id{creator_id}|сюда], желательно с приставкой "по котику" или что-то в этом роде'
         bot.api.send_chat_msg(event.chat_id, message)
         return
+
+
+class Balance(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('баланс', 'кошелек', 'деньги', 'balance', 'wallet', 'money'))
+        self.desc = 'Узнать свой баланс. Только для членов гильдии'
+        self.set_access('guild')
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        if event.message.from_id in bot.api.get_members(GUILD_CHAT_ID):
+            gold_emoji = '&#127765;'
+            balance = users.get_balance(event.message.from_id)
+            if balance is not None:
+                message = f"Ваш долг: {gold_emoji}{-balance}(Положить {round(-balance/(100-COMMISSION_PERCENT)/100)})" if balance < 0 else f"Сейчас на счету: {gold_emoji}{balance}"
+            else:
+                message = "Хм... О вас нет записей, покажите профиль хотя бы раз!!"
+
+            bot.api.send_chat_msg(event.chat_id, message)
+        return
+
