@@ -58,7 +58,7 @@ def update_user(id_vk: int, **kwargs):
 
 
 def get_user(id_vk: int) -> (dict, None):
-    QUERY = 'SELECT id_vk, profile_key, is_active, is_leader, is_officer, equipment, class_id FROM users WHERE id_vk = %s;'
+    QUERY = 'SELECT id_vk, profile_key, is_active, is_leader, is_officer, equipment, class_id, balance FROM users WHERE id_vk = %s;'
 
     try:
         id_vk = int(id_vk)
@@ -70,7 +70,7 @@ def get_user(id_vk: int) -> (dict, None):
     if res:
         res = res[0]
         return {'id_vk': res[0], 'profile_key': res[1], 'is_active': res[2], 'is_leader': res[3], 'is_officer': res[4],
-                'equipment': res[5], 'class_id': res[6]}
+                'equipment': res[5], 'class_id': res[6], 'balance': res[7]}
     else:
         return
 
@@ -86,8 +86,11 @@ def get_equip():
 
 
 def get_leaders() -> tuple:
-    # TODO: make query
-    return tuple([205486328, 16914430, 158154503])
+    QUERY = 'SELECT id_vk FROM users WHERE is_leader = 1;'
+    res = DB().query(QUERY)
+    answer = [row[0] for row in res]
+
+    return tuple(answer)
 
 
 def check_active(members: List[int]) -> None:
@@ -109,6 +112,20 @@ def check_active(members: List[int]) -> None:
     return
 
 
+def get_balance(id_vk: int):
+
+    try:
+        id_vk = int(id_vk)
+    except ValueError:
+        raise TypeError(f"`id_vk` must be int, got {id_vk} instead")
+
+    res = DB().query('SELECT balance FROM users WHERE is_active = 1 AND id_vk = %s;', (id_vk,))
+    if res:
+        return res[0][0]
+    else:
+        return
+
+
 def change_balance(id_vk: int, amount: int) -> (int, None):
 
     try:
@@ -121,11 +138,9 @@ def change_balance(id_vk: int, amount: int) -> (int, None):
     except ValueError:
         raise TypeError(f"`amount` must be int, got {amount} instead")
 
-    user = DB().query('SELECT balance FROM users WHERE is_active = 1 AND id_vk = %s;', (id_vk,))
-    if not user:
+    balance = get_balance(id_vk)
+    if balance is None:
         return
-
-    balance = user[0][0]
 
     DB().query('UPDATE users SET balance = %s WHERE id_vk = %s;', (balance+amount, id_vk))
 
