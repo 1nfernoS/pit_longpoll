@@ -82,7 +82,7 @@ class Balance(Command):
             gold_emoji = '&#127765;'
             balance = users.get_balance(event.message.from_id)
             if balance is not None:
-                message = f"Ваш долг: {gold_emoji}{-balance}(Положить {round(-balance/(100-COMMISSION_PERCENT)/100)})" if balance < 0 else f"Сейчас на счету: {gold_emoji}{balance}"
+                message = f"Ваш долг: {gold_emoji}{-balance}(Положить {round(-balance/((100-COMMISSION_PERCENT)/100))})" if balance < 0 else f"Сейчас на счету: {gold_emoji}{balance}"
             else:
                 message = "Хм... О вас нет записей, покажите профиль хотя бы раз!!"
 

@@ -101,15 +101,15 @@ def storage_reactions(self: VkBot, event: VkBotEvent):
     if data['item_type'] == 'book':
         cur_balance = users.change_balance(data['id_vk'], data['result_price']*data['count'])
         if data['result_price'] > 0:
-            msg = f"О, [id{data['id_vk']}|Вы] взяли {data['count']} штук {data['item_name']}!\n"
-        else:
             msg = f"О, [id{data['id_vk']}|Вы] положили {data['count']} штук {data['item_name']}!\n"
+        else:
+            msg = f"О, [id{data['id_vk']}|Вы] взяли {data['count']} штук {data['item_name']}!\n"
 
         msg += f"Я вижу, они стоят в среднем {gold_emoji}{data['price']}({abs(data['result_price'])}), так что я "
         msg += "пополняю баланс на" if data['result_price'] > 0 else "списываю с баланса"
         msg += f" {abs(data['result_price']*data['count'])}{gold_emoji}\n"
 
-        msg += f"Ваш долг: {gold_emoji}{-cur_balance}(Положить {round(-cur_balance/(100-COMMISSION_PERCENT)/100)})" if cur_balance < 0 else f"Сейчас на счету: {gold_emoji}{cur_balance}"
+        msg += f"Ваш долг: {gold_emoji}{-cur_balance}(Положить {round(-cur_balance/((100-COMMISSION_PERCENT)/100))})" if cur_balance < 0 else f"Сейчас на счету: {gold_emoji}{cur_balance}"
         self.api.send_chat_msg(event.chat_id, msg)
         return
 
@@ -119,7 +119,7 @@ def storage_reactions(self: VkBot, event: VkBotEvent):
             msg = f"О, [id{data['id_vk']}|Вы] взяли {-data['count']} золота!\n"
         else:
             msg = f"О, [id{data['id_vk']}|Вы] положили {data['count']} золота!\n"
-        msg += f"Ваш долг: {gold_emoji}{-cur_balance}(Положить {round(cur_balance/(100-COMMISSION_PERCENT)/100)})" if cur_balance < 0 else f"Сейчас на счету: {gold_emoji}{cur_balance}"
+        msg += f"Ваш долг: {gold_emoji}{-cur_balance}(Положить {round(-cur_balance/((100-COMMISSION_PERCENT)/100))})" if cur_balance < 0 else f"Сейчас на счету: {gold_emoji}{cur_balance}"
         self.api.send_chat_msg(event.chat_id, msg)
         return
 

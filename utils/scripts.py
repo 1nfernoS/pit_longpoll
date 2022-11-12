@@ -17,9 +17,9 @@ def withdraw_bill(bot: VkBot) -> None:
         if data_user:
             # print(data_user['level'])
             if data_user['level'] < 100:
-                users.change_balance(user_id, -20000)
+                users.change_balance(user_id, -18000)
             else:
-                users.change_balance(user_id, -40000)
+                users.change_balance(user_id, -36000)
     # bot.api.send_chat_msg(GUILD_CHAT_ID, 'С баланса списан месячный налог, проверить свой баланс можно командой баланс')
     print('Done')
     return
