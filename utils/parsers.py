@@ -66,7 +66,7 @@ def parse_storage_action(text: str):
         if 'положили' in text:
             res['result_price'] = result_price
 
-    if 'золота' in text:
+    elif 'золота' in text:
         res = {'item_type': 'gold'}
 
         count = int(re.findall(r'\d+(?= золота)', text)[0])
@@ -75,4 +75,6 @@ def parse_storage_action(text: str):
             res.update({'id_vk': id_vk, 'count': -count})
         if 'положили' in text:
             res.update({'id_vk': id_vk, 'count': count})
+    else:
+        res = {'item_type': 'item'}
     return res
