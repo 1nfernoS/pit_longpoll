@@ -33,7 +33,7 @@ class Pin(Command):
     def __init__(self):
         super().__init__(__class__.__name__, ('pin', 'пин', 'закреп'), 'leader')
         self.desc = 'Закрепить сообщение. Доступно только лидерам гильдии'
-        # self.set_active(False)
+        self.set_active(False)
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
