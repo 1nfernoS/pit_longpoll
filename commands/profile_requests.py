@@ -8,6 +8,8 @@ from DB import items, users
 
 import profile_api
 
+import utils.math
+
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
 from vk_bot.vk_bot import VkBot
@@ -33,19 +35,17 @@ class Price(Command):
                 item_emoji = '&#128093;'
                 gold_emoji = '&#127765;'
 
-                commission_multiplier = (100-COMMISSION_PERCENT)/100
-                guild_multiplier = (100-DISCOUNT_PERCENT)/100
-                guild_commission_multiplier = guild_multiplier / commission_multiplier
-
                 answer = ''
                 cnt = 0
                 for i in search['result']:
                     auc_price = profile_api.price(i['item_id'])
                     if auc_price > 0:
+                        guild_price = utils.math.discount_price(auc_price)
+                        guild_commission_price = utils.math.commission_price(guild_price)
                         # TODO: guild discount {gold_emoji}{round(auc_price/0.9)}
                         answer += f"\n{gold_emoji}{auc_price} " \
-                                  f"[-{DISCOUNT_PERCENT}%:{gold_emoji}{round(auc_price*guild_multiplier)}" \
-                                  f"({gold_emoji}{round(auc_price*guild_commission_multiplier)})] " \
+                                  f"[-{DISCOUNT_PERCENT}%:{gold_emoji}{guild_price}" \
+                                  f"({gold_emoji}{guild_commission_price})] " \
                                   f"{item_emoji}{i['item_name']}"
                         cnt += 1
                 if cnt > 0:

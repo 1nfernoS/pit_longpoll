@@ -5,6 +5,8 @@ from vk_api.bot_longpoll import VkBotEvent
 from vk_bot.vk_bot import VkBot
 
 from config import GUILD_CHAT_ID, DISCOUNT_PERCENT, COMMISSION_PERCENT
+import utils.math
+from utils.emoji import item_emoji, gold_emoji
 
 import profile_api
 
@@ -19,11 +21,12 @@ logger = get_logger(__name__, 'forwards')
 
 def forward_parse(self: VkBot, event: VkBotEvent):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
-    if fwd_txt.startswith('&#128093;1*'):
+    if fwd_txt.startswith(f'{item_emoji}1*'):
         logger.info('dark_vendor\t'+fwd_txt.replace('\n', ' | '))
         dark_vendor(self, event)
         return
 
+    # TODO: move to utils.emoji
     if fwd_txt.startswith('&#9989;') and '&#128100;' in fwd_txt:
         logger.info('siege\t'+fwd_txt.replace('\n', ' | '))
         pass
@@ -39,10 +42,6 @@ def forward_parse(self: VkBot, event: VkBotEvent):
 
 
 def dark_vendor(self: VkBot, event: VkBotEvent):
-
-    item_emoji = '&#128093;'
-    gold_emoji = '&#127765;'
-
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     msg_id = self.api.send_chat_msg(event.chat_id, 'Проверяю торговца...')[0]
     fwd_split = fwd_txt.split('\n')
@@ -62,23 +61,24 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
         if item_id in row[1]:
             in_equip.append(row[0])
 
+    commission_price = utils.math.commission_price(item_price)
+
     if auc_price > 0:
-        commission_multiplier = (100-COMMISSION_PERCENT)/100
-        guild_multiplier = (100-DISCOUNT_PERCENT)/100
-        guild_commission_multiplier = guild_multiplier / commission_multiplier
+        guild_price = utils.math.discount_price(auc_price)
+        guild_commission_price = utils.math.commission_price(guild_price)
 
         msg = f'Товар: {item_emoji}{item_name}\nЦена торговца: {gold_emoji}{item_price} ' \
-              f'({gold_emoji}{round(item_price/commission_multiplier)})' + \
+              f'({gold_emoji}{commission_price})' + \
               f'\nЦена аукциона: {gold_emoji}{auc_price} (со скидкой гильдии {DISCOUNT_PERCENT}%: ' \
-              f'{gold_emoji}{round(auc_price*guild_multiplier)}' \
-              f'({gold_emoji}{round(auc_price*guild_commission_multiplier)})\n\n'
+              f'{gold_emoji}{guild_price}' \
+              f'({gold_emoji}{guild_commission_price})\n\n'
 
         if int(event.chat_id) == GUILD_CHAT_ID:
             if item_name.startswith('Книга - '):
                 if in_equip:
                     msg += f'{item_emoji}В экипировке у {self.api.get_names(in_equip)}'
     else:
-        msg = f'Товар: {item_emoji}{item_name}\nЦена торговца: {gold_emoji}{item_price} ({gold_emoji}{round(item_price/0.9)})' + \
+        msg = f'Товар: {item_emoji}{item_name}\nЦена торговца: {gold_emoji}{item_price} ({gold_emoji}{commission_price})' + \
               f'\nВот только... Он не продается, Сам не знаю почему'
 
     self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)

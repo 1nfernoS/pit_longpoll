@@ -2,6 +2,8 @@ from commands import Command
 
 from DB import users
 
+from utils.emoji import gold_emoji
+
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
 from vk_bot.vk_bot import VkBot
@@ -69,7 +71,7 @@ class Check(Command):
                 if cur_balance is None:
                     answer = 'Я не могу изменять баланс тем, кого не знаю, пусть покажет профиль хоть раз, чтобы убедится, что это согильдиец!'
                 else:
-                    answer = f'Готово, изменил баланс на {money}&#127765;, теперь счету {cur_balance}&#127765;'
+                    answer = f'Готово, изменил баланс на {money}{gold_emoji}, теперь счету {cur_balance}{gold_emoji}'
             else:
                 answer = 'Я не могу менять баланс никому...'
             bot.api.send_chat_msg(event.chat_id, answer)

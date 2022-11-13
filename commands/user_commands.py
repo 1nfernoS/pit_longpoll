@@ -1,8 +1,10 @@
 from commands import Command, command_list
 
-from config import COMMISSION_PERCENT, creator_id, GUILD_CHAT_ID
+from config import creator_id, GUILD_CHAT_ID
 
 from DB import user_data, users
+from utils.emoji import level_emoji, strength_emoji, agility_emoji, endurance_emoji, gold_emoji
+from utils.math import commission_price
 
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
@@ -19,8 +21,9 @@ class Stats(Command):
     def run(self, bot: VkBot, event: VkBotEvent):
         data = user_data.get_user_data(event.message.from_id)
         if data:
-            message = f"{data['level']}&#128128;: до пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}&#128074;/&#128400; или " \
-                      f"{data['level'] * 3 + 45 - data['endurance']}&#10084;"
+            message = f"{data['level']}{level_emoji}: до пинка " \
+                      f"{(data['level'] + 15) * 6 - data['strength'] - data['agility']}{strength_emoji}/{agility_emoji}" \
+                      f" или {data['level'] * 3 + 45 - data['endurance']}{endurance_emoji}"
         else:
             message = "До пинка... Хм... О вас нет записей, покажите профиль хотя бы раз!!"
 
@@ -79,13 +82,11 @@ class Balance(Command):
 
     def run(self, bot: VkBot, event: VkBotEvent):
         if event.message.from_id in bot.api.get_members(GUILD_CHAT_ID):
-            gold_emoji = '&#127765;'
             balance = users.get_balance(event.message.from_id)
             if balance is not None:
-                message = f"Ваш долг: {gold_emoji}{-balance}(Положить {round(-balance/((100-COMMISSION_PERCENT)/100))})" if balance < 0 else f"Сейчас на счету: {gold_emoji}{balance}"
+                message = f"Ваш долг: {gold_emoji}{-balance}(Положить {commission_price(-balance)})" if balance < 0 else f"Сейчас на счету: {gold_emoji}{balance}"
             else:
                 message = "Хм... О вас нет записей, покажите профиль хотя бы раз!!"
 
             bot.api.send_chat_msg(event.chat_id, message)
         return
-
