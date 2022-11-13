@@ -3,7 +3,7 @@ FROM python:3.7
 ENV TZ="Europe/Moscow"
 
 
-EXPOSE 3306
+EXPOSE 3306, 3305
 
 RUN mkdir /bot
 WORKDIR /bot

@@ -1,3 +1,4 @@
 vk_api
 bs4
 mariadb
+mysql-connector-python
