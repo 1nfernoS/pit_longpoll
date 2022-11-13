@@ -2,6 +2,8 @@ from commands import Command
 
 from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
 
+from utils.emoji import level_emoji, strength_emoji, agility_emoji, endurance_emoji, luck_emoji, attack_emoji, defence_emoji
+
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
 from vk_bot.vk_bot import VkBot
@@ -25,7 +27,7 @@ class War(Command):
     def __init__(self):
         super().__init__(__class__.__name__, ('war', 'война'), 'guild')
         self.desc = 'Список игроков, с которой идет война. Только для членов гильдии'
-        # self.set_active(False)
+        self.set_active(False)
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
@@ -148,8 +150,8 @@ Mr Pudge (орк-гном - дело в шляпе):
             attack = data[9][14:]
             defence = data[10][16:]
             res_str += f"\n{name} ({race} - {class_}): \n" \
-                       f"&#128481;:{attack} &#128737;:{defence} &#127808;:{luck}\n" \
-                       f"&#128074;:{strength} &#128400;:{agility} &#10084;:{endurance}\n"
+                       f"{attack_emoji}:{attack} {defence_emoji}:{defence} {luck_emoji}:{luck}\n" \
+                       f"{strength_emoji}:{strength} {agility_emoji}:{agility} {endurance_emoji}:{endurance}\n"
         return res_str
 
 
