@@ -1,7 +1,5 @@
-import mysql.connector as sql
+import mariadb as sql
 from config import db_data
-
-import mysql.connector.errors as sql_err
 
 
 class DB(object):
@@ -10,10 +8,10 @@ class DB(object):
     """
     try:
         _connection = sql.connect(user=db_data['user'], password=db_data['password'],
-                                  host='host.docker.internal', database=db_data['database'], port=3305)
+                                  host='host.docker.internal', database=db_data['database'])
     except:
         _connection = sql.connect(user=db_data['user'], password=db_data['password'],
-                                  host=db_data['host'], database=db_data['database'], port=3305)
+                                  host=db_data['host'], database=db_data['database'])
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, '_instance'):
@@ -22,13 +20,12 @@ class DB(object):
         return cls._instance
 
     def connect(self):
-        if not self._connection.is_connected():
-            try:
-                self._connection = sql.connect(user=db_data['user'], password=db_data['password'],
-                                               host='host.docker.internal', database=db_data['database'], port=3305)
-            except:
-                self._connection = sql.connect(user=db_data['user'], password=db_data['password'],
-                                               host=db_data['host'], database=db_data['database'], port=3305)
+        try:
+            self._connection = sql.connect(user=db_data['user'], password=db_data['password'],
+                                           host='host.docker.internal', database=db_data['database'])
+        except:
+            self._connection = sql.connect(user=db_data['user'], password=db_data['password'],
+                                           host=db_data['host'], database=db_data['database'])
 
         return self._connection
 
@@ -39,12 +36,15 @@ class DB(object):
 
         try:
             cur.execute(query_str, data)
-            res = cur.fetchall()
+            try:
+                res = cur.fetchall()
+            except sql.ProgrammingError:
+                pass
             db.commit()
-        except sql_err.ProgrammingError as exc:
+        except sql.ProgrammingError as exc:
             db.rollback()
-            raise KeyError(exc.msg)
-        except sql_err.IntegrityError:
+            raise KeyError(exc)
+        except sql.IntegrityError:
             db.rollback()
         finally:
             cur.close()
