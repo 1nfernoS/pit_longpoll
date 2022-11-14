@@ -112,6 +112,17 @@ def check_active(members: List[int]) -> None:
     return
 
 
+def get_all_balance():
+    res = DB().query('SELECT id_vk, balance FROM users WHERE is_active = 1;')
+    if res:
+        answer = {}
+        for row in res:
+            answer[row[0]] = row[1]
+        return answer
+    else:
+        return
+
+
 def get_balance(id_vk: int):
 
     try:
