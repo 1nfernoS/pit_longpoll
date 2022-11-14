@@ -1,6 +1,6 @@
 from commands import Command, command_list
 
-from config import creator_id, GUILD_CHAT_ID
+from config import creator_id, GUILD_CHAT_ID, GUILD_LIBRARIAN_ID, GUILD_NAME
 
 from DB import user_data, users
 from utils.emoji import level_emoji, strength_emoji, agility_emoji, endurance_emoji, gold_emoji
@@ -82,6 +82,26 @@ class Balance(Command):
 
     def run(self, bot: VkBot, event: VkBotEvent):
         if event.message.from_id in bot.api.get_members(GUILD_CHAT_ID):
+
+            if event.message.from_id == GUILD_LIBRARIAN_ID or event.message.from_id in users.get_leaders():
+                if 'reply_message' in event.message.keys():
+                    balance = users.get_balance(event.message.reply_message['from_id'])
+                    message = f"Счет игрока: {balance}" if balance is not None else "Нет записей, пусть сдаст профиль"
+                    bot.api.send_chat_msg(event.chat_id, message)
+                    return
+                elif len(event.message.text.split(' ')) > 1:
+                    if event.message.text.split(' ')[1] == 'все':
+                        msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
+                        balance = users.get_all_balance()
+                        message = f'Баланс игроков гильдии {GUILD_NAME}:'
+                        for member in bot.api.get_members(GUILD_CHAT_ID):
+                            if member in balance.keys():
+                                message += f"\n@id{member}: {balance[member]}{gold_emoji}"
+
+                        bot.api.send_user_msg(event.message.from_id, message)
+                        bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Отправил список в лс')
+                        return
+
             balance = users.get_balance(event.message.from_id)
             if balance is not None:
                 message = f"Ваш долг: {gold_emoji}{-balance}(Положить {commission_price(-balance)})" if balance < 0 else f"Сейчас на счету: {gold_emoji}{balance}"
@@ -89,4 +109,5 @@ class Balance(Command):
                 message = "Хм... О вас нет записей, покажите профиль хотя бы раз!!"
 
             bot.api.send_chat_msg(event.chat_id, message)
+
         return
