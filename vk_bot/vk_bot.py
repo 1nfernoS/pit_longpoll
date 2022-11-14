@@ -82,11 +82,11 @@ class VkBot:
                     # Call def with same name as event type
                     logger.info(f"{event.type.name}:\t{event.raw['event_id']} - {str(event.obj).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')}")
                     getattr(self._events, event.type.name)(self, event)
-            if self._before_stop:
-                self._before_stop(self)
         except KeyboardInterrupt:
             print('\n', 'Stopping . . .', '\n')
             self.__not_kill = False
+            if self._before_stop:
+                self._before_stop(self)
             return
         except ReadTimeout as exc:
             logger.warning("ReadTimeout")
