@@ -4,6 +4,10 @@ import json
 
 from typing import List, Union, Dict
 
+from logger import get_logger
+
+logger = get_logger(__name__, 'profile_requests')
+
 
 def get_name(item_id: int) -> str:
     url = f'https://vip3.activeusers.ru/app.php?act=item&id={item_id}&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
@@ -16,7 +20,7 @@ def get_name(item_id: int) -> str:
 
 def lvl_active(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]]]:
     url = f'https://vip3.activeusers.ru/app.php?act=pages&id=620&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214'
-    print(f"[GET] Request to {url}")
+    logger.info(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     t_res = soup.body.find_all('div', class_='portlet-body')[0]
@@ -37,7 +41,7 @@ def lvl_active(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]]
 
 def lvl_passive(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]]]:
     url = f'https://vip3.activeusers.ru/app.php?act=pages&id=622&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214'
-    print(f"[GET] Request to {url}")
+    logger.info(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     t_res = soup.body.find_all('div', class_='portlet-body')[0]
@@ -59,7 +63,7 @@ def lvl_passive(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]
 def _stats(auth_key: str, user_id: int) -> dict:
     url = f"https://vip3.activeusers.ru/app.php?act=user&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214"
 
-    print(f"[GET] Request to {url}")
+    logger.info(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     stat = []
@@ -74,7 +78,7 @@ def _stats(auth_key: str, user_id: int) -> dict:
 def _inv(auth_key: str, user_id: int):
     url = f"https://vip3.activeusers.ru/app.php?act=user&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214"
 
-    print(f"[GET] Request to {url}")
+    logger.info(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     t1 = soup.body.find_all('div', class_='resitems items clearfix')[2]
@@ -136,7 +140,7 @@ def get_build(item_list: list) -> dict:
 
 def price(item: int) -> int:
     url = f'https://vip3.activeusers.ru/app.php?act=item&id={item}&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
-    print(f"[GET] Request to {url}")
+    logger.info(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     try:
