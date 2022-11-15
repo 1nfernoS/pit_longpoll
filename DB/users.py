@@ -44,7 +44,7 @@ def add_user(id_vk: int, profile_key: (str, None), is_active: bool, is_leader: b
 
 
 def update_user(id_vk: int, **kwargs):
-    QUERY = 'UPDATE `users` SET ' + ', '.join([k + ' = %s' for k in kwargs.keys()]) + ' WHERE id_vk = %s;'
+    QUERY = 'UPDATE `users` SET ' + ', '.join([k + ' = %s' for k in kwargs.keys()]) + ', is_active=1 WHERE id_vk = %s;'
 
     try:
         id_vk = int(id_vk)
