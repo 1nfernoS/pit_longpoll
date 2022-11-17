@@ -13,6 +13,8 @@ def datediff(d1: datetime, d2: datetime) -> str:
         res += str(diff.days)
         if diff.days // 10 == 1 or diff.days % 10 > 4:
             res += ' дней '
+        elif diff.days // 10 > 1 and diff.days % 10 == 0:
+            res += ' дней '
         elif diff.days % 10 > 1:
             res += ' дня '
         elif diff.days % 10 == 1:
