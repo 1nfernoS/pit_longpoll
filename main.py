@@ -55,3 +55,4 @@ def event(b: bot, e: VkBotEvent):
 
 if __name__ == '__main__':
     bot.start()
+    pass
