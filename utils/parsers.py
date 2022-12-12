@@ -3,7 +3,8 @@ import re
 
 from config import DISCOUNT_PERCENT
 
-from DB.items import get_item_by_name, search_item
+from DB.items import get_item_by_name, search_item, search_regexp
+from utils import emoji
 
 
 def parse_profile(text: str) -> dict:
@@ -42,7 +43,6 @@ def parse_profile(text: str) -> dict:
 def parse_storage_action(text: str):
     import profile_api
     text = text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
-    res = {}
 
     id_vk = int(re.findall(r'(?<=id)\d+', text)[0])
 
@@ -78,3 +78,35 @@ def parse_storage_action(text: str):
     else:
         res = {'item_type': 'item'}
     return res
+
+
+def guesser(text: str) -> list:
+    # ingredients
+    __possible = [14436, 14453, 14452, 14438, 14440, 14441, 14628, 14627, 14442, 14460, 14462, 14470, 14472, 14550]
+    # potions
+    __possible += [14609, 14610, 14487, 14449, 14629, 14447]
+    # rings
+    __possible += [14238, 14316, 14318, 14240, 14242]
+    # materials
+    __possible += [14793, 14794, 14795, 14796]
+    # maps
+    __possible += [14660, 14661, 14662, 14663, 14664, 14665, 14963, 14270, 15301]
+    # other: faith stone
+    __possible += [14128]
+
+    text = text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+    regexp = text.split('\n')[1].replace(emoji.empty, '.')
+    item_list = search_regexp(regexp, has_price=False)
+    res = []
+    for i in item_list:
+        if i in __possible or '-' in item_list[i]:
+            res.append(item_list[i].replace('Книга - ', ''))
+
+    return res
+
+
+if __name__ == '__main__':
+    sample = '&#128081;[id16191014|Юрий], Ваш профиль: | &#128100;Класс: клинок тьмы, человек-эльф | &#128101;Гильдия: Темная сторона | &#128578;Положительная карма | &#128128;Уровень: 90 | &#127881;Достижений: 32 | &#127765;Золото: 24819 | &#128074;295 &#128400;303 &#10084;314 &#127808;21 &#128481;107 &#128737;90'
+    result = parse_profile(sample.replace(' | ', '\n'))
+    print(result)
+    pass
