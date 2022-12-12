@@ -181,7 +181,7 @@ def upd_items(start_id=12000, stop_id=20000):
     return
 
 
-def foo():
+def sellable_items():
     url = 'https://vip3.activeusers.ru/app.php?act=user&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     t1 = soup.find_all('li', class_='dropdown-submenu')
@@ -195,5 +195,37 @@ def foo():
     return res
 
 
+def ingredients():
+    url = 'https://vip3.activeusers.ru/app.php?act=user&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
+    soup = BeautifulSoup(requests.get(url).content, 'html.parser')
+    t1 = soup.find_all('li', class_='dropdown-submenu')
+    sellable = [t1[0]]
+    res = []
+    for t in sellable:
+        for i in t.find_all('li'):
+            data = i.a['href']
+            res.append(int(data[data.find('&id=') + 4:data.find('&auth_key=')]))
+    return res
+
+
+def header(param: int = 0):
+
+    url = 'https://vip3.activeusers.ru/app.php?act=user&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
+    soup = BeautifulSoup(requests.get(url).content, 'html.parser')
+    t1 = soup.find_all('li', class_='dropdown-submenu')
+    if 0 <= param < 17 and param != 13:
+        sellable = [t1[param]]
+    else:
+        sellable = [*t1[:13], *t1[14:17]]
+
+    res = {}
+    for t in sellable:
+        for i in t.find_all('li'):
+            data = i.a['href']
+            if 'act=item' in data:
+                res[int(data[data.find('&id=') + 4:data.find('&auth_key=')])] = i.span.text.strip()
+    return res
+
+
 if __name__ == '__main__':
-    upd_items()
+    print(header(15).keys())
