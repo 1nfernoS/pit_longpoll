@@ -4,10 +4,10 @@ from vk_api.bot_longpoll import VkBotEvent
 
 from vk_bot.vk_bot import VkBot
 
-from config import GUILD_CHAT_ID, DISCOUNT_PERCENT, COMMISSION_PERCENT
+from config import GUILD_CHAT_ID, DISCOUNT_PERCENT
 import utils.math
-from utils.emoji import item_emoji, gold_emoji
-
+from utils.emoji import item_emoji, gold_emoji, empty
+from utils import parsers
 import profile_api
 
 from DB.items import get_item_by_name
@@ -36,6 +36,13 @@ def forward_parse(self: VkBot, event: VkBotEvent):
         logger.info('elites\t'+fwd_txt.replace('\n', ' | '))
         pass
 
+    if empty in fwd_txt:
+        logger.info('symbols\t'+fwd_txt.replace('\n', ' | '))
+        symbol_guesser(self, event)
+        return
+
+    else:
+        logger.info('other\t'+fwd_txt.replace('\n', ' | '))
     # puzzles
 
     return
@@ -81,5 +88,18 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
         msg = f'Товар: {item_emoji}{item_name}\nЦена торговца: {gold_emoji}{item_price} ({gold_emoji}{commission_price})' + \
               f'\nВот только... Он не продается, Сам не знаю почему'
 
+    self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
+    return
+
+
+def symbol_guesser(self: VkBot, event: VkBotEvent):
+    fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+    msg_id = self.api.send_chat_msg(event.chat_id, 'Символы... Символы... Сейчас вспомню')[0]
+    res_list = parsers.guesser(fwd_txt)
+    if res_list:
+        msg = 'Ну точно! Это наверняка что-то из этого:\n'
+        msg += '\n'.join(res_list)
+    else:
+        msg = 'Что-то не пойму, что это может быть'
     self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
     return

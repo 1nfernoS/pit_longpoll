@@ -70,6 +70,7 @@ class VkBot:
 
     def start(self):
         logger = get_logger(__name__, '_BOT_EVENTS', 'midnight')
+        logger_errors = get_logger(__name__, '_BOT_ERRORS', 'midnight')
         if self._before_start:
             print('Starting up . . .')
             self._before_start(self)
@@ -89,12 +90,12 @@ class VkBot:
                 self._before_stop(self)
             return
         except ReadTimeout as exc:
-            logger.warning("ReadTimeout")
+            logger_errors.warning("ReadTimeout")
             # print(f'\n\nTimeout error {exc}')
             # print('\n\tRestarting . . .\n')
             self.start()
         except:
-            logger.error("Un-handled exception ! ! !", exc_info=True)
+            logger_errors.error("Un-handled exception ! ! !", exc_info=True)
             # logging.error(f"{time.strftime('%d %m %Y %H:%M:%S')}\t{traceback.format_exc(-3)}")
             print('Error:', end='')
             print('\n\nFull Trace')
