@@ -74,6 +74,21 @@ def search_item(name: str, has_price: bool = True):
         return
 
 
+def search_regexp(item_name: str, has_price: bool = True) -> (dict, None):
+    QUERY = "SELECT * FROM items WHERE item_name REGEXP CONCAT('(Книга - |^)', %s, '$')"
+
+    if has_price:
+        QUERY += " AND has_price = 1"
+
+    data = DB().query(QUERY, (item_name,))
+    if data:
+        res = {}
+        for row in data:
+            res[row[0]] = row[1]
+        return res
+    return
+
+
 if __name__ == '__main__':
     # print(get_item_by_name('Браконьер'))
     # print(get_item_by_id(14972))
