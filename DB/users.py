@@ -24,7 +24,7 @@ def check_users():
 
 def add_user(id_vk: int, profile_key: (str, None), is_active: bool, is_leader: bool, is_officer: bool, equipment: (str, None), class_id: (str, None)):
 
-    QUERY = 'INSERT INTO `users` VALUE ( %s, %s, %s, %s, %s, %s, %s );'
+    QUERY = 'INSERT INTO `users` VALUE ( %s, %s, %s, %s, %s, %s, %s, 0);'
 
     try:
         id_vk = int(id_vk)
