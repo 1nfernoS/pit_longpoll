@@ -38,7 +38,7 @@ def forward_parse(self: VkBot, event: VkBotEvent):
 
     if empty in fwd_txt:
         logger.info('symbols\t'+fwd_txt.replace('\n', ' | '))
-        symbol_guesser(self, event)
+        # symbol_guesser(self, event)
         return
 
     else:
