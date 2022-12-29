@@ -32,10 +32,12 @@ def forward_parse(self: VkBot, event: VkBotEvent):
         pass
 
     # 'обменяли элитные трофеи' in fwd_txt and
+    # TODO: fix false reactions (trophies, PvP)
     if '&#127941;' in fwd_txt:
         logger.info('elites\t'+fwd_txt.replace('\n', ' | '))
         pass
 
+    # TODO: fix false reactions (PvP)
     if empty in fwd_txt:
         logger.info('symbols\t'+fwd_txt.replace('\n', ' | '))
         # symbol_guesser(self, event)
