@@ -10,14 +10,6 @@ config.load('prod')
 bot = VkBot(config.group_data['group_token'])
 
 
-# TODO:
-#   - logging
-#   - puzzle hints (reply  with answer)
-#   - APO system
-#   - logs for economics
-#   - SIGTERM handler for shell
-#   - rework profile price with usage of `has_price`
-
 @bot.startup()
 def before_start(b: VkBot, *args):
     b.api.send_chat_msg(config.GUILD_CHAT_ID, 'Ну, я проснулся')
