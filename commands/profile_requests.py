@@ -30,30 +30,32 @@ class Price(Command):
             answer = 'А что искать...'
         else:
             item_name = msg[1]
-            search = items.search_item(item_name)
-            if search:
-                item_emoji = '&#128093;'
-                gold_emoji = '&#127765;'
+            if len(item_name) < 3:
+                answer = 'Добавьте пару букв к поиску, чтобы их было хотя бы 3'
+            else:
+                search = items.search_item(item_name)
+                if search:
+                    item_emoji = '&#128093;'
+                    gold_emoji = '&#127765;'
 
-                answer = ''
-                cnt = 0
-                for i in search['result']:
-                    auc_price = profile_api.price(i['item_id'])
-                    if auc_price > 0:
-                        guild_price = utils.math.discount_price(auc_price)
-                        guild_commission_price = utils.math.commission_price(guild_price)
-                        # TODO: guild discount {gold_emoji}{round(auc_price/0.9)}
-                        answer += f"\n{gold_emoji}{auc_price} " \
-                                  f"[-{DISCOUNT_PERCENT}%:{gold_emoji}{guild_price}" \
-                                  f"({gold_emoji}{guild_commission_price})] " \
-                                  f"{item_emoji}{i['item_name']}"
-                        cnt += 1
-                if cnt > 0:
-                    answer = f"Нашел следующее ({cnt}):" + answer
+                    answer = ''
+                    cnt = 0
+                    for i in search['result']:
+                        auc_price = profile_api.price(i['item_id'])
+                        if auc_price > 0:
+                            guild_price = utils.math.discount_price(auc_price)
+                            guild_commission_price = utils.math.commission_price(guild_price)
+                            answer += f"\n{gold_emoji}{auc_price} " \
+                                      f"[-{DISCOUNT_PERCENT}%:{gold_emoji}{guild_price}" \
+                                      f"({gold_emoji}{guild_commission_price})] " \
+                                      f"{item_emoji}{i['item_name']}"
+                            cnt += 1
+                    if cnt > 0:
+                        answer = f"Нашел следующее ({cnt}):" + answer
+                    else:
+                        answer = 'Ничего не нашлось...'
                 else:
                     answer = 'Ничего не нашлось...'
-            else:
-                answer = 'Ничего не нашлось...'
 
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer)
 
