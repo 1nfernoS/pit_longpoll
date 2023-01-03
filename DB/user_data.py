@@ -4,7 +4,7 @@ from DB import DB
 
 def add_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, agile: int, end: int, luck: int, acc: (int, None), conc: (int, None)):
 
-    QUERY = 'INSERT INTO `user_data` VALUE ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s , %s );'
+    query = 'INSERT INTO `user_data` VALUE ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s , %s );'
 
     try:
         id_vk = int(id_vk)
@@ -60,14 +60,14 @@ def add_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, a
 
     data = (id_vk, lvl, atk, defence, strength, agile, end, luck, acc, conc, dt.now())
 
-    DB().query(QUERY, data)
+    DB().query(query, data)
 
     return
 
 
 def update_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, agile: int, end: int, luck: int, acc: (int, None), conc: (int, None)):
 
-    QUERY = 'UPDATE `user_data` SET level = %s, attack = %s, defence = %s, strength = %s, agility = %s, endurance = %s, luck = %s, accuracy = %s, concentration = %s, last_update = %s WHERE id_vk = %s;'
+    query = 'UPDATE `user_data` SET level = %s, attack = %s, defence = %s, strength = %s, agility = %s, endurance = %s, luck = %s, accuracy = %s, concentration = %s, last_update = %s WHERE id_vk = %s;'
 
     try:
         id_vk = int(id_vk)
@@ -123,21 +123,21 @@ def update_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int
 
     data = (lvl, atk, defence, strength, agile, end, luck, acc, conc, dt.now(), id_vk)
 
-    DB().query(QUERY, data)
+    DB().query(query, data)
 
     return
 
 
 def get_user_data(id_vk: int):
 
-    QUERY = 'SELECT id_vk, `level`, attack, defence, strength, agility, endurance, luck, accuracy, concentration, last_update FROM user_data WHERE user_data.id_vk = %s;'
+    query = 'SELECT id_vk, `level`, attack, defence, strength, agility, endurance, luck, accuracy, concentration, last_update FROM user_data WHERE user_data.id_vk = %s;'
 
     try:
         id_vk = int(id_vk)
     except ValueError:
         raise TypeError(f"`id_vk` must be int, got {id_vk} instead")
 
-    res = DB().query(QUERY, (id_vk,))
+    res = DB().query(query, (id_vk,))
 
     if res:
         res = res[0]
@@ -151,4 +151,3 @@ if __name__ == '__main__':
     # add_user_data(123141, 90, 120, 55, 123, 122, 129, 10, None, None)
     # update_user_data(123141, 90, 120, 55, 123, 122, 129, 10, 15, 45)
     print(get_user_data(3902377))
-

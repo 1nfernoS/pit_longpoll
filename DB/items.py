@@ -1,27 +1,28 @@
 from DB import DB
-import json
-import os
 
 
 def check_items():
-    QUERY = 'INSERT INTO `items` VALUES (%s, %s, %s);'
+    import os
+    import json
+
+    query = 'INSERT INTO `items` VALUES (%s, %s, %s);'
     items = json.loads(open(os.environ.get('ITEM_FILE'), 'r').read())
 
     for i in items:
         data = (i, *list(items[i].values()))
-        DB().query(QUERY, data)
+        DB().query(query, data)
     return
 
 
 def get_item_by_id(item_id: int):
-    QUERY = 'SELECT item_name FROM items WHERE item_id = %s;'
+    query = 'SELECT item_name FROM items WHERE item_id = %s;'
 
     try:
         item_id = int(item_id)
     except ValueError:
         raise TypeError(f"`item_id` must be int, got {item_id} instead")
 
-    res = DB().query(QUERY, (item_id,))
+    res = DB().query(query, (item_id,))
     if res:
         res = res[0]
         return res[0]
@@ -30,12 +31,12 @@ def get_item_by_id(item_id: int):
 
 
 def get_item_by_name(name: str, has_price: bool = True):
-    QUERY = "SELECT item_id FROM items WHERE item_name LIKE CONCAT(%s, '%')"
+    query = "SELECT item_id FROM items WHERE item_name LIKE CONCAT(%s, '%')"
 
     if has_price:
-        QUERY += " AND has_price = 1"
+        query += " AND has_price = 1"
 
-    res = DB().query(QUERY, (name,))
+    res = DB().query(query, (name,))
 
     if res:
         res = res[0]
@@ -45,25 +46,25 @@ def get_item_by_name(name: str, has_price: bool = True):
 
 
 def search_item(name: str, has_price: bool = True):
-    QUERY = "SELECT COUNT(*) FROM items WHERE item_name LIKE CONCAT('Книга - ', %s, '%')"
-    QUERY = "SELECT * FROM items WHERE item_name REGEXP CONCAT('(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^)', %s, '.*$')"
+    # query = "SELECT COUNT(*) FROM items WHERE item_name LIKE CONCAT('Книга - ', %s, '%')"
+    query = "SELECT * FROM items WHERE item_name REGEXP CONCAT('(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^)', %s, '.*$')"
 
     if has_price:
-        QUERY += " AND has_price = 1"
+        query += " AND has_price = 1"
     '''
-    cnt = DB().query(QUERY, (name,))[0][0]
+    cnt = DB().query(query, (name,))[0][0]
     if cnt > 0:
-        QUERY = "SELECT * FROM items WHERE item_name LIKE CONCAT('Книга - ', %s, '%');"
+        query = "SELECT * FROM items WHERE item_name LIKE CONCAT('Книга - ', %s, '%');"
     else:
-        QUERY = "SELECT * FROM items WHERE item_name LIKE CONCAT(%s, '%');"
+        query = "SELECT * FROM items WHERE item_name LIKE CONCAT(%s, '%');"
     
     if has_price:
-        QUERY += " AND has_price = 1"
+        query += " AND has_price = 1"
     '''
 
-    # QUERY = "SELECT * FROM items WHERE item_name LIKE CONCAT('%', %s, '%');"
+    # query = "SELECT * FROM items WHERE item_name LIKE CONCAT('%', %s, '%');"
 
-    res = DB().query(QUERY, (name, ))
+    res = DB().query(query, (name, ))
     if res:
         data = {'count': 0, 'result': []}
         for row in res:
@@ -75,12 +76,12 @@ def search_item(name: str, has_price: bool = True):
 
 
 def search_regexp(item_name: str, has_price: bool = True) -> (dict, None):
-    QUERY = "SELECT * FROM items WHERE item_name REGEXP CONCAT('(Книга - |^)', %s, '$')"
+    query = "SELECT * FROM items WHERE item_name REGEXP CONCAT('(Книга - |^)', %s, '$')"
 
     if has_price:
-        QUERY += " AND has_price = 1"
+        query += " AND has_price = 1"
 
-    data = DB().query(QUERY, (item_name,))
+    data = DB().query(query, (item_name,))
     if data:
         res = {}
         for row in data:

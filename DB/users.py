@@ -8,9 +8,9 @@ from profile_api import get_profile, get_books
 
 def check_users():
 
-    QUERY = 'SELECT id_vk, profile_key FROM users WHERE profile_key IS NOT NULL AND is_active=TRUE;'
+    query = 'SELECT id_vk, profile_key FROM users WHERE profile_key IS NOT NULL AND is_active=TRUE;'
 
-    res = DB().query(QUERY)
+    res = DB().query(query)
 
     for i in res:
         inv = [int(data) for data in get_profile(i[1], i[0])['items']]
@@ -24,7 +24,7 @@ def check_users():
 
 def add_user(id_vk: int, profile_key: (str, None), is_active: bool, is_leader: bool, is_officer: bool, equipment: (str, None), class_id: (str, None)):
 
-    QUERY = 'INSERT INTO `users` (id_vk, profile_key, is_active, is_leader, is_officer, equipment, class_id) ' \
+    query = 'INSERT INTO `users` (id_vk, profile_key, is_active, is_leader, is_officer, equipment, class_id) ' \
             'VALUE ( %s, %s, %s, %s, %s, %s, %s);'
 
     try:
@@ -38,14 +38,15 @@ def add_user(id_vk: int, profile_key: (str, None), is_active: bool, is_leader: b
         except ValueError:
             raise TypeError(f"`class_id` must be int, got {class_id} instead")
 
-    data = (id_vk, profile_key if profile_key else None, is_active, is_leader, is_officer, equipment if equipment else None, class_id if class_id else None)
+    data = (id_vk, profile_key if profile_key else None, is_active, is_leader, is_officer,
+            equipment if equipment else None, class_id if class_id else None)
 
-    DB().query(QUERY, data)
+    DB().query(query, data)
     return
 
 
 def update_user(id_vk: int, **kwargs):
-    QUERY = 'UPDATE `users` SET ' + ', '.join([k + ' = %s' for k in kwargs.keys()]) + ', is_active=1 WHERE id_vk = %s;'
+    query = 'UPDATE `users` SET ' + ', '.join([k + ' = %s' for k in kwargs.keys()]) + ', is_active=1 WHERE id_vk = %s;'
 
     try:
         id_vk = int(id_vk)
@@ -54,19 +55,21 @@ def update_user(id_vk: int, **kwargs):
 
     data = tuple(kwargs.values())
 
-    DB().query(QUERY, (*data, id_vk))
+    DB().query(query, (*data, id_vk))
     return
 
 
 def get_user(id_vk: int) -> (dict, None):
-    QUERY = 'SELECT id_vk, profile_key, is_active, is_leader, is_officer, equipment, class_id, balance FROM users WHERE id_vk = %s;'
+    query = 'SELECT id_vk, profile_key, is_active, is_leader, is_officer, equipment, class_id, balance ' \
+            'FROM users ' \
+            'WHERE id_vk = %s;'
 
     try:
         id_vk = int(id_vk)
     except ValueError:
         raise TypeError(f"`id_vk` must be int, got {id_vk} instead")
 
-    res = DB().query(QUERY, (id_vk,))
+    res = DB().query(query, (id_vk,))
 
     if res:
         res = res[0]
@@ -77,8 +80,8 @@ def get_user(id_vk: int) -> (dict, None):
 
 
 def get_equip():
-    QUERY = 'SELECT id_vk, equipment FROM users WHERE equipment IS NOT NULL AND is_active=TRUE;'
-    res = DB().query(QUERY)
+    query = 'SELECT id_vk, equipment FROM users WHERE equipment IS NOT NULL AND is_active=TRUE;'
+    res = DB().query(query)
     answer = []
     for row in res:
         answer.append((row[0], json.loads(row[1])))
@@ -87,8 +90,8 @@ def get_equip():
 
 
 def get_leaders() -> tuple:
-    QUERY = 'SELECT id_vk FROM users WHERE is_leader = 1;'
-    res = DB().query(QUERY)
+    query = 'SELECT id_vk FROM users WHERE is_leader = 1;'
+    res = DB().query(query)
     answer = [row[0] for row in res]
 
     return tuple(answer)
@@ -98,6 +101,7 @@ def check_active(members: List[int]) -> None:
 
     # SET all users as inactive
 
+    # noinspection SqlWithoutWhere
     DB().query('UPDATE users SET is_active=FALSE;')
 
     # Set all users from list as active

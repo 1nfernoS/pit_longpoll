@@ -45,7 +45,7 @@ TODO
     - APO system
         DB tables (tokens and races)
         forwards by message
-        get answer and return raply (event_keyboard)
+        get answer and return reply (event_keyboard)
     - keyboards
     - PM features (some from chat)
     - public test (?)
