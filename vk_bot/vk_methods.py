@@ -1,5 +1,4 @@
 from random import randint
-import json
 
 from typing import List
 from vk_api.exceptions import ApiError
@@ -63,12 +62,12 @@ class VkMethods:
         except ApiError:
             return 0
 
-    def send_event(self, peer_id: int, event_id: str, user_id: int, data: dict) -> int:
+    def send_event(self, peer_id: int, event_id: str, user_id: int, data: str) -> int:
         return self._api.messages.sendMessageEventAnswer(
             event_id=event_id,
             peer_id=peer_id,
             user_id=user_id,
-            event_data=json.dumps(data)
+            event_data=data
         )
 
     def pin_msg(self, chat_id: int, conv_msg_id: int, **kwargs) -> int:
