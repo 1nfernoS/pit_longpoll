@@ -138,6 +138,20 @@ def get_build(item_list: list) -> dict:
     return res
 
 
+def get_races(auth_key: str, user_id: int) -> List[int]:
+    return [val for val in _inv(auth_key, user_id) if val in range(14413, 14420)]  # 14413-14419 is race ids
+
+
+def get_voices(auth_key: str, user_id: int) -> int:
+    url = f"https://vip3.activeusers.ru/app.php?act=item&id=14264&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214"
+
+    logger.info(f"[GET] Request to {url}")
+
+    soup = BeautifulSoup(requests.get(url).content, 'html.parser')
+
+    return int(soup.find_all('h4')[0].text[-5:-3])
+
+
 def price(item: int) -> int:
     url = f'https://vip3.activeusers.ru/app.php?act=item&id={item}&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
     logger.info(f"[GET] Request to {url}")
