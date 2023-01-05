@@ -85,7 +85,7 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
     if data['guild'] == GUILD_NAME:
         if users.get_user(data['id_vk']):
             answer = 'Обновил информацию гильдии!\n' + answer
-            users.update_user(data['id_vk'], class_id=data['class_id'])
+            users.update_user(data['id_vk'], is_active=1)
         else:
             answer = 'Записал информацию гильдии!\n' + answer
             users.add_user(data['id_vk'], None, True, False, False, None, data['class_id'])
