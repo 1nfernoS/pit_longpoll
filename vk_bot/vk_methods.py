@@ -25,7 +25,7 @@ class VkMethods:
         return self._api.messages.send(
             peer_ids=[CHAT_START_ID + chat_id],
             message=msg,
-            keyboard=json.dumps(kbd) if kbd else None,
+            keyboard=kbd if kbd else None,
             random_id=0,
             disable_mentions=True,
             **kwargs
@@ -36,7 +36,7 @@ class VkMethods:
         return self._api.messages.send(
             peer_id=user_id,
             message=msg,
-            keyboard=json.dumps(kbd) if kbd else None,
+            keyboard=kbd if kbd else None,
             random_id=0,
             disable_mentions=True,
             **kwargs
@@ -49,7 +49,7 @@ class VkMethods:
             message=msg,
             conversation_message_id=conv_msg_id,
             disable_mentions=True,
-            keyboard=json.dumps(kbd) if kbd else None,
+            keyboard=kbd if kbd else None,
             **kwargs
         )
 
