@@ -47,7 +47,8 @@ def get_item_by_name(name: str, has_price: bool = True):
 
 def search_item(name: str, has_price: bool = True):
     # query = "SELECT COUNT(*) FROM items WHERE item_name LIKE CONCAT('Книга - ', %s, '%')"
-    query = "SELECT * FROM items WHERE item_name REGEXP CONCAT('(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^)', %s, '.*$')"
+    query = "SELECT * FROM items WHERE item_name " \
+            "REGEXP CONCAT('(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^)', %s, '.*$')"
 
     if has_price:
         query += " AND has_price = 1"

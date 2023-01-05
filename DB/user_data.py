@@ -2,7 +2,8 @@ from datetime import datetime as dt
 from DB import DB
 
 
-def add_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, agile: int, end: int, luck: int, acc: (int, None), conc: (int, None)):
+def add_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, agile: int, end: int, luck: int,
+                  acc: (int, None), conc: (int, None)):
 
     query = 'INSERT INTO `user_data` VALUE ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s , %s );'
 
@@ -65,9 +66,11 @@ def add_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, a
     return
 
 
-def update_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, agile: int, end: int, luck: int, acc: (int, None), conc: (int, None)):
+def update_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int, agile: int, end: int, luck: int,
+                     acc: (int, None), conc: (int, None)):
 
-    query = 'UPDATE `user_data` SET level = %s, attack = %s, defence = %s, strength = %s, agility = %s, endurance = %s, luck = %s, accuracy = %s, concentration = %s, last_update = %s WHERE id_vk = %s;'
+    query = 'UPDATE `user_data` SET level = %s, attack = %s, defence = %s, strength = %s, agility = %s, ' \
+            'endurance = %s, luck = %s, accuracy = %s, concentration = %s, last_update = %s WHERE id_vk = %s;'
 
     try:
         id_vk = int(id_vk)
@@ -130,7 +133,8 @@ def update_user_data(id_vk: int, lvl: int, atk: int, defence: int, strength: int
 
 def get_user_data(id_vk: int):
 
-    query = 'SELECT id_vk, `level`, attack, defence, strength, agility, endurance, luck, accuracy, concentration, last_update FROM user_data WHERE user_data.id_vk = %s;'
+    query = 'SELECT id_vk, `level`, attack, defence, strength, agility, endurance, luck, accuracy, concentration, ' \
+            'last_update FROM user_data WHERE user_data.id_vk = %s;'
 
     try:
         id_vk = int(id_vk)
@@ -142,7 +146,8 @@ def get_user_data(id_vk: int):
     if res:
         res = res[0]
         return {'id_vk': res[0], 'level': res[1], 'attack': res[2], 'defence': res[3], 'strength': res[4],
-                'agility': res[5], 'endurance': res[6], 'luck': res[7], 'accuracy': res[8], 'concentration': res[9], 'last_update': res[10]}
+                'agility': res[5], 'endurance': res[6], 'luck': res[7], 'accuracy': res[8], 'concentration': res[9],
+                'last_update': res[10]}
     else:
         return
 

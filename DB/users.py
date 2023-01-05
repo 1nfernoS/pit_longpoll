@@ -22,7 +22,8 @@ def check_users():
     return
 
 
-def add_user(id_vk: int, profile_key: (str, None), is_active: bool, is_leader: bool, is_officer: bool, equipment: (str, None), class_id: (str, None)):
+def add_user(id_vk: int, profile_key: (str, None), is_active: bool, is_leader: bool, is_officer: bool,
+             equipment: (str, None), class_id: (str, None)):
 
     query = 'INSERT INTO `users` (id_vk, profile_key, is_active, is_leader, is_officer, equipment, class_id) ' \
             'VALUE ( %s, %s, %s, %s, %s, %s, %s);'
