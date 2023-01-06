@@ -12,7 +12,7 @@ bot = VkBot(config.group_data['group_token'])
 
 @bot.startup()
 def before_start(b: VkBot, *args):
-    b.api.send_chat_msg(config.GUILD_CHAT_ID, 'Ну, я проснулся')
+    # b.api.send_chat_msg(config.GUILD_CHAT_ID, 'Ну, я проснулся')
     # All stuff dor startup
     return
 
