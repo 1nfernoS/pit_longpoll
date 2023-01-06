@@ -41,7 +41,7 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int):
             if event.type == VkEventType.MESSAGE_NEW and event.from_group and not event.from_me:
                 if not event.peer_id == OVERSEER_BOT:
                     continue
-                print(event.raw)
+                # print(event.raw)
                 if not any([msg in event.message for msg in POSSIBLE_ANSWERS]):
                     continue
                 return event.message
