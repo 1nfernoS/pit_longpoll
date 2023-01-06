@@ -42,12 +42,14 @@ TODO
 
 - new modules
     - Announcements (Ad or important notes)
-    - APO system
-        DB tables (tokens and races)
-        forwards by message
-        get answer and return reply (event_keyboard)
-    - keyboards
     - PM features (some from chat)
     - public test (?)
 
 DONE (datetime)
+
+    - APO system (05.01.22)
+        DB tables (tokens and races)
+        forwards by message
+        get answer and return reply (event_keyboard)
+
+    - keyboards - for ap (05.01.22)
