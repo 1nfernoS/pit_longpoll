@@ -13,10 +13,10 @@ def event_message(self: VkBot, event: VkBotEvent):
     if action:
         if action == 'buff':
 
-            receiver = self.api.messages.getByConversationMessageId(
+            receiver = self.api.get_conversation_msg(
                 peer_id=CHAT_START_ID + pl['chat_id'],
                 conversation_message_ids=pl['msg_id']
-                )['items'][0]['from_id']
+                )['from_id']
             if event.object.user_id != receiver:
                 self.api.send_event(
                     event.object.peer_id,
