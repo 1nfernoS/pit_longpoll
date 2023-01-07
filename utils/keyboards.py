@@ -1,8 +1,9 @@
 import vk_api.keyboard as keyboard
 
-from DB.autobuffer_list import get_buff_command, load_buffer_buff
+from DB.autobuffer_list import get_buff_command
 
 from utils import buffs
+from utils.emoji import cancel, clear, heal_trauma, take_trauma
 
 
 def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None) -> str:
@@ -24,4 +25,80 @@ def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None
 
         payload = {'action': 'buff', 'msg_id': msg_id, 'chat_id': chat_id, 'from': vk_id, 'buff': i}
         kbd.add_callback_button(txt.split()[-1].capitalize(), keyboard.VkKeyboardColor.PRIMARY, payload)
+
+    kbd.add_line()
+    kbd.add_callback_button(cancel, keyboard.VkKeyboardColor.NEGATIVE, {'action': 'remove'})
+
+    return kbd.get_keyboard()
+
+
+def warlock(vk_id: int, msg_id: int, chat_id: int) -> str:
+
+    kbd = keyboard.VkKeyboard(inline=True)
+
+    for i in buffs.BUFF_DATA[buffs.WARLOCK_ITEM_ID]:
+        txt = get_buff_command(i)
+
+        payload = {'action': 'buff', 'msg_id': msg_id, 'chat_id': chat_id, 'from': vk_id, 'buff': i}
+        kbd.add_callback_button(txt.split()[-1].capitalize(), keyboard.VkKeyboardColor.PRIMARY, payload)
+
+    kbd.add_line()
+    kbd.add_callback_button(cancel, keyboard.VkKeyboardColor.NEGATIVE, {'action': 'remove'})
+
+    return kbd.get_keyboard()
+
+
+def paladin(vk_id: int, msg_id: int, chat_id: int) -> str:
+
+    kbd = keyboard.VkKeyboard(inline=True)
+
+    buff = buffs.BUFF_DATA[buffs.PALADIN_ITEM_ID][0]
+    txt = clear
+
+    payload = {'action': 'buff', 'msg_id': msg_id, 'chat_id': chat_id, 'from': vk_id, 'buff': buff}
+    kbd.add_callback_button(txt.split()[-1].capitalize(), keyboard.VkKeyboardColor.PRIMARY, payload)
+
+    kbd.add_line()
+    kbd.add_callback_button(cancel, keyboard.VkKeyboardColor.NEGATIVE, {'action': 'remove'})
+
+    return kbd.get_keyboard()
+
+
+def crusader(vk_id: int, msg_id: int, chat_id: int) -> str:
+
+    kbd = keyboard.VkKeyboard(inline=True)
+
+    buff = buffs.BUFF_DATA[buffs.CRUSADER_ITEM_ID][0]
+    txt = clear
+    payload = {'action': 'buff', 'msg_id': msg_id, 'chat_id': chat_id, 'from': vk_id, 'buff': buff}
+    kbd.add_callback_button(txt.split()[-1].capitalize(), keyboard.VkKeyboardColor.PRIMARY, payload)
+
+    buff = buffs.BUFF_DATA[buffs.CRUSADER_ITEM_ID][1]
+    txt = take_trauma
+    payload = {'action': 'buff', 'msg_id': msg_id, 'chat_id': chat_id, 'from': vk_id, 'buff': buff}
+    kbd.add_callback_button(txt.split()[-1].capitalize(), keyboard.VkKeyboardColor.PRIMARY, payload)
+
+    kbd.add_line()
+    kbd.add_callback_button(cancel, keyboard.VkKeyboardColor.NEGATIVE, {'action': 'remove'})
+
+    return kbd.get_keyboard()
+
+
+def light_inc(vk_id: int, msg_id: int, chat_id: int) -> str:
+
+    kbd = keyboard.VkKeyboard(inline=True)
+
+    buff = buffs.BUFF_DATA[buffs.LIGHT_INC_ITEM_ID][0]
+    txt = clear
+    payload = {'action': 'buff', 'msg_id': msg_id, 'chat_id': chat_id, 'from': vk_id, 'buff': buff}
+    kbd.add_callback_button(txt.split()[-1].capitalize(), keyboard.VkKeyboardColor.PRIMARY, payload)
+
+    buff = buffs.BUFF_DATA[buffs.LIGHT_INC_ITEM_ID][1]
+    txt = heal_trauma
+    payload = {'action': 'buff', 'msg_id': msg_id, 'chat_id': chat_id, 'from': vk_id, 'buff': buff}
+    kbd.add_callback_button(txt.split()[-1].capitalize(), keyboard.VkKeyboardColor.PRIMARY, payload)
+
+    kbd.add_line()
+    kbd.add_callback_button(cancel, keyboard.VkKeyboardColor.NEGATIVE, {'action': 'remove'})
+
     return kbd.get_keyboard()
