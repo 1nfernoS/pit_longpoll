@@ -60,7 +60,7 @@ def add_autobuffer(id_vk: int, profile_key: str, is_active: bool, class_id: int)
 
 
 def get_buffer_by_id(id_vk: int, is_active: bool = True):
-    query = 'SELECT id_vk, profile_key, token_key, buffer_type, race1, race2 FROM `autobuffer_list` WHERE id_vk = %s'
+    query = 'SELECT id_vk, profile_key, token_key, is_active, buffer_type, race1, race2 FROM `autobuffer_list` WHERE id_vk = %s'
 
     if is_active:
         query += ' and is_active = 1;'
@@ -74,8 +74,8 @@ def get_buffer_by_id(id_vk: int, is_active: bool = True):
 
     if res:
         res = res[0]
-        return {'id_vk': res[0], 'profile_key': res[1], 'token_key': res[2], 'buffer_type': res[3],
-                'race1': res[4], 'race2': res[5]}
+        return {'id_vk': res[0], 'profile_key': res[1], 'token_key': res[2], 'is_active':res[3], 'buffer_type': res[4],
+                'race1': res[5], 'race2': res[6]}
     else:
         return
 
