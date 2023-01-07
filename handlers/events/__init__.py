@@ -1,6 +1,6 @@
 import json
 
-from vk_api.bot_longpoll import VkBotEvent
+from vk_api.bot_longpoll import VkBotEvent, CHAT_START_ID
 
 from vk_bot.vk_bot import VkBot
 
@@ -12,7 +12,12 @@ def event_message(self: VkBot, event: VkBotEvent):
     action = pl.get('action')
     if action:
         if action == 'buff':
-            if event.object.user_id != pl['from']:
+
+            receiver = self.api.messages.getByConversationMessageId(
+                peer_id=CHAT_START_ID + pl['chat_id'],
+                conversation_message_ids=pl['msg_id']
+                )['items'][0]['from_id']
+            if event.object.user_id != receiver:
                 self.api.send_event(
                     event.object.peer_id,
                     event.object.event_id,
