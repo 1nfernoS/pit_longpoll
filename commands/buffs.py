@@ -5,7 +5,7 @@ from DB import autobuffer_list as buff
 from config import creator_id
 
 from utils import keyboards
-from utils.buffs import APOSTOL_ITEM_ID
+from utils.buffs import APOSTOL_ITEM_ID, WARLOCK_ITEM_ID, PALADIN_ITEM_ID, CRUSADER_ITEM_ID, LIGHT_INC_ITEM_ID
 
 from vk_bot.vk_bot import VkBot
 from vk_api.bot_longpoll import VkBotEvent
@@ -14,7 +14,7 @@ from vk_api.bot_longpoll import VkBotEvent
 
 class ChangeBufferState(Command):
     def __init__(self):
-        super().__init__(__class__.__name__, ('баффер', 'бафер', 'buffer'))
+        super().__init__(__class__.__name__, ('баффер', 'бафер', 'buffer'), access='creator')
         self.desc = 'Вкл/Выкл баффера (Апо, Вопла и др). Только для создателя'
         # self.set_active(False)
         return
@@ -31,8 +31,8 @@ class ChangeBufferState(Command):
 
 class Apostol(Command):
     def __init__(self):
-        super().__init__(__class__.__name__, ('апо', 'apo'))
-        self.desc = 'Апостолы и их бафы'
+        super().__init__(__class__.__name__, ('апо', 'apo'), access='guild')
+        self.desc = 'Апостолы и их баффы. Только для членов гильдии'
         # self.set_active(False)
         return
 
@@ -40,6 +40,11 @@ class Apostol(Command):
         from profile_api import get_voices
 
         apostols = buff.get_buffers_by_type(APOSTOL_ITEM_ID)
+
+        if not apostols:
+            bot.api.send_chat_msg(event.chat_id, "Мне жаль, но сейчас нет ни одного активного апостола")
+            return
+
         voices = {apo['id_vk']: get_voices(apo['profile_key'], apo['id_vk']) for apo in apostols}
 
         if not any(voices):
