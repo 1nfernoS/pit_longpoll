@@ -12,6 +12,14 @@ def event_message(self: VkBot, event: VkBotEvent):
     action = pl.get('action')
     if action:
         if action == 'buff':
+            if event.object.user_id != pl['from']:
+                self.api.send_event(
+                    event.object.peer_id,
+                    event.object.event_id,
+                    event.object.user_id,
+                    json.dumps({'type': 'show_snackbar', 'text': 'Это не для вас'})
+                )
+                return
 
             self.api.send_event(
                 event.object.peer_id,
@@ -20,6 +28,7 @@ def event_message(self: VkBot, event: VkBotEvent):
                 json.dumps({'type': 'show_snackbar', 'text': 'Накладываю бафф...'})
             )
 
+            # TODO in other thread
             res = buff(pl['from'], pl['chat_id'], pl['msg_id'], pl['buff'])
 
             self.api.edit_msg(
@@ -28,6 +37,21 @@ def event_message(self: VkBot, event: VkBotEvent):
                 res
             )
             return
+
+        elif action == 'remove':
+            self.api.del_msg(
+                event.object.peer_id,
+                self.api.get_conversation_msg(event.object.peer_id, event.object.conversation_message_id)['id']
+            )
+
+            self.api.send_event(
+                event.object.peer_id,
+                event.object.event_id,
+                event.object.user_id,
+                json.dumps({'type': 'show_snackbar', 'text': 'Готово!'})
+            )
+            return
+
         else:
             self.api.send_event(
                 event.object.peer_id,
