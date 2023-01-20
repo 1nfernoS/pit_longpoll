@@ -22,8 +22,8 @@ class Kick(Command):
         if event.message.from_id in users.get_leaders():
             if 'reply_message' in event.message.keys():
                 if event.message.reply_message['from_id'] != event.message.from_id:
-                    bot.api.kick(event.chat_id, event.message.reply_message['from_id'])
                     users.update_user(event.message.reply_message['from_id'], is_active=False)
+                    bot.api.kick(event.chat_id, event.message.reply_message['from_id'])
                     pass
             else:
                 bot.api.send_chat_msg(event.chat_id, 'Некого кикать... (по реплаю)')
