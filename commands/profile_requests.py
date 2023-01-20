@@ -9,6 +9,7 @@ from DB import items, users
 import profile_api
 
 import utils.math
+from utils.emoji import gold_emoji, item_emoji
 
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
@@ -27,35 +28,36 @@ class Price(Command):
         msg_id = bot.api.send_chat_msg(event.chat_id, 'Ищу ценники . . .')[0]
         msg = event.message.text.split(' ', 1)
         if len(msg) == 1:
-            answer = 'А что искать...'
-        else:
-            item_name = msg[1]
-            if len(item_name) < 3:
-                answer = 'Добавьте пару букв к поиску, чтобы их было хотя бы 3'
-            else:
-                search = items.search_item(item_name)
-                if search:
-                    item_emoji = '&#128093;'
-                    gold_emoji = '&#127765;'
+            bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'А что искать...')
+            return
 
-                    answer = ''
-                    cnt = 0
-                    for i in search['result']:
-                        auc_price = profile_api.price(i['item_id'])
-                        if auc_price > 0:
-                            guild_price = utils.math.discount_price(auc_price)
-                            guild_commission_price = utils.math.commission_price(guild_price)
-                            answer += f"\n{gold_emoji}{auc_price} " \
-                                      f"[-{DISCOUNT_PERCENT}%:{gold_emoji}{guild_price}" \
-                                      f"({gold_emoji}{guild_commission_price})] " \
-                                      f"{item_emoji}{i['item_name']}"
-                            cnt += 1
-                    if cnt > 0:
-                        answer = f"Нашел следующее ({cnt}):" + answer
-                    else:
-                        answer = 'Ничего не нашлось...'
-                else:
-                    answer = 'Ничего не нашлось...'
+        item_name = msg[1]
+        if len(item_name) < 3:
+            bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'],
+                             'Добавьте пару букв к поиску, чтобы их было хотя бы 3')
+            return
+
+        search = items.search_item(item_name)
+        if not search:
+            bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Ничего не нашлось...')
+            return
+
+        answer = ''
+        cnt = 0
+        for i in search['result']:
+            auc_price = profile_api.price(i['item_id'])
+            if auc_price <= 0:
+                continue
+
+            guild_price = utils.math.discount_price(auc_price)
+            guild_commission_price = utils.math.commission_price(guild_price)
+            answer += f"\n{gold_emoji}{auc_price} " \
+                      f"[-{DISCOUNT_PERCENT}%:{gold_emoji}{guild_price}" \
+                      f"({gold_emoji}{guild_commission_price})] " \
+                      f"{item_emoji}{i['item_name']}"
+            cnt += 1
+
+        answer = f"Нашел следующее ({cnt}):" + answer if cnt > 0 else 'Ничего не нашлось...'
 
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer)
 
@@ -73,63 +75,61 @@ class Equip(Command):
     def run(self, bot: VkBot, event: VkBotEvent):
 
         if event.message.from_id in bot.api.get_members(GUILD_CHAT_ID):
+            bot.api.send_chat_msg(event.chat_id, f"Нет, это только для членов гильдии {GUILD_NAME}!")
+            return
 
-            data = users.get_user(event.message.from_id)
-            if data:
-                if data['profile_key']:
+        data = users.get_user(event.message.from_id)
+        if not data:
+            bot.api.send_chat_msg(event.chat_id, f"Не могу найти записей, покажите сой профиль, чтобы я записал информацию о вас и вашей гильдии")
+            return
 
-                    msg_id = bot.api.send_chat_msg(event.chat_id, 'Поднимаю записи . . .')[0]
+        if not data['profile_key']:
+            message = "Сдайте ссылку на профиль мне в лс!\n" \
+                      "Проще всего это сделать через сайт, скопировав адрес ссылки кнопки 'Профиль' в приложении.\n" \
+                      "Если получилась ссылка формата 'https:// vip3.activeusers .ru/блаблабла', то все получится)"
+            bot.api.send_chat_msg(event.chat_id, message)
+            return
 
-                    profile = profile_api.get_profile(data['profile_key'], event.message.from_id)
+        msg_id = bot.api.send_chat_msg(event.chat_id, 'Поднимаю записи . . .')[0]
 
-                    inv = [int(i) for i in profile['items']]
+        profile = profile_api.get_profile(data['profile_key'], event.message.from_id)
 
-                    class_id = inv[0] if inv[0] != 14108 else inv[1]
-                    build = profile_api.get_books(inv)
-                    users.update_user(event.message.from_id, is_active=1, equipment=json.dumps(build),
-                                      class_id=class_id)
+        inv = [int(i) for i in profile['items']]
 
-                    build = profile_api.get_build(inv)
+        class_id = inv[0] if inv[0] != 14108 else inv[1]
+        build = profile_api.get_books(inv)
+        users.update_user(event.message.from_id, is_active=1, equipment=json.dumps(build),
+                          class_id=class_id)
 
-                    actives = profile_api.lvl_active(data['profile_key'], event.message.from_id)
-                    passives = profile_api.lvl_passive(data['profile_key'], event.message.from_id)
+        build = profile_api.get_build(inv)
 
-                    message = f'Билд {bot.api.get_names([event.message.from_id])}:'
-                    if build['books']:
-                        message += '\nКниги:'
-                        for item in build['books']:
-                            name = items.get_item_by_id(item)
-                            if name.startswith('(А)'):
-                                message += '\n' + f'{name.replace("(А) ", "&#8195;&#128213;")}'
-                                for i in actives:
-                                    if name[4:].startswith(i):
-                                        message += f' - {actives[i][0]} ({int(actives[i][1]*100)}%)'
-                            else:
-                                message += '\n' + f'{name.replace("(П) ", "&#8195;&#128216;")}'
-                                for i in passives:
-                                    if name[4:].startswith(i):
-                                        message += f' - {passives[i][0]} ({int(passives[i][1]*100)}%)'
-                    if build['adms']:
-                        message += '\nВ адмах:'
-                        for item in build['adms']:
-                            name = items.get_item_by_id(item)
-                            message += '\n' + f'{name.replace("(П) ", "&#8195;&#128216;")}'
-                            for i in passives:
-                                if name[4:].startswith(i):
-                                    message += f' - {passives[i][0]} ({int(passives[i][1]*100)}%)'
+        actives = profile_api.lvl_active(data['profile_key'], event.message.from_id)
+        passives = profile_api.lvl_passive(data['profile_key'], event.message.from_id)
 
-                    bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], message)
-                    return
-
+        message = f'Билд {bot.api.get_names([event.message.from_id])}:'
+        if build['books']:
+            message += '\nКниги:'
+            for item in build['books']:
+                name = items.get_item_by_id(item)
+                if name.startswith('(А)'):
+                    message += '\n' + f'{name.replace("(А) ", "&#8195;&#128213;")}'
+                    for i in actives:
+                        if name[4:].startswith(i):
+                            message += f' - {actives[i][0]} ({int(actives[i][1]*100)}%)'
                 else:
-                    message = "Сдайте ссылку на профиль мне в лс!\n" \
-                              "Проще всего это сделать через сайт, скопировав адрес ссылки кнопки 'Профиль' в приложении.\n" \
-                              "Если получилась ссылка формата 'https:// vip3.activeusers .ru/блаблабла', то все получится)"
-            else:
-                message = f'Не могу найти записей, покажите сой профиль, чтобы я записал информацию о вас и вашей гильдии'
-        else:
-            message = f'Нет, это только для членов гильдии {GUILD_NAME}!'
+                    message += '\n' + f'{name.replace("(П) ", "&#8195;&#128216;")}'
+                    for i in passives:
+                        if name[4:].startswith(i):
+                            message += f' - {passives[i][0]} ({int(passives[i][1]*100)}%)'
 
-        bot.api.send_chat_msg(event.chat_id, message)
+        if build['adms']:
+            message += '\nВ адмах:'
+            for item in build['adms']:
+                name = items.get_item_by_id(item)
+                message += '\n' + f'{name.replace("(П) ", "&#8195;&#128216;")}'
+                for i in passives:
+                    if name[4:].startswith(i):
+                        message += f' - {passives[i][0]} ({int(passives[i][1]*100)}%)'
 
+        bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], message)
         return

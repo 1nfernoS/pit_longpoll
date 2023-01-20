@@ -39,6 +39,7 @@ class Command:
     def set_access(self, role: str = 'all') -> None:
         if role not in self.access_list:
             raise ValueError(f"{role} not in list ({', '.join(self.access_list)})")
+        # TODO
         if role == 'all':
             self.require_creator = False
             self.require_leader = False

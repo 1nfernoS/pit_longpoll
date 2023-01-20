@@ -20,12 +20,12 @@ class Stats(Command):
 
     def run(self, bot: VkBot, event: VkBotEvent):
         data = user_data.get_user_data(event.message.from_id)
-        if data:
-            message = f"{data['level']}{level_emoji}: до пинка " \
-                      f"{(data['level'] + 15) * 6 - data['strength'] - data['agility']}{strength_emoji}/{agility_emoji}" \
-                      f" или {data['level'] * 3 + 45 - data['endurance']}{endurance_emoji}"
-        else:
-            message = "До пинка... Хм... О вас нет записей, покажите профиль хотя бы раз!!"
+
+        message = f"{data['level']}{level_emoji}: до пинка " \
+                  f"{(data['level'] + 15) * 6 - data['strength'] - data['agility']}{strength_emoji}/{agility_emoji}" \
+                  f" или {data['level'] * 3 + 45 - data['endurance']}{endurance_emoji}" \
+            if data \
+            else "До пинка... Хм... О вас нет записей, покажите профиль хотя бы раз!!"
 
         bot.api.send_chat_msg(event.chat_id, message)
         return
