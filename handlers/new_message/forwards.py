@@ -96,6 +96,11 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
 
 def symbol_guesser(self: VkBot, event: VkBotEvent):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+
+    if not fwd_txt.split('\n')[1].replace(empty, '').replace(' ', ''):
+        self.api.send_chat_msg(event.chat_id, 'Ну так не интересно, попробуй хотя бы одну букву сам')
+        return
+
     msg_id = self.api.send_chat_msg(event.chat_id, 'Символы... Символы... Сейчас вспомню')[0]
     res_list = parsers.guesser(fwd_txt)
     if res_list:
