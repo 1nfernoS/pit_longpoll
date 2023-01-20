@@ -52,5 +52,5 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
     #     change_balance(vk_id, APO_PAYMENT)
     #     change_balance(receiver, -APO_PAYMENT)
 
-    return f"Наложено благословение {msg.split()[-1]}"  # \
+    return f"Наложено {msg.lower()}"  # \
     #  f"\n[id{receiver}|На счету]: {get_balance(receiver)}{gold_emoji}"
