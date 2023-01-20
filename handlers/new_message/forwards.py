@@ -15,36 +15,35 @@ from DB.users import get_equip
 
 from logger import get_logger
 
-
 logger = get_logger(__name__, 'forwards')
 
 
 def forward_parse(self: VkBot, event: VkBotEvent):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     if fwd_txt.startswith(f'{item_emoji}1*'):
-        logger.info('dark_vendor\t'+fwd_txt.replace('\n', ' | '))
+        logger.info('dark_vendor\t' + fwd_txt.replace('\n', ' | '))
         dark_vendor(self, event)
         return
 
     # TODO: move to utils.emoji
     if fwd_txt.startswith('&#9989;') and '&#128100;' in fwd_txt:
-        logger.info('siege\t'+fwd_txt.replace('\n', ' | '))
+        logger.info('siege\t' + fwd_txt.replace('\n', ' | '))
         pass
 
     # 'обменяли элитные трофеи' in fwd_txt and
     # TODO: fix false reactions (trophies, PvP)
     if '&#127941;' in fwd_txt:
-        logger.info('elites\t'+fwd_txt.replace('\n', ' | '))
+        logger.info('elites\t' + fwd_txt.replace('\n', ' | '))
         pass
 
     # TODO: fix false reactions (PvP)
     if empty in fwd_txt:
-        logger.info('symbols\t'+fwd_txt.replace('\n', ' | '))
+        logger.info('symbols\t' + fwd_txt.replace('\n', ' | '))
         symbol_guesser(self, event)
         return
 
     else:
-        logger.info('other\t'+fwd_txt.replace('\n', ' | '))
+        logger.info('other\t' + fwd_txt.replace('\n', ' | '))
     # puzzles
 
     return
@@ -99,6 +98,9 @@ def symbol_guesser(self: VkBot, event: VkBotEvent):
 
     if not fwd_txt.split('\n')[1].replace(empty, '').replace(' ', ''):
         self.api.send_chat_msg(event.chat_id, 'Ну так не интересно, попробуй хотя бы одну букву сам')
+        return
+
+    if empty not in fwd_txt.split('\n')[1]:
         return
 
     msg_id = self.api.send_chat_msg(event.chat_id, 'Символы... Символы... Сейчас вспомню')[0]
