@@ -95,7 +95,7 @@ def guesser(text: str) -> list:
     __possible += [14182]
 
     text = text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
-    regexp = text.split('\n')[1].replace(emoji.empty, '.')
+    regexp = text.split('\n')[1].replace(emoji.empty, '[[:alnum:]]')
     item_list = search_regexp(regexp, has_price=False)
     res = []
     for i in item_list:
