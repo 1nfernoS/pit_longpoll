@@ -96,14 +96,10 @@ def storage_reactions(self: VkBot, event: VkBotEvent):
     data = parse_storage_action(event.message.text)
     if data['item_type'] == 'book':
         cur_balance = users.change_balance(data['id_vk'], data['result_price']*data['count'])
-        if data['result_price'] > 0:
-            msg = f"О, [id{data['id_vk']}|Вы] положили {data['count']} штук {data['item_name']}!\n"
-        else:
-            msg = f"О, [id{data['id_vk']}|Вы] взяли {data['count']} штук {data['item_name']}!\n"
 
-        msg += f"Я вижу, они стоят в среднем {emo.gold_emoji}{data['price']}({abs(data['result_price'])}), так что я "
+        msg = f"[id{data['id_vk']}|Готово], "
         msg += "пополняю баланс на" if data['result_price'] > 0 else "списываю с баланса"
-        msg += f" {abs(data['result_price']*data['count'])}{emo.gold_emoji}\n"
+        msg += f" {abs(data['result_price']*data['count'])}{emo.gold_emoji}({data['count']}*{abs(data['result_price'])})\n"
 
         msg += f"Ваш долг: {emo.gold_emoji}{-cur_balance}(Положить {commission_price(-cur_balance)})" \
             if cur_balance < 0 else f"Сейчас на счету: {emo.gold_emoji}{cur_balance}"
