@@ -3,7 +3,7 @@ from commands import Command, command_list
 from config import creator_id, GUILD_CHAT_ID, GUILD_LIBRARIAN_ID, GUILD_NAME
 
 from DB import user_data, users
-from utils.emoji import level_emoji, strength_emoji, agility_emoji, endurance_emoji, gold_emoji
+from utils.emoji import level, strength, agility, endurance, gold
 from utils.math import commission_price
 
 # import for typing hints
@@ -20,12 +20,12 @@ class Stats(Command):
 
     def run(self, bot: VkBot, event: VkBotEvent):
         data = user_data.get_user_data(event.message.from_id)
-        if data:
-            message = f"{data['level']}{level_emoji}: до пинка " \
-                      f"{(data['level'] + 15) * 6 - data['strength'] - data['agility']}{strength_emoji}/{agility_emoji}" \
-                      f" или {data['level'] * 3 + 45 - data['endurance']}{endurance_emoji}"
-        else:
-            message = "До пинка... Хм... О вас нет записей, покажите профиль хотя бы раз!!"
+
+        message = f"{data['level']}{level}: до пинка " \
+                  f"{(data['level'] + 15) * 6 - data['strength'] - data['agility']}{strength}/{agility}" \
+                  f" или {data['level'] * 3 + 45 - data['endurance']}{endurance}" \
+            if data \
+            else "До пинка... Хм... О вас нет записей, покажите профиль хотя бы раз!!"
 
         bot.api.send_chat_msg(event.chat_id, message)
         return
@@ -96,7 +96,7 @@ class Balance(Command):
                         message = f'Баланс игроков гильдии {GUILD_NAME}:'
                         for member in bot.api.get_members(GUILD_CHAT_ID):
                             if member in balance.keys():
-                                message += f"\n@id{member}: {balance[member]}{gold_emoji}"
+                                message += f"\n@id{member}: {balance[member]}{gold}"
 
                         bot.api.send_user_msg(event.message.from_id, message)
                         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Отправил список в лс')
@@ -104,7 +104,7 @@ class Balance(Command):
 
             balance = users.get_balance(event.message.from_id)
             if balance is not None:
-                message = f"Ваш долг: {gold_emoji}{-balance}(Положить {commission_price(-balance)})" if balance < 0 else f"Сейчас на счету: {gold_emoji}{balance}"
+                message = f"Ваш долг: {gold}{-balance}(Положить {commission_price(-balance)})" if balance < 0 else f"Сейчас на счету: {gold}{balance}"
             else:
                 message = "Хм... О вас нет записей, покажите профиль хотя бы раз!!"
 

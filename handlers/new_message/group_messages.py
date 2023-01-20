@@ -62,24 +62,24 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
     if data_old:
         answer = f"{data['name']}, статы обновлены! ({datediff(data_old['last_update'], datetime.now())} с {str_datetime(data_old['last_update'])})\n" \
                  f"[ {data['class_name']} | {data['race']} ]\n" \
-                 f"{emo.level_emoji}{data['level']}({data['level'] - data_old['level']}) " \
-                 f"{emo.attack_emoji}{data['attack']}({data['attack'] - data_old['attack']}) " \
-                 f"{emo.defence_emoji}{data['defence']}({data['defence'] - data_old['defence']})\n" \
-                 f"{emo.strength_emoji}{data['strength']}({data['strength'] - data_old['strength']}) " \
-                 f"{emo.agility_emoji}{data['agility']}({data['agility'] - data_old['agility']}) " \
-                 f"{emo.endurance_emoji}{data['endurance']}({data['endurance'] - data_old['endurance']})\n" \
-                 f"{emo.luck_emoji}{data['luck']}({data['luck'] - data_old['luck']})\n" \
-                 f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}{emo.strength_emoji}/{emo.agility_emoji}" \
-                 f" или {(data['level'] + 15) * 3 - data['endurance']}{emo.endurance_emoji})"
+                 f"{emo.level}{data['level']}({data['level'] - data_old['level']}) " \
+                 f"{emo.attack}{data['attack']}({data['attack'] - data_old['attack']}) " \
+                 f"{emo.defence}{data['defence']}({data['defence'] - data_old['defence']})\n" \
+                 f"{emo.strength}{data['strength']}({data['strength'] - data_old['strength']}) " \
+                 f"{emo.agility}{data['agility']}({data['agility'] - data_old['agility']}) " \
+                 f"{emo.endurance}{data['endurance']}({data['endurance'] - data_old['endurance']})\n" \
+                 f"{emo.luck}{data['luck']}({data['luck'] - data_old['luck']})\n" \
+                 f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}{emo.strength}/{emo.agility}" \
+                 f" или {(data['level'] + 15) * 3 - data['endurance']}{emo.endurance})"
         user_data.update_user_data(*new_data)
     else:
         answer = f"{data['name']}, статы записаны!\n" \
                  f"[ {data['class_name']} | {data['race']} ]\n" \
-                 f"{emo.level_emoji}{data['level']} {emo.attack_emoji}{data['attack']} {emo.defence_emoji}{data['defence']} " \
-                 f"{emo.strength_emoji}{data['strength']} {emo.agility_emoji}{data['agility']} {emo.endurance_emoji}{data['endurance']} " \
-                 f"{emo.luck_emoji}{data['luck']}\n" \
-                 f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}{emo.strength_emoji}/{emo.agility_emoji}" \
-                 f"{(data['level'] + 15) * 3 - data['endurance']}{emo.endurance_emoji})"
+                 f"{emo.level}{data['level']} {emo.attack}{data['attack']} {emo.defence}{data['defence']} " \
+                 f"{emo.strength}{data['strength']} {emo.agility}{data['agility']} {emo.endurance}{data['endurance']} " \
+                 f"{emo.luck}{data['luck']}\n" \
+                 f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}{emo.strength}/{emo.agility}" \
+                 f"{(data['level'] + 15) * 3 - data['endurance']}{emo.endurance})"
         user_data.add_user_data(*new_data)
 
     if data['guild'] == GUILD_NAME:
@@ -99,10 +99,10 @@ def storage_reactions(self: VkBot, event: VkBotEvent):
 
         msg = f"[id{data['id_vk']}|Готово], "
         msg += "пополняю баланс на" if data['result_price'] > 0 else "списываю с баланса"
-        msg += f" {abs(data['result_price']*data['count'])}{emo.gold_emoji}({data['count']}*{abs(data['result_price'])})\n"
+        msg += f" {abs(data['result_price']*data['count'])}{emo.gold}({data['count']}*{abs(data['result_price'])})\n"
 
-        msg += f"Ваш долг: {emo.gold_emoji}{-cur_balance}(Положить {commission_price(-cur_balance)})" \
-            if cur_balance < 0 else f"Сейчас на счету: {emo.gold_emoji}{cur_balance}"
+        msg += f"Ваш долг: {emo.gold}{-cur_balance}(Положить {commission_price(-cur_balance)})" \
+            if cur_balance < 0 else f"Сейчас на счету: {emo.gold}{cur_balance}"
         self.api.send_chat_msg(event.chat_id, msg)
         return
 
@@ -112,8 +112,8 @@ def storage_reactions(self: VkBot, event: VkBotEvent):
             msg = f"О, [id{data['id_vk']}|Вы] взяли {-data['count']} золота!\n"
         else:
             msg = f"О, [id{data['id_vk']}|Вы] положили {data['count']} золота!\n"
-        msg += f"Ваш долг: {emo.gold_emoji}{-cur_balance}(Положить {commission_price(-cur_balance)})" \
-            if cur_balance < 0 else f"Сейчас на счету: {emo.gold_emoji}{cur_balance}"
+        msg += f"Ваш долг: {emo.gold}{-cur_balance}(Положить {commission_price(-cur_balance)})" \
+            if cur_balance < 0 else f"Сейчас на счету: {emo.gold}{cur_balance}"
         self.api.send_chat_msg(event.chat_id, msg)
         return
 

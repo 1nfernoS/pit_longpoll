@@ -7,7 +7,7 @@ from DB.autobuffer_list import get_buffer_by_id, get_buff_command, get_peer_by_b
 from DB.users import change_balance, get_balance
 
 from utils.buffs import POSSIBLE_ANSWERS, BUFF_RACE
-from utils.emoji import gold_emoji
+from utils.emoji import gold
 
 from config import OVERSEER_BOT, APO_PAYMENT
 
@@ -30,7 +30,7 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
         conversation_message_ids=msg_id
     )['items'][0]['id']
 
-    res = api.messages.send(
+    api.messages.send(
         peer_ids=[OVERSEER_BOT],
         message=msg,
         random_id=0,
@@ -52,5 +52,8 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
     #     change_balance(vk_id, APO_PAYMENT)
     #     change_balance(receiver, -APO_PAYMENT)
 
-    return f"Наложено {msg.lower()}"  # \
-    #  f"\n[id{receiver}|На счету]: {get_balance(receiver)}{gold_emoji}"
+    res = f"Наложено {msg.lower()}"
+
+    # if apo['buffer_type'] == 14264:
+    #     res += f"\n[id{receiver}|На счету]: {get_balance(receiver)}{gold}"
+    return res

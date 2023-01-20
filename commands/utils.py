@@ -2,7 +2,7 @@ from commands import Command
 
 from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
 
-from utils.emoji import level_emoji, strength_emoji, agility_emoji, endurance_emoji, luck_emoji, attack_emoji, defence_emoji
+from utils.emoji import level, strength, agility, endurance, luck, attack, defence
 
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
@@ -60,8 +60,8 @@ class War(Command):
             attack = data[9][14:]
             defence = data[10][16:]
             res_str += f"\n{name} ({race} - {class_}): \n" \
-                       f"{attack_emoji}:{attack} {defence_emoji}:{defence} {luck_emoji}:{luck}\n" \
-                       f"{strength_emoji}:{strength} {agility_emoji}:{agility} {endurance_emoji}:{endurance}\n"
+                       f"{attack}:{attack} {defence}:{defence} {luck}:{luck}\n" \
+                       f"{strength}:{strength} {agility}:{agility} {endurance}:{endurance}\n"
         return res_str
 
 
