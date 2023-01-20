@@ -92,7 +92,7 @@ def guesser(text: str) -> list:
     # maps
     __possible += [14660, 14661, 14662, 14663, 14664, 14665, 14963, 14270, 15301]
     # other: faith stone
-    __possible += [14128]
+    __possible += [14182]
 
     text = text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     regexp = text.split('\n')[1].replace(emoji.empty, '.')
