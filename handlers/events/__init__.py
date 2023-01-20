@@ -34,7 +34,7 @@ def event_message(self: VkBot, event: VkBotEvent):
             )
 
             # TODO in other thread
-            res = buff(pl['from'], pl['chat_id'], pl['msg_id'], pl['buff'])
+            res = buff(pl['from'], pl['chat_id'], pl['msg_id'], pl['buff'], receiver)
 
             self.api.edit_msg(
                 event.object.peer_id,

@@ -21,6 +21,7 @@ GUILD_PAYMASTER_ID = 0
 DISCOUNT_PERCENT = 20
 COMMISSION_PERCENT = 10
 
+APO_PAYMENT = 100
 
 def load(branch: str):
     global group_data
