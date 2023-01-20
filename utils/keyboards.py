@@ -11,6 +11,10 @@ def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None
     kbd = keyboard.VkKeyboard(inline=True)
 
     for i in buffs.BUFF_DATA[buffs.APOSTOL_ITEM_ID]:
+
+        if i == 12:
+            continue
+
         if len(kbd.lines[-1]) // 3 == 1:
             kbd.add_line()
 
