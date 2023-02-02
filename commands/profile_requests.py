@@ -19,7 +19,7 @@ from vk_bot.vk_bot import VkBot
 class Price(Command):
     def __init__(self):
         super().__init__(__class__.__name__, ('цена',))
-        self.desc = 'Узнать цену предмета на аукционе и внутри гильдии'
+        self.desc = 'Узнать цену предмета на аукционе и внутри гильдии. Можно указать число перед поиском'
         # self.set_active(False)
         return
 
