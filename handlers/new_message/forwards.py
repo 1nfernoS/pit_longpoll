@@ -4,7 +4,7 @@ from vk_api.bot_longpoll import VkBotEvent
 
 from vk_bot.vk_bot import VkBot
 
-from config import GUILD_CHAT_ID, DISCOUNT_PERCENT
+from config import GUILD_CHAT_ID, DISCOUNT_PERCENT, creator_id
 import utils.math
 from utils.emoji import item, gold, empty
 from utils import parsers
@@ -25,22 +25,23 @@ def forward_parse(self: VkBot, event: VkBotEvent):
         dark_vendor(self, event)
         return
 
-    # TODO: move to utils.emoji
-    if fwd_txt.startswith('&#9989;') and '&#128100;' in fwd_txt:
+    if 'присоединились к осадному лагерю' in fwd_txt:
         logger.info('siege\t' + fwd_txt.replace('\n', ' | '))
         pass
 
-    # 'обменяли элитные трофеи' in fwd_txt and
-    # TODO: fix false reactions (trophies, PvP)
-    if '&#127941;' in fwd_txt:
+    if 'обменяли элитные трофеи' in fwd_txt:
         logger.info('elites\t' + fwd_txt.replace('\n', ' | '))
         pass
 
-    # TODO: fix false reactions (PvP)
-    if empty in fwd_txt:
+    if 'Символы' in fwd_txt:
         logger.info('symbols\t' + fwd_txt.replace('\n', ' | '))
         symbol_guesser(self, event)
         return
+
+    if 'Путешествие продолжается...' in fwd_txt:
+        travel_check(self, event)
+        return
+
 
     else:
         logger.info('other\t' + fwd_txt.replace('\n', ' | '))
@@ -95,11 +96,11 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
 def symbol_guesser(self: VkBot, event: VkBotEvent):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
 
-    if not fwd_txt.split('\n')[1].replace(empty, '').replace(' ', ''):
-        self.api.send_chat_msg(event.chat_id, 'Ну так не интересно, попробуй хотя бы одну букву сам')
+    if empty not in fwd_txt.split('\n')[1]:
         return
 
-    if empty not in fwd_txt.split('\n')[1]:
+    if not fwd_txt.split('\n')[1].replace(empty, '').replace(' ', ''):
+        self.api.send_chat_msg(event.chat_id, 'Ну так не интересно, попробуй хотя бы одну букву сам')
         return
 
     msg_id = self.api.send_chat_msg(event.chat_id, 'Символы... Символы... Сейчас вспомню')[0]
@@ -110,4 +111,34 @@ def symbol_guesser(self: VkBot, event: VkBotEvent):
     else:
         msg = 'Что-то не пойму, что это может быть'
     self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
+    return
+
+
+def travel_check(self: VkBot, event: VkBotEvent):
+    _safe_list = ('Стрекот сверчков заглушает другие звуки.', 'Густые заросли травы по правую руку.',
+                  'Впереди не видно никаких препятствий.', 'Пение птиц доносится из соседнего леса.',
+                  'Самое время найти еще что-то интересное.', 'Идти легко, как никогда.',
+                  'От широкой дороги ветвится небольшая тропинка.', 'Дорога проходит мимо озера.',
+                  'Тропа ведет в густой лес.', 'На небе ни единого облачка.', 'Не время останавливаться!',
+                  'Погода просто отличная.', 'Вы бодры как никогда.', 'Время пересечь мост через реку.')
+
+    _warn_list = ('Тучи сгущаются над дорогой...', 'Возможно, стоит повернуть назад?..', 'Нужно ли продолжать путь...',
+                  'Сердце громко стучит в груди...', 'Туман начинает сгущаться...', 'Вдалеке слышны страшные крики...')
+
+    _danger_list = ('Боль разрывает Вас на части...', 'В воздухе витает отчетливый запах смерти...',
+                    'Ноги дрожат от предчувствия беды...', 'Вы уже на пределе...', 'Чувство тревоги бьет в колокол!')
+
+    fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+    txt = fwd_txt.split('\n')[-1]
+
+    if txt in _safe_list:
+        answer = f"(+1) Можно продолжать путешествие"
+    elif txt in _warn_list:
+        answer = f"(+2) Можно продолжать путешествие"
+    elif txt in _danger_list:
+        answer = f"(+3) Событие предшествует смертельному!"
+    else:
+        answer = f"(+?) Неизвестное событие, сообщите в полигон или [id{creator_id}|ему]"
+
+    self.api.send_chat_msg(event.chat_id, answer)
     return
