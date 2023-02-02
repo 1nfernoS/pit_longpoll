@@ -134,3 +134,49 @@ class Balance(Command):
         bot.api.send_chat_msg(event.chat_id, message)
 
         return
+
+
+class Transfer(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('перевести', 'transfer'))
+        self.desc = 'Узнать свой баланс. Только для членов гильдии'
+        self.set_access('guild')
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+
+        if event.message.from_id not in bot.api.get_members(GUILD_CHAT_ID):
+            return
+
+        if 'reply_message' not in event.message.keys():
+            return
+
+        # 2 or 3 word in message (command, value, optional word)
+        if 2 > len(event.message.text.split(' ')) > 3:
+            return
+
+        try:
+            money = int(event.message.text.split(' ')[1])
+        except ValueError:
+            message = f"Ой, {event.message.text.split(' ')[1]} не число"
+            bot.api.send_chat_msg(event.chat_id, message)
+            return
+
+        balance = users.get_balance(event.message.from_id)
+
+        if balance < money:
+            message = f"У вас на счету {gold}{balance}, сначала пополните баланс!"
+            bot.api.send_chat_msg(event.chat_id, message)
+            return
+
+        users.change_balance(event.message.from_id, -money)
+        users.change_balance(event.message.reply_message['from_id'], money)
+
+        balance -= money
+
+        message = f"Перевел {gold}{money}\n"
+        message += "Ваш долг: {gold}{-balance}(Положить {commission_price(-balance)})" if balance < 0 else f"Сейчас на счету: {gold}{balance}"
+
+        bot.api.send_chat_msg(event.chat_id, message)
+        return
