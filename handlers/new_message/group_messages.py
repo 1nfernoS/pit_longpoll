@@ -99,7 +99,8 @@ def storage_reactions(self: VkBot, event: VkBotEvent):
 
         msg = f"[id{data['id_vk']}|Готово], "
         msg += "пополняю баланс на" if data['result_price'] > 0 else "списываю с баланса"
-        msg += f" {abs(data['result_price']*data['count'])}{emo.gold}({data['count']}*{abs(data['result_price'])})\n"
+        msg += f" {abs(data['result_price']*data['count'])}{emo.gold}"
+        msg += f"({data['count']}*{abs(data['result_price'])})\n" if data['count'] > 1 else "\n"
 
         msg += f"Ваш долг: {emo.gold}{-cur_balance}(Положить {commission_price(-cur_balance)})" \
             if cur_balance < 0 else f"Сейчас на счету: {emo.gold}{cur_balance}"

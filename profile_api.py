@@ -8,7 +8,7 @@ from logger import get_logger
 
 logger = get_logger(__name__, 'profile_requests')
 
-
+# TODO: Refactor for urllib
 def get_name(item_id: int) -> str:
     url = f'https://vip3.activeusers.ru/app.php?act=item&id={item_id}&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
