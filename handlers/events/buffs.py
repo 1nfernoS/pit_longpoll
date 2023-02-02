@@ -48,12 +48,12 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
                 return event.message
 
     # Change balance
-    # if apo['buffer_type'] == 14264:
-    #     change_balance(vk_id, APO_PAYMENT)
-    #     change_balance(receiver, -APO_PAYMENT)
+    if apo['buffer_type'] == 14264:
+        change_balance(vk_id, APO_PAYMENT)
+        change_balance(receiver, -APO_PAYMENT)
 
     res = f"Наложено {msg.lower()}"
 
-    # if apo['buffer_type'] == 14264:
-    #     res += f"\n[id{receiver}|На счету]: {get_balance(receiver)}{gold}"
+    if apo['buffer_type'] == 14264:
+        res += f"\n[id{receiver}|На счету]: {get_balance(receiver)}{gold}"
     return res
