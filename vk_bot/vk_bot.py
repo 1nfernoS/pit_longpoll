@@ -81,7 +81,7 @@ class VkBot:
             while self.__not_kill:
                 for event in self._long_poll.check():
                     # Call def with same name as event type
-                    logger.info(f"{event.type.name}:\t{event.raw['event_id']} - {str(event.obj).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')}")
+                    # logger.info(f"{event.type.name}:\t{event.raw['event_id']} - {str(event.obj).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')}")
                     getattr(self._events, event.type.name)(self, event)
         except KeyboardInterrupt:
             print('\n', 'Stopping . . .', '\n')

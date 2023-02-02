@@ -31,7 +31,7 @@ def new_message(self: VkBot, event: VkBotEvent):
     if len(event.message.fwd_messages) == 1:
         if int(event.message.fwd_messages[0]['from_id']) == int(PIT_BOT):
             txt = event.message.fwd_messages[0]['text'].encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | ')
-            logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\t[{event.chat_id}]({event.message.from_id}): {txt}")
+            # logging.info(f"{time.strftime('%d %m %Y %H:%M:%S')}\t[{event.chat_id}]({event.message.from_id}): {txt}")
             del txt
 
             forward_parse(self, event)
