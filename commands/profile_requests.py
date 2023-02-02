@@ -26,12 +26,18 @@ class Price(Command):
     def run(self, bot: VkBot, event: VkBotEvent):
 
         msg_id = bot.api.send_chat_msg(event.chat_id, 'Ищу ценники . . .')[0]
-        msg = event.message.text.split(' ', 1)
+        msg = event.message.text.split(' ')
         if len(msg) == 1:
             bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'А что искать...')
             return
 
-        item_name = msg[1]
+        try:
+            count = int(msg[1])
+            item_name = ' '.join(msg[2:])
+        except ValueError:
+            count = 1
+            item_name = ' '.join(msg[1:])
+
         if len(item_name) < 3:
             bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'],
                              'Добавьте пару букв к поиску, чтобы их было хотя бы 3')
@@ -51,10 +57,10 @@ class Price(Command):
 
             guild_price = utils.math.discount_price(auc_price)
             guild_commission_price = utils.math.commission_price(guild_price)
-            answer += f"\n{gold}{auc_price} " \
-                      f"[-{DISCOUNT_PERCENT}%:{gold}{guild_price}" \
-                      f"({gold}{guild_commission_price})] " \
-                      f"{item}{i['item_name']}"
+            answer += f"\n{gold}{auc_price*count} " if count > 1 else f"\n{gold}{auc_price} "
+            answer += f"[-{DISCOUNT_PERCENT}%:{gold}{guild_price*count}" if count > 1 else f"[-{DISCOUNT_PERCENT}%:{gold}{guild_price}"
+            answer += f"({gold}{guild_commission_price*count})] " if count > 1 else f"({gold}{guild_commission_price})] "
+            answer += f"{item}{count}*{i['item_name']}" if count > 1 else f"{item}{i['item_name']}"
             cnt += 1
 
         answer = f"Нашел следующее ({cnt}):" + answer if cnt > 0 else 'Ничего не нашлось...'
