@@ -8,6 +8,7 @@ from config import GUILD_CHAT_ID, DISCOUNT_PERCENT, creator_id
 import utils.math
 from utils.emoji import item, gold, empty
 from utils import parsers
+from utils.formatters import translate
 import profile_api
 
 from DB.items import get_item_by_name
@@ -40,6 +41,10 @@ def forward_parse(self: VkBot, event: VkBotEvent):
 
     if 'Путешествие продолжается...' in fwd_txt:
         travel_check(self, event)
+        return
+
+    if fwd_txt.startswith('Дверь с грохотом открывается'):
+        door_solver(self, event)
         return
 
 
@@ -129,6 +134,7 @@ def travel_check(self: VkBot, event: VkBotEvent):
                     'Ноги дрожат от предчувствия беды...', 'Вы уже на пределе...', 'Чувство тревоги бьет в колокол!')
 
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+    fwd_txt = translate(fwd_txt)
     txt = fwd_txt.split('\n')[-1]
 
     if txt in _safe_list:
@@ -141,4 +147,33 @@ def travel_check(self: VkBot, event: VkBotEvent):
         answer = f"(+?) Неизвестное событие, сообщите в полигон или [id{creator_id}|ему]"
 
     self.api.send_chat_msg(event.chat_id, answer)
+    return
+
+
+def door_solver(self: VkBot, event: VkBotEvent):
+    _answers = {
+        'Похоже, нужно поставить фигурку на определенный участок карты...': 'Темнолесье',
+        'Итак, как же звали воина...': 'Гер, Натаниэль, Эмбер',
+        'Видимо, этот камень нужно вложить в одну из вытянутых рук.': 'Человек',
+        'В груди моей горел пожар, но сжег меня дотла. Ты имя назови мое, и получи сполна...': 'Роза',
+        'Итак, эльфа нужно расположить...': 'Северо-восток, Северо-запад, Юг материка',
+        'Сяэпьчео рущэр': 'Берем строку, прогоняем по шифру Цезаря... \nЛадно, это "Гробница веков"',
+        'Начнем с юркого гоблина...': 'Разрезать мечом, Ударить молотом, Уколоть кинжалом',
+        'Видимо, порядок этих барельефов как-то связан с рычагами...': 'Грах, Ева, Трор, Смотритель',
+        'Итак, главным реагентом добавим...': 'Пещерный корень, Первозданная вода, Рыбий жир',
+        'КАКОВ ЦВЕТ СЕРДЦА?': 'Фиолетовый',
+        'Где в настоящее время находится истинный спуск на путь к Сердцу Глубин?': 'Темнолесье',
+        'Возможно, нужно что-то произнести? Или нет?..': 'Уйти. Да, просто уйти',
+        'В каком же порядке активировать плиты?..': 'Осень, Зима, Весна, Лето'
+    }
+
+    fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+    fwd_txt = translate(fwd_txt)
+
+    for answer in _answers:
+        if answer in fwd_txt:
+            self.api.send_chat_msg(event.chat_id, 'Открываем дверь, а там ответ: ' + _answers[answer])
+            return
+
+    self.api.send_chat_msg(event.chat_id, f"Ой, а я не знаю ответ\nCообщите в полигон или [id{creator_id}|ему]")
     return
