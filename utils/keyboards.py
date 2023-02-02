@@ -5,6 +5,8 @@ from DB.autobuffer_list import get_buff_command
 from utils import buffs
 from utils.emoji import cancel, clear, heal_trauma, take_trauma
 
+from config import NOTE_ALL, NOTE_RULES
+
 
 def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None) -> str:
 
@@ -104,5 +106,14 @@ def light_inc(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd.add_line()
     kbd.add_callback_button(cancel, keyboard.VkKeyboardColor.NEGATIVE, {'action': 'remove'})
+
+    return kbd.get_keyboard()
+
+
+def notes() -> str:
+    kbd = keyboard.VkKeyboard(inline=True)
+
+    kbd.add_openlink_button('Правила', NOTE_RULES)
+    kbd.add_openlink_button('Все статьи', NOTE_ALL)
 
     return kbd.get_keyboard()

@@ -5,6 +5,7 @@ from config import creator_id, GUILD_CHAT_ID, GUILD_LIBRARIAN_ID, GUILD_NAME
 from DB import user_data, users
 from utils.emoji import level, strength, agility, endurance, gold
 from utils.math import commission_price
+from utils.keyboards import notes
 
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
@@ -69,6 +70,21 @@ class Help(Command):
         message += '\n ПРИМЕЧАНИЕ: После использования, сообщение с командой автоматически удаляется, чтобы уменьшить количество флуда'
         message += f'\n За идеями/ошибками/вопросами обращаться [id{creator_id}|сюда], желательно с приставкой "по котику" или что-то в этом роде'
         bot.api.send_chat_msg(event.chat_id, message)
+        return
+
+
+class Notes(Command):
+
+    def __init__(self):
+        super().__init__(__class__.__name__, ('заметки', 'notes', 'note', 'правила'))
+        self.desc = 'Правила и остальные статьи'
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        # TODO get kbd and message
+        message = 'Заметки:'
+        bot.api.send_chat_msg(event.chat_id, message, notes())
         return
 
 
