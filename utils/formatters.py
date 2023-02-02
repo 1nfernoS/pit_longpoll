@@ -38,3 +38,11 @@ def datediff(d1: datetime, d2: datetime) -> str:
     elif m % 10 == 1:
         res += ' минута '
     return res.strip()
+
+
+def translate(text: str) -> str:
+    translate_dict = {'A': 'А', 'B': 'В', 'C': 'С', 'E': 'Е', 'H': 'Н', 'K': 'К', 'M': 'М', 'O': 'О', 'P': 'Р',
+                      'T': 'Т', 'X': 'Х', 'a': 'а', 'c': 'с', 'e': 'е', 'o': 'о', 'p': 'р', 'x': 'х', 'y': 'у'}
+    for letter in translate_dict:
+        text = text.replace(letter, translate_dict[letter])
+    return text
