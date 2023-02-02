@@ -1,6 +1,7 @@
 import json
 
 from vk_api.bot_longpoll import VkBotEvent, CHAT_START_ID
+from vk_api.exceptions import VkApiError
 
 from vk_bot.vk_bot import VkBot
 
@@ -48,11 +49,15 @@ def event_message(self: VkBot, event: VkBotEvent):
         # TODO in other thread
         res = buff(pl['from'], pl['chat_id'], pl['msg_id'], pl['buff'], receiver)
 
-        self.api.edit_msg(
-            event.object.peer_id,
-            event.object.conversation_message_id,
-            res
-        )
+        # Message may be deleted before editing
+        try:
+            self.api.edit_msg(
+                event.object.peer_id,
+                event.object.conversation_message_id,
+                res
+            )
+        except VkApiError:
+            pass
         return
 
     elif action == 'remove':
