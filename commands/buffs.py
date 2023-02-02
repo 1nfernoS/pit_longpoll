@@ -88,7 +88,7 @@ class Warlock(Command):
 
 class PaladinStuff(Command):
     def __init__(self):
-        super().__init__(__class__.__name__, ('травма', 'очистка', 'trauma', 'clear'), access='guild')
+        super().__init__(__class__.__name__, ('травма', 'травмы', 'очистка', 'trauma', 'clear'), access='guild')
         self.desc = 'Паладины и производные классы и их заклинания. Только для членов гильдии'
         # self.set_active(False)
         return
