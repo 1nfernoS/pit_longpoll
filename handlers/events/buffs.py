@@ -19,7 +19,7 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
     if 'race1' in msg:
         msg = msg.replace('race1', BUFF_RACE[buffer.buff_user_race1])
     if 'race2' in msg:
-        msg = msg.replace('race2', BUFF_RACE[buffer.buff_user_race1])
+        msg = msg.replace('race2', BUFF_RACE[buffer.buff_user_race2])
     peer = CHAT_START_ID + buffer.buff_user_chat_id
 
     vk = vk_api.VkApi(token=buffer.buff_user_token, api_version='5.131')
