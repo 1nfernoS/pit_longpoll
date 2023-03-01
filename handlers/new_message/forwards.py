@@ -1,4 +1,5 @@
 import re
+from typing import List
 
 from vk_api.bot_longpoll import VkBotEvent
 
@@ -11,8 +12,8 @@ from utils import parsers
 from utils.formatters import translate
 import profile_api
 
-from DB.items import get_item_by_name
-from DB.users import get_equip
+from ORM import session as DB
+import ORM
 
 from logger import get_logger
 
@@ -61,20 +62,14 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
     fwd_split = fwd_txt.split('\n')
     item_name = fwd_split[0][11:]
     item_price = int(re.findall(r'\d+', fwd_split[1][9:])[0])
-    try:
-        item_id = get_item_by_name(item_name)
-    except KeyError:
+    item_: ORM.Item = DB.query(ORM.Item).filter(ORM.Item.item_name.ilike(f"{item_name}%"),
+                                               ORM.Item.item_has_price == 1).first()
+    if not item_:
         msg = 'Кажется, такого предмета нет в базе'
         self.api.send_chat_msg(event.chat_id, msg)
         return
 
-    auc_price = profile_api.price(item_id)
-
-    in_equip = []
-    for row in get_equip():
-        if item_id in row[1]:
-            in_equip.append(row[0])
-
+    auc_price = profile_api.price(item_.item_id)
     commission_price = utils.math.commission_price(item_price)
 
     if auc_price > 0:
@@ -88,8 +83,9 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
               f'({gold}{guild_commission_price})\n\n'
 
         if int(event.chat_id) == GUILD_CHAT_ID:
-            if item_name.startswith('Книга - ') and in_equip:
-                msg += f'{item}В экипировке у {self.api.get_names(in_equip)}'
+            if item_name.startswith('Книга - ') and item_.item_users:
+                in_equip: List[ORM.UserInfo] = item_.item_users
+                msg += f'{item}В экипировке у {self.api.get_names([i.user_id for i in in_equip])}'
     else:
         msg = f'Товар: {item}{item_name}\nЦена торговца: {gold}{item_price} ({gold}{commission_price})' + \
               f'\nВот только... Он не продается, Сам не знаю почему'

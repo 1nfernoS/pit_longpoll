@@ -1,8 +1,3 @@
-from DB.autobuffer_list import load_buffer_buff
-
-
-BUFF_DATA = load_buffer_buff()
-
 BUFF_RACE = {14413: 'человека', 14414: 'орка', 14415: 'гнома', 14416: 'нежити', 14417: 'эльфа', 14418: 'демона',
              14419: 'гоблина'}
 

@@ -7,8 +7,8 @@ from vk_api.bot_longpoll import VkBotEvent
 # config and packages
 from config import GUILD_NAME, GUILD_CHAT_ID, COMMISSION_PERCENT
 
-import DB.users as users
-import DB.user_data as user_data
+from ORM import session as DB
+import ORM
 
 from utils.parsers import parse_profile, parse_storage_action
 from utils.formatters import str_datetime, datediff
@@ -27,7 +27,9 @@ def bot_message(self: VkBot, event: VkBotEvent):
     # group's message in chat
 
     if "Ваш профиль:" in event.message.text:
-        logger.info('Profile\t'+event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | '))
+        logger.info(
+            'Profile\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',
+                                                                                                            ' | '))
         msg_id = self.api.send_chat_msg(event.chat_id, 'Читаю профиль...')[0]
         answer = profile_message(self, event)
         photo = ''
@@ -36,43 +38,59 @@ def bot_message(self: VkBot, event: VkBotEvent):
                 if 'photo' in event.message['attachments'][0]:
                     at = event.message['attachments'][0]
                     photo = f"photo{at['photo']['owner_id']}_{at['photo']['id']}_{at['photo']['access_key']}"
-            msg_id_del = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+            msg_id_del = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)[
+                'id']
             self.api.del_msg(event.message.peer_id, msg_id_del)
-        self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer, attachment=photo if photo else None)
+        self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer,
+                          attachment=photo if photo else None)
 
     if 'положили' in event.message.text or 'взяли' in event.message.text:
         if event.chat_id == GUILD_CHAT_ID:
-            logger.info('Storage\t'+event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | '))
+            logger.info(
+                'Storage\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',
+                                                                                                                ' | '))
             storage_reactions(self, event)
             pass
 
     if 'от игрока' in event.message.text:
         if event.chat_id == GUILD_CHAT_ID:
-            logger.info('Transfer\t'+event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n', ' | '))
+            logger.info(
+                'Transfer\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',
+                                                                                                                 ' | '))
             pass
     return
 
 
 def profile_message(self: VkBot, event: VkBotEvent) -> str:
     data = parse_profile(event.message.text)
-    data_old = user_data.get_user_data(data['id_vk'])
-    new_data = (data['id_vk'], data['level'], data['attack'], data['defence'],
+    info: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == data['id_vk']).first()
+
+    new_data = (data['level'], data['attack'], data['defence'],
                 data['strength'], data['agility'], data['endurance'],
-                data['luck'], None, None)
-    if data_old:
-        answer = f"{data['name']}, статы обновлены! ({datediff(data_old['last_update'], datetime.now())} с {str_datetime(data_old['last_update'])})\n" \
+                data['luck'])
+    if info:
+        stats: ORM.UserStats = info.user_stats
+
+        answer = f"{data['name']}, статы обновлены! ({datediff(stats.last_update, datetime.now())} с {str_datetime(stats.last_update)})\n" \
                  f"[ {data['class_name']} | {data['race']} ]\n" \
-                 f"{emo.level}{data['level']}({data['level'] - data_old['level']}) " \
-                 f"{emo.attack}{data['attack']}({data['attack'] - data_old['attack']}) " \
-                 f"{emo.defence}{data['defence']}({data['defence'] - data_old['defence']})\n" \
-                 f"{emo.strength}{data['strength']}({data['strength'] - data_old['strength']}) " \
-                 f"{emo.agility}{data['agility']}({data['agility'] - data_old['agility']}) " \
-                 f"{emo.endurance}{data['endurance']}({data['endurance'] - data_old['endurance']})\n" \
-                 f"{emo.luck}{data['luck']}({data['luck'] - data_old['luck']})\n" \
+                 f"{emo.level}{data['level']}({data['level'] - stats.user_level}) " \
+                 f"{emo.attack}{data['attack']}({data['attack'] - stats.user_attack}) " \
+                 f"{emo.defence}{data['defence']}({data['defence'] - stats.user_defence})\n" \
+                 f"{emo.strength}{data['strength']}({data['strength'] - stats.user_strength}) " \
+                 f"{emo.agility}{data['agility']}({data['agility'] - stats.user_agility}) " \
+                 f"{emo.endurance}{data['endurance']}({data['endurance'] - stats.user_endurance})\n" \
+                 f"{emo.luck}{data['luck']}({data['luck'] - stats.user_luck})\n" \
                  f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}{emo.strength}/{emo.agility}" \
                  f" или {(data['level'] + 15) * 3 - data['endurance']}{emo.endurance})"
-        user_data.update_user_data(*new_data)
+
+        # user_data.update_user_data(*new_data)
     else:
+        info = ORM.UserInfo()
+        info.user_id = data['id_vk']
+
+        stats = ORM.UserStats()
+        stats.user_id = data['id_vk']
+
         answer = f"{data['name']}, статы записаны!\n" \
                  f"[ {data['class_name']} | {data['race']} ]\n" \
                  f"{emo.level}{data['level']} {emo.attack}{data['attack']} {emo.defence}{data['defence']} " \
@@ -80,41 +98,56 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
                  f"{emo.luck}{data['luck']}\n" \
                  f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}{emo.strength}/{emo.agility}" \
                  f"{(data['level'] + 15) * 3 - data['endurance']}{emo.endurance})"
-        user_data.add_user_data(*new_data)
+
+
+    stats.user_level, stats.user_attack, stats.user_defence, \
+        stats.user_strength, stats.user_agility, stats.user_endurance, \
+        stats.user_luck = new_data
 
     if data['guild'] == GUILD_NAME:
-        if users.get_user(data['id_vk']):
+
+        if info.role_id is None:
             answer = 'Обновил информацию гильдии!\n' + answer
-            users.update_user(data['id_vk'], is_active=1)
-        else:
-            answer = 'Записал информацию гильдии!\n' + answer
-            users.add_user(data['id_vk'], None, True, False, False, None, data['class_id'])
+            role_guild = 5
+            info.role_id = role_guild
+
+    DB.add(info)
+    DB.add(stats)
+    DB.commit()
     return answer
 
 
 def storage_reactions(self: VkBot, event: VkBotEvent):
     data = parse_storage_action(event.message.text)
+    if data['item_type'] == 'item':
+        return
+    user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == data['id_vk']).first()
     if data['item_type'] == 'book':
-        cur_balance = users.change_balance(data['id_vk'], data['result_price']*data['count'])
+        user.balance += data['result_price'] * data['count']
+        DB.add(user)
+        DB.commit()
 
-        msg = f"[id{data['id_vk']}|Готово], "
+        msg = f"[id{user.user_id}|Готово], "
         msg += "пополняю баланс на" if data['result_price'] > 0 else "списываю с баланса"
-        msg += f" {abs(data['result_price']*data['count'])}{emo.gold}"
+        msg += f" {abs(data['result_price'] * data['count'])}{emo.gold}"
         msg += f"({data['count']}*{abs(data['result_price'])})\n" if data['count'] > 1 else "\n"
 
-        msg += f"Ваш долг: {emo.gold}{-cur_balance}(Положить {commission_price(-cur_balance)})" \
-            if cur_balance < 0 else f"Сейчас на счету: {emo.gold}{cur_balance}"
+        msg += f"Ваш долг: {emo.gold}{-int(user.balance)}(Положить {commission_price(-int(user.balance))})" \
+            if user.balance < 0 else f"Сейчас на счету: {emo.gold}{user.balance}"
         self.api.send_chat_msg(event.chat_id, msg)
         return
 
     if data['item_type'] == 'gold':
-        cur_balance = users.change_balance(data['id_vk'], data['count'])
+        user.balance += data['count']
+        DB.add(user)
+        DB.commit()
+
         if data['count'] < 0:
             msg = f"О, [id{data['id_vk']}|Вы] взяли {-data['count']} золота!\n"
         else:
             msg = f"О, [id{data['id_vk']}|Вы] положили {data['count']} золота!\n"
-        msg += f"Ваш долг: {emo.gold}{-cur_balance}(Положить {commission_price(-cur_balance)})" \
-            if cur_balance < 0 else f"Сейчас на счету: {emo.gold}{cur_balance}"
+        msg += f"Ваш долг: {emo.gold}{-int(user.balance)}(Положить {commission_price(-int(user.balance))})" \
+            if user.balance < 0 else f"Сейчас на счету: {emo.gold}{user.balance}"
         self.api.send_chat_msg(event.chat_id, msg)
         return
 

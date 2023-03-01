@@ -3,8 +3,8 @@ import time
 import vk_api
 from vk_api.longpoll import VkEventType, VkLongPoll, CHAT_START_ID
 
-from DB.autobuffer_list import get_buffer_by_id, get_buff_command, get_peer_by_buffer_id
-from DB.users import change_balance, get_balance
+from ORM import session as DB
+import ORM
 
 from utils.buffs import POSSIBLE_ANSWERS, BUFF_RACE
 from utils.emoji import gold
@@ -13,15 +13,16 @@ from config import OVERSEER_BOT, APO_PAYMENT
 
 
 def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
-    apo = get_buffer_by_id(vk_id)
-    msg = get_buff_command(command)
+    buffer: ORM.BuffUser = DB.query(ORM.BuffUser).filter(ORM.BuffUser.buff_user_id == vk_id).first()
+    cmd: ORM.BuffCmd = DB.query(ORM.BuffCmd).filter(ORM.BuffCmd.buff_cmd_id == command).first()
+    msg = cmd.buff_cmd_text
     if 'race1' in msg:
-        msg = msg.replace('race1', BUFF_RACE[apo['race1']])
+        msg = msg.replace('race1', BUFF_RACE[buffer.buff_user_race1])
     if 'race2' in msg:
-        msg = msg.replace('race2', BUFF_RACE[apo['race2']])
-    peer = CHAT_START_ID + get_peer_by_buffer_id(vk_id, chat_id)
+        msg = msg.replace('race2', BUFF_RACE[buffer.buff_user_race1])
+    peer = CHAT_START_ID + buffer.buff_user_chat_id
 
-    vk = vk_api.VkApi(token=apo['token_key'], api_version='5.131')
+    vk = vk_api.VkApi(token=buffer.buff_user_token, api_version='5.131')
     api = vk.get_api()
     long_poll = VkLongPoll(vk, 1)
 
@@ -47,13 +48,22 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
                     continue
                 return event.message
 
-    # Change balance
-    if apo['buffer_type'] == 14264:
-        change_balance(vk_id, APO_PAYMENT)
-        change_balance(receiver, -APO_PAYMENT)
-
     res = f"Наложено {msg.lower()}"
 
-    if apo['buffer_type'] == 14264:
-        res += f"\n[id{receiver}|На счету]: {get_balance(receiver)}{gold}"
+    # Change balance
+    if buffer.buff_type_id == 14264:
+        user_from: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == receiver).first()
+        user_to: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == buffer.buff_user_id).first()
+
+        if user_from.user_role.role_can_balance:
+            user_from.balance -= APO_PAYMENT
+
+        user_to.balance += APO_PAYMENT
+        DB.add(user_from)
+        DB.add(user_to)
+
+        DB.commit()
+
+        res += f"\n[id{user_from.user_id}|На счету]: {user_from.balance}{gold}"
+
     return res
