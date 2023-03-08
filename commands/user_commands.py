@@ -2,7 +2,7 @@ from typing import List
 
 from commands import Command, command_list, DB, ORM
 
-from config import creator_id, GUILD_CHAT_ID, GUILD_LIBRARIAN_ID, GUILD_NAME
+from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
 
 # from DB import user_data, users
 from utils.emoji import level, strength, agility, endurance, gold
@@ -152,7 +152,7 @@ class Balance(Command):
 class Transfer(Command):
     def __init__(self):
         super().__init__(__class__.__name__, ('перевести', 'transfer'))
-        self.desc = 'Узнать свой баланс. Только для членов гильдии'
+        self.desc = 'Перевести деньги со своего счета по реплаю'
         self.require_balance = True
         # self.set_active(False)
         return
@@ -182,12 +182,27 @@ class Transfer(Command):
             bot.api.send_chat_msg(event.chat_id, message)
             return
 
+        if money < 0:
+            message = f"Нет, так не работает"
+            bot.api.send_chat_msg(event.chat_id, message)
+            return
+
         if user_from.balance < money:
             message = f"У вас на счету {gold}{user_from.balance}, сначала пополните баланс!"
             bot.api.send_chat_msg(event.chat_id, message)
             return
 
         user_to: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.reply_message['from_id']).first()
+
+        if not user_to:
+            message = f"О id{user_to.user_id} нет записей, пусть покажет профиль хотя бы раз!"
+            bot.api.send_chat_msg(event.chat_id, message)
+            return
+
+        if not user_to.user_role.role_can_balance:
+            message = f"У id{user_to.user_id} нет прав баланса, проерьте роль или получателя!"
+            bot.api.send_chat_msg(event.chat_id, message)
+            return
 
         user_from.balance -= money
         user_to.balance += money

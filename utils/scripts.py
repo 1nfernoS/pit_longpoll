@@ -14,7 +14,9 @@ def withdraw_bill(bot: VkBot) -> None:
         user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == user_id).first()
         if not user:
             continue
-        user.balance -= 18000 if user.user_stats.user_level < 100 else 36000
+
+        if user.user_role.role_can_balance:
+            user.balance -= 18000 if user.user_stats.user_level < 100 else 36000
 
         DB.add(user)
 

@@ -14,7 +14,7 @@ from vk_api.bot_longpoll import VkBotEvent
 # TODO: Add commands for paladin stuff by reply/for self
 
 
-class ChangeBufferState(Command):
+class ToggleBuffer(Command):
     def __init__(self):
         super().__init__(__class__.__name__, ('баффер', 'бафер', 'buffer'))
         self.desc = 'Вкл/Выкл баффера (Апо, Вопла и др). Только для создателя'

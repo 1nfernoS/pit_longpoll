@@ -8,8 +8,42 @@ from utils.emoji import gold
 from vk_api.bot_longpoll import VkBotEvent
 from vk_bot.vk_bot import VkBot
 
+leader_role = 1
+officer_role = 2
+guild_member_role = 5
+guild_guest_role = 7
+other_role = 8
+ban_role = 9
+
+
+def toggle_role(id_from: int, id_to: int, role_id: int, toggle_role_id: int) -> str:
+    user_from: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == id_from).first()
+
+    if not user_from.user_role.role_can_change_role:
+        return "Нет прав менять роль"
+
+    user_to: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == id_to).first()
+
+    if not user_to:
+        return f"О id{user_to.user_id} нет записей, пусть покажет профиль хотя бы раз!"
+
+    if user_from.role_id < user_to.role_id:
+        return "Вы не можете менять роль старшего по статусу"
+
+    user_to.role_id = toggle_role_id \
+        if user_to.role_id == role_id else role_id
+
+    role: ORM.Role = DB.query(ORM.Role).filter(ORM.Role.role_id == user_to.role_id).first()
+    msg = f"Теперь @id{user_to.user_id} имеет права {role.role_name}"
+
+    DB.add(user_to)
+    DB.commit()
+
+    return msg
+
 
 class Kick(Command):
+    # TODO: resolve error with kick etc
 
     def __init__(self):
         super().__init__(__class__.__name__, ('kick', 'кик'))
@@ -33,10 +67,8 @@ class Kick(Command):
 
         kicked_user: ORM.UserInfo = \
             DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.reply_message['from_id']).first()
-        # users.update_user(event.message.reply_message['from_id'], is_active=False)
-        role_blacklist: ORM.Role = DB.query(ORM.Role).filter(ORM.Role.role_id == 9).first()
 
-        kicked_user.role_id = role_blacklist.role_id
+        kicked_user.role_id = ban_role
         DB.add(kicked_user)
         DB.commit()
 
@@ -96,7 +128,8 @@ class Check(Command):
             bot.api.send_chat_msg(event.chat_id, 'Что-то не то, это не число')
             return
 
-        changed_user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.reply_message['from_id']).first()
+        changed_user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(
+            ORM.UserInfo.user_id == event.message.reply_message['from_id']).first()
 
         if changed_user is None:
             bot.api.send_chat_msg(event.chat_id, "Я не могу изменять баланс тем, кого не знаю, "
@@ -110,4 +143,83 @@ class Check(Command):
 
         bot.api.send_chat_msg(event.chat_id, f"Готово, изменил баланс на {money}{gold}, "
                                              f"теперь счету {changed_user.balance}{gold}")
+        return
+
+
+class ToggleLeader(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('лид', 'leader', 'lead', 'лидер'))
+        self.desc = 'Назначить лидера. Только для создателя'
+        self.require_utils = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+
+        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+
+        if not user.user_role.role_can_utils:
+            return
+
+        if 'reply_message' in event.message.keys():
+            msg = toggle_role(
+                user.user_id,
+                event.message.reply_message['from_id'],
+                leader_role,
+                guild_member_role
+            )
+
+            bot.api.send_chat_msg(event.chat_id, msg)
+        return
+
+
+class ToggleOfficer(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('офицер', 'officer'))
+        self.desc = 'Назначить офицера. Для лидеров'
+        self.require_change_role = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+
+        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+
+        if not user.user_role.role_can_change_role:
+            return
+
+        if 'reply_message' in event.message.keys():
+            msg = toggle_role(
+                event.message.from_id,
+                event.message.reply_message['from_id'],
+                officer_role,
+                guild_member_role
+            )
+            bot.api.send_chat_msg(event.chat_id, msg)
+        return
+
+
+class ToggleGuest(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('guest', 'гость'))
+        self.desc = 'Назначить гостя. Для лидеров и офицеров'
+        self.require_change_role = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+
+        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+
+        if not user.user_role.role_can_change_role:
+            return
+
+        if 'reply_message' in event.message.keys():
+            msg = toggle_role(
+                event.message.from_id,
+                event.message.reply_message['from_id'],
+                guild_guest_role,
+                other_role
+            )
+            bot.api.send_chat_msg(event.chat_id, msg)
         return
