@@ -1,6 +1,8 @@
 from typing import List
 
-from commands import Command, command_list, DB, ORM
+from commands import Command, command_list
+
+from ORM import session, UserInfo, UserStats
 
 from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
 
@@ -23,7 +25,9 @@ class Stats(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        user: ORM.UserStats = DB.query(ORM.UserStats).filter(ORM.UserStats.user_id == event.message.from_id).first()
+        s = session()
+
+        user: UserStats = s.query(UserStats).filter(UserStats.user_id == event.message.from_id).first()
 
         if not user.user_info.user_role.role_can_check_stats:
             return
@@ -50,7 +54,8 @@ class Help(Command):
     def run(self, bot: VkBot, event: VkBotEvent):
         message = 'Команды можно вводить как с префиксом, так и без\nВарианты использования - что делает\n'
 
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         role_access = {i.replace('role_can_', ''): bool(getattr(user.user_role, i))
                        for i in dir(user.user_role)
                        if i.startswith('role_can_')}
@@ -80,7 +85,8 @@ class Notes(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
             return
@@ -99,8 +105,8 @@ class Balance(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if user is None:
             bot.api.send_chat_msg(event.chat_id, "Хм... О вас нет записей, покажите профиль хотя бы раз!!")
@@ -111,8 +117,8 @@ class Balance(Command):
 
         if user.user_role.role_can_check_all_balance:
             if 'reply_message' in event.message.keys():
-                reply_user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(
-                    ORM.UserInfo.user_id == event.message.reply_message['from_id']).first()
+                reply_user: UserInfo = s.query(UserInfo).filter(
+                    UserInfo.user_id == event.message.reply_message['from_id']).first()
 
                 message = f"Счет игрока: {reply_user.balance}" if reply_user is not None else "Нет записей, пусть сдаст профиль"
                 bot.api.send_chat_msg(event.chat_id, message)
@@ -127,7 +133,7 @@ class Balance(Command):
                 print(msg_id)
 
                 guild_roles = (0, 1, 2, 3, 4, 5, 6)
-                users: List[ORM.UserInfo] = DB.query(ORM.UserInfo).filter(ORM.UserInfo.role_id.in_(guild_roles)).all()
+                users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
 
                 print(users)
                 members = bot.api.get_members(GUILD_CHAT_ID)
@@ -158,8 +164,8 @@ class Transfer(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-
-        user_from: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user_from: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if user_from is None:
             bot.api.send_chat_msg(event.chat_id, "Хм... О вас нет записей, покажите профиль хотя бы раз!!")
@@ -192,7 +198,7 @@ class Transfer(Command):
             bot.api.send_chat_msg(event.chat_id, message)
             return
 
-        user_to: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.reply_message['from_id']).first()
+        user_to: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.reply_message['from_id']).first()
 
         if not user_to:
             message = f"О id{user_to.user_id} нет записей, пусть покажет профиль хотя бы раз!"
@@ -207,9 +213,9 @@ class Transfer(Command):
         user_from.balance -= money
         user_to.balance += money
 
-        DB.add(user_from)
-        DB.add(user_to)
-        DB.commit()
+        s.add(user_from)
+        s.add(user_to)
+        s.commit()
 
         message = f"Перевел {gold}{money}\n"
         message += "Ваш долг: {gold}{-balance}(Положить {commission_price(-balance)})" if user_from.balance < 0 \

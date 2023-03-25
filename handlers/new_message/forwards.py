@@ -12,8 +12,7 @@ from utils import parsers
 from utils.formatters import translate
 import profile_api
 
-from ORM import session as DB
-import ORM
+from ORM import session, UserInfo, Item
 
 from logger import get_logger
 
@@ -62,8 +61,9 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
     fwd_split = fwd_txt.split('\n')
     item_name = fwd_split[0][11:]
     item_price = int(re.findall(r'\d+', fwd_split[1][9:])[0])
-    item_: ORM.Item = DB.query(ORM.Item).filter(ORM.Item.item_name.ilike(f"{item_name}%"),
-                                               ORM.Item.item_has_price == 1).first()
+
+    DB = session()
+    item_: Item = DB.query(Item).filter(Item.item_name.ilike(f"{item_name}%"),Item.item_has_price == 1).first()
     if not item_:
         msg = 'Кажется, такого предмета нет в базе'
         self.api.send_chat_msg(event.chat_id, msg)
@@ -84,7 +84,7 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
 
         if int(event.chat_id) == GUILD_CHAT_ID:
             if item_name.startswith('Книга - ') and item_.item_users:
-                in_equip: List[ORM.UserInfo] = item_.item_users
+                in_equip: List[UserInfo] = item_.item_users
                 msg += f'{item}В экипировке у {self.api.get_names([i.user_id for i in in_equip])}'
     else:
         msg = f'Товар: {item}{item_name}\nЦена торговца: {gold}{item_price} ({gold}{commission_price})' + \
@@ -137,7 +137,8 @@ def travel_check(self: VkBot, event: VkBotEvent):
                     'Еще немного, и Вы падаете без сил...', 'Кажется, конец близок...',
                     'Крик отчаяния вырывается у Вас из груди...', 'Ноги дрожат от предчувствия беды...',
                     'Нужно бежать отсюда!', 'Силы быстро Вас покидают...', 'Смерть таится за каждым поворотом...',
-                    'Чувство тревоги бьет в колокол!', 'Кажeтся, кoнец близок...')
+                    'Чувство тревоги бьет в колокол!', 'Кажется, конец близок...',
+                    'Еще немного, и Вы падете без сил...')
 
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     fwd_txt = translate(fwd_txt)

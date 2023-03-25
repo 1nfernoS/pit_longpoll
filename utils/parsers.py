@@ -5,8 +5,7 @@ from typing import List
 from config import DISCOUNT_PERCENT
 
 # from DB.items import get_item_by_name, search_item, search_regexp
-from ORM import session as DB
-import ORM
+from ORM import session, Item
 
 from utils import emoji
 
@@ -21,7 +20,8 @@ def parse_profile(text: str) -> dict:
 
     sep = t[1].find(',')
     class_name = t[1][16:sep]
-    class_item: ORM.Item = DB.query(ORM.Item).filter(ORM.Item.item_name.ilike(f"{class_name}")).first()
+    DB = session()
+    class_item: Item = DB.query(Item).filter(Item.item_name.ilike(f"{class_name}")).first()
     # class_id = get_item_by_name(class_name)
     race = t[1][sep+1:]
 
@@ -56,9 +56,10 @@ def parse_storage_action(text: str):
 
         count = int(re.findall(r'(?<=&#128216;|&#128213;)\d+(?=\*)', text)[0])
         item_name = re.findall(r'(?<=\*)\D+(?=!)', text)[0]
-        item: ORM.Item = DB.query(ORM.Item).\
-            filter(ORM.Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name}.*$"),
-                   ORM.Item.item_has_price == 1).first()
+        DB = session()
+        item: Item = DB.query(Item).\
+            filter(Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name}.*$"),
+                   Item.item_has_price == 1).first()
         # item_id = search_item(item_name)['result'][0]['item_id']
 
         if not item:
@@ -104,8 +105,9 @@ def guesser(text: str) -> list:
     text = text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     regexp = text.split('\n')[1].replace(emoji.empty, '[[:alnum:]]')
 
-    item_list: List[ORM.Item] = DB.query(ORM.Item).filter(
-        ORM.Item.item_name.op('regexp')(f"(Книга - |^){regexp}$")).all()
+    DB = session()
+    item_list: List[Item] = DB.query(Item).filter(
+        Item.item_name.op('regexp')(f"(Книга - |^){regexp}$")).all()
     res = []
     for i in item_list:
         if i.item_id in __possible or '-' in i.item_name:

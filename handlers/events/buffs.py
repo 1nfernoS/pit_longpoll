@@ -3,7 +3,7 @@ import time
 import vk_api
 from vk_api.longpoll import VkEventType, VkLongPoll, CHAT_START_ID
 
-from ORM import session as DB
+from ORM import session
 import ORM
 
 from utils.buffs import POSSIBLE_ANSWERS, BUFF_RACE
@@ -13,6 +13,7 @@ from config import OVERSEER_BOT, APO_PAYMENT
 
 
 def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
+    DB = session()
     buffer: ORM.BuffUser = DB.query(ORM.BuffUser).filter(ORM.BuffUser.buff_user_id == vk_id).first()
     cmd: ORM.BuffCmd = DB.query(ORM.BuffCmd).filter(ORM.BuffCmd.buff_cmd_id == command).first()
     msg = cmd.buff_cmd_text

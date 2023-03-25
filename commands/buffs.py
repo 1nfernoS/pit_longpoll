@@ -1,15 +1,16 @@
 from typing import List
 
-from commands import Command, DB, ORM
+from vk_api.bot_longpoll import VkBotEvent
 
-
+from ORM import session, UserInfo, BuffUser
+from commands import Command
 from config import creator_id
 
 from utils import keyboards
 from utils.buffs import APOSTOL_ITEM_ID, WARLOCK_ITEM_ID, PALADIN_ITEM_ID, CRUSADER_ITEM_ID, LIGHT_INC_ITEM_ID
 
 from vk_bot.vk_bot import VkBot
-from vk_api.bot_longpoll import VkBotEvent
+
 
 # TODO: Add commands for paladin stuff by reply/for self
 
@@ -22,14 +23,19 @@ class ToggleBuffer(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
+        if event.message.from_id != int(creator_id):
+            return
 
-        if event.message.from_id == int(creator_id):
-            if 'reply_message' in event.message.keys():
-                buffer: ORM.BuffUser = DB.query(ORM.BuffUser).filter(ORM.BuffUser.buff_user_id == event.message.reply_message['from_id']).first()
-                buffer.buff_user_is_active = int(not bool(buffer.buff_user_is_active))
-                DB.add(buffer)
-                DB.commit()
-                bot.api.send_chat_msg(event.chat_id, f"Баффер стал {bool(buffer.buff_user_is_active)} ")
+        if 'reply_message' not in event.message.keys():
+            return
+
+        with session() as s:
+            user_id = event.message.reply_message['from_id']
+            buffer: BuffUser = s.query(BuffUser).filter(BuffUser.buff_user_id == user_id).first()
+            buffer.buff_user_is_active = int(not bool(buffer.buff_user_is_active))
+            s.add(buffer)
+            s.commit()
+        bot.api.send_chat_msg(event.chat_id, f"Баффер стал {bool(buffer.buff_user_is_active)} ")
         return
 
 
@@ -43,14 +49,15 @@ class Apostol(Command):
 
     def run(self, bot: VkBot, event: VkBotEvent):
 
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
             return
 
         from profile_api import get_voices
 
-        apostols: List[ORM.BuffUser] = DB.query(ORM.BuffUser).filter(ORM.BuffUser.buff_type_id == APOSTOL_ITEM_ID,
-                                                                     ORM.BuffUser.buff_user_is_active == 1).all()
+        apostols: List[BuffUser] = s.query(BuffUser).filter(BuffUser.buff_type_id == APOSTOL_ITEM_ID,
+                                                            BuffUser.buff_user_is_active == 1).all()
 
         if not apostols:
             bot.api.send_chat_msg(event.chat_id, "Мне жаль, но сейчас нет ни одного активного апостола")
@@ -81,11 +88,12 @@ class Warlock(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
             return
 
-        warlocks: List[ORM.BuffUser] = DB.query(ORM.BuffUser).filter(ORM.BuffUser.buff_type_id == WARLOCK_ITEM_ID).all()
+        warlocks: List[BuffUser] = s.query(BuffUser).filter(BuffUser.buff_type_id == WARLOCK_ITEM_ID).all()
 
         if not warlocks:
             bot.api.send_chat_msg(event.chat_id, "Мне жаль, но сейчас нет ни одного активного чернокнижника")
@@ -109,13 +117,14 @@ class PaladinStuff(Command):
 
     def run(self, bot: VkBot, event: VkBotEvent):
 
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
             return
 
-        paladins: List[ORM.BuffUser] = DB.query(ORM.BuffUser).filter(ORM.BuffUser.buff_type_id == PALADIN_ITEM_ID).all()
-        crusaders: List[ORM.BuffUser] = DB.query(ORM.BuffUser).filter(ORM.BuffUser.buff_type_id == CRUSADER_ITEM_ID).all()
-        light_incs: List[ORM.BuffUser] = DB.query(ORM.BuffUser).filter(ORM.BuffUser.buff_type_id == LIGHT_INC_ITEM_ID).all()
+        paladins: List[BuffUser] = s.query(BuffUser).filter(BuffUser.buff_type_id == PALADIN_ITEM_ID).all()
+        crusaders: List[BuffUser] = s.query(BuffUser).filter(BuffUser.buff_type_id == CRUSADER_ITEM_ID).all()
+        light_incs: List[BuffUser] = s.query(BuffUser).filter(BuffUser.buff_type_id == LIGHT_INC_ITEM_ID).all()
 
         if not any([paladins, crusaders, light_incs]):
             bot.api.send_chat_msg(event.chat_id, "Мне жаль, но сейчас нет ни одного активного паладина")

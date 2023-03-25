@@ -2,8 +2,7 @@ from vk_bot.vk_bot import VkBot
 
 from config import GUILD_CHAT_ID
 
-from ORM import session as DB
-import ORM
+from ORM import session, UserInfo
 
 
 def withdraw_bill(bot: VkBot) -> None:
@@ -11,7 +10,8 @@ def withdraw_bill(bot: VkBot) -> None:
     for user_id in members:
         if user_id < 0:
             continue
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == user_id).first()
+        DB = session()
+        user: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == user_id).first()
         if not user:
             continue
 

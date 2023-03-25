@@ -1,4 +1,6 @@
-from commands import Command, DB, ORM
+from commands import Command
+
+from ORM import session, UserInfo
 
 from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
 
@@ -18,7 +20,8 @@ class Ping(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
             return
@@ -43,7 +46,8 @@ class War(Command):
         bot.api.send_chat_msg(event.chat_id, war_list)
         return
 
-    def __template(self, bot: VkBot, event: VkBotEvent) -> str:
+    @staticmethod
+    def __template(bot: VkBot, event: VkBotEvent) -> str:
         """
         template generator for run
         :return:
@@ -78,7 +82,8 @@ class Role(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
             return
@@ -88,8 +93,8 @@ class Role(Command):
             return
 
         if 'reply_message' in event.message.keys():
-            user_reply: ORM.UserInfo = DB.query(ORM.UserInfo).\
-                filter(ORM.UserInfo.user_id == event.message.reply_message['from_id']).first()
+            user_reply: UserInfo = s.query(UserInfo).\
+                filter(UserInfo.user_id == event.message.reply_message['from_id']).first()
             answer = f'Роль id{user_reply.user_id}: {user_reply.user_role.role_name}' \
                 if user_reply else 'Нет такого пользователя'
             bot.api.send_chat_msg(event.chat_id, answer)
@@ -107,8 +112,9 @@ class Id(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
+        s = session()
 
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_utils:
             return
@@ -130,7 +136,8 @@ class Emoji(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_utils:
             return
@@ -150,7 +157,8 @@ class Bill(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_withdraw_bill:
             return

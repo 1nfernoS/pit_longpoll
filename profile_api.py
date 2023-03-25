@@ -242,4 +242,4 @@ def header(param: int = 0):
 
 
 if __name__ == '__main__':
-    print(header(15).keys())
+    upd_items(12000, 15000)

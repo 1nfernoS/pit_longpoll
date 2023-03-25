@@ -15,9 +15,6 @@ GUILD_CHAT_ID = 1
 IGNORE_LIST = (PIT_BOT, OVERSEER_BOT, 211500453)
 ALLOWED_CHATS = (1, 5, 6)
 
-GUILD_LIBRARIAN_ID = 166287013
-GUILD_PAYMASTER_ID = 0
-
 DISCOUNT_PERCENT = 20
 COMMISSION_PERCENT = 10
 
@@ -25,6 +22,7 @@ APO_PAYMENT = 100
 
 NOTE_RULES = 'https://vk.com/@asstrickster_kitty-pravila-gildii'
 NOTE_ALL = 'https://vk.com/@asstrickster_kitty'
+
 
 def load(branch: str):
     global group_data

@@ -1,9 +1,10 @@
 from typing import List
 
-from commands import Command, DB, ORM
+from commands import Command
 
+from ORM import session, UserInfo, Item
 
-from config import GUILD_CHAT_ID, GUILD_NAME, DISCOUNT_PERCENT, COMMISSION_PERCENT
+from config import GUILD_NAME, DISCOUNT_PERCENT
 
 import profile_api
 
@@ -25,7 +26,8 @@ class Price(Command):
 
     def run(self, bot: VkBot, event: VkBotEvent):
 
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_balance:
             return
 
@@ -49,9 +51,9 @@ class Price(Command):
 
         # search = items.search_item(item_name)
 
-        search: List[ORM.Item] = DB.query(ORM.Item).filter(
-            ORM.Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name}.*$"),\
-            ORM.Item.item_has_price == 1).all()
+        search: List[Item] = s.query(Item).filter(
+            Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name}.*$"),
+            Item.item_has_price == 1).all()
 
         if not search:
             bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Ничего не нашлось...')
@@ -90,8 +92,10 @@ class Equip(Command):
     @staticmethod
     def __get_list(item_list: list, skills: dict) -> str:
         message = ''
+        s = session()
+
         for book in item_list:
-            b_item: ORM.Item = DB.query(ORM.Item).filter(ORM.Item.item_id == book).first()
+            b_item: Item = s.query(Item).filter(Item.item_id == book).first()
             # name = items.get_item_by_id(book)
 
             book_name = b_item.item_name.replace("(А) ", f"{tab}{active_book}").replace("(П) ", f"{tab}{passive_book}")
@@ -102,8 +106,9 @@ class Equip(Command):
         return message
 
     def run(self, bot: VkBot, event: VkBotEvent):
+        s = session()
 
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user:
             bot.api.send_chat_msg(event.chat_id, f"Не могу найти записей, покажите свой профиль, чтобы я записал информацию о вас и вашей гильдии")
@@ -129,10 +134,10 @@ class Equip(Command):
         class_id = inv[0] if inv[0] != 14108 else inv[1]
         build = profile_api.get_books(inv)
 
-        user.user_items = [DB.query(ORM.Item).filter(ORM.Item.item_id == i).first()
+        user.user_items = [s.query(Item).filter(Item.item_id == i).first()
                            for i in build]
-        DB.add(user)
-        DB.commit()
+        s.add(user)
+        s.commit()
 
         build = profile_api.get_build(inv)
 

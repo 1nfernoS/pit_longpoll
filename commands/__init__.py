@@ -2,14 +2,12 @@ import importlib
 from typing import Tuple
 import os
 
-from ORM import session as DB
-import ORM
 
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
 from vk_bot.vk_bot import VkBot
 
-__all__ = ['command_list', 'Command', 'ORM', 'DB']
+__all__ = ['command_list', 'Command']
 
 # Here is all allowed commands list
 command_list = dict()
@@ -67,7 +65,8 @@ if __name__ == 'commands':
     for m in [cmd[:-3] for cmd in os.listdir('commands') if not cmd.startswith('__')]:
         module = importlib.import_module('commands.' + m)
         [getattr(module, i)() for i in dir(module)
-         if not i.startswith('__') and type(getattr(module, i)) == type and i not in ('Command', 'VkBot', 'VkBotEvent', 'ORM', 'DB')]
+         if not i.startswith('__') and type(getattr(module, i)) == type
+         and i not in ('Command', 'VkBot', 'VkBotEvent')]
 
     print('\n' + 40 * '-',
           '\nLoaded commands: ', ', '.join(f"{command_list[i]}" for i in command_list),

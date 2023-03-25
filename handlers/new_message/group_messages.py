@@ -7,8 +7,7 @@ from vk_api.bot_longpoll import VkBotEvent
 # config and packages
 from config import GUILD_NAME, GUILD_CHAT_ID, COMMISSION_PERCENT
 
-from ORM import session as DB
-import ORM
+from ORM import session, UserInfo, UserStats
 
 from utils.parsers import parse_profile, parse_storage_action
 from utils.formatters import str_datetime, datediff
@@ -62,14 +61,15 @@ def bot_message(self: VkBot, event: VkBotEvent):
 
 
 def profile_message(self: VkBot, event: VkBotEvent) -> str:
+    DB = session()
     data = parse_profile(event.message.text)
-    info: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == data['id_vk']).first()
+    info: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == data['id_vk']).first()
 
     new_data = (data['level'], data['attack'], data['defence'],
                 data['strength'], data['agility'], data['endurance'],
                 data['luck'])
     if info:
-        stats: ORM.UserStats = info.user_stats
+        stats: UserStats = info.user_stats
 
         answer = f"{data['name']}, статы обновлены! ({datediff(stats.last_update, datetime.now())} с {str_datetime(stats.last_update)})\n" \
                  f"[ {data['class_name']} | {data['race']} ]\n" \
@@ -85,11 +85,11 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
 
         # user_data.update_user_data(*new_data)
     else:
-        info = ORM.UserInfo()
-        info.user_id = data['id_vk']
+        info = UserInfo(user_id=data['id_vk'])
+        # info.user_id = data['id_vk']
 
-        stats = ORM.UserStats()
-        stats.user_id = data['id_vk']
+        stats = UserStats(user_id=data['id_vk'])
+        # stats.user_id = data['id_vk']
 
         answer = f"{data['name']}, статы записаны!\n" \
                  f"[ {data['class_name']} | {data['race']} ]\n" \
@@ -121,7 +121,8 @@ def storage_reactions(self: VkBot, event: VkBotEvent):
     data = parse_storage_action(event.message.text)
     if data['item_type'] == 'item':
         return
-    user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == data['id_vk']).first()
+    DB = session()
+    user: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == data['id_vk']).first()
     if data['item_type'] == 'book':
         user.balance += data['result_price'] * data['count']
         DB.add(user)

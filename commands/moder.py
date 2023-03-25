@@ -1,4 +1,6 @@
-from commands import Command, DB, ORM
+from commands import Command
+
+from ORM import session, UserInfo, Role
 
 # from DB import users
 
@@ -17,12 +19,13 @@ ban_role = 9
 
 
 def toggle_role(id_from: int, id_to: int, role_id: int, toggle_role_id: int) -> str:
-    user_from: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == id_from).first()
+    s = session()
+    user_from: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == id_from).first()
 
     if not user_from.user_role.role_can_change_role:
         return "Нет прав менять роль"
 
-    user_to: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == id_to).first()
+    user_to: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == id_to).first()
 
     if not user_to:
         return f"О id{user_to.user_id} нет записей, пусть покажет профиль хотя бы раз!"
@@ -33,11 +36,11 @@ def toggle_role(id_from: int, id_to: int, role_id: int, toggle_role_id: int) -> 
     user_to.role_id = toggle_role_id \
         if user_to.role_id == role_id else role_id
 
-    role: ORM.Role = DB.query(ORM.Role).filter(ORM.Role.role_id == user_to.role_id).first()
+    role: Role = s.query(Role).filter(Role.role_id == user_to.role_id).first()
     msg = f"Теперь @id{user_to.user_id} имеет права {role.role_name}"
 
-    DB.add(user_to)
-    DB.commit()
+    s.add(user_to)
+    s.commit()
 
     return msg
 
@@ -53,7 +56,9 @@ class Kick(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_kick:
             return
@@ -65,12 +70,12 @@ class Kick(Command):
         if event.message.reply_message['from_id'] == event.message.from_id:
             return
 
-        kicked_user: ORM.UserInfo = \
-            DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.reply_message['from_id']).first()
+        kicked_user: UserInfo = \
+            s.query(UserInfo).filter(UserInfo.user_id == event.message.reply_message['from_id']).first()
 
         kicked_user.role_id = ban_role
-        DB.add(kicked_user)
-        DB.commit()
+        s.add(kicked_user)
+        s.commit()
 
         bot.api.kick(event.chat_id, kicked_user.user_id)
 
@@ -87,7 +92,9 @@ class Pin(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_moderate:
             return
@@ -109,7 +116,9 @@ class Check(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        s = session()
+
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_change_balance:
             return
@@ -128,8 +137,8 @@ class Check(Command):
             bot.api.send_chat_msg(event.chat_id, 'Что-то не то, это не число')
             return
 
-        changed_user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(
-            ORM.UserInfo.user_id == event.message.reply_message['from_id']).first()
+        changed_user: UserInfo = s.query(UserInfo).filter(
+            UserInfo.user_id == event.message.reply_message['from_id']).first()
 
         if changed_user is None:
             bot.api.send_chat_msg(event.chat_id, "Я не могу изменять баланс тем, кого не знаю, "
@@ -138,8 +147,8 @@ class Check(Command):
 
         changed_user.balance += money
 
-        DB.add(changed_user)
-        DB.commit()
+        s.add(changed_user)
+        s.commit()
 
         bot.api.send_chat_msg(event.chat_id, f"Готово, изменил баланс на {money}{gold}, "
                                              f"теперь счету {changed_user.balance}{gold}")
@@ -155,8 +164,9 @@ class ToggleLeader(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
+        s = session()
 
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_utils:
             return
@@ -182,8 +192,9 @@ class ToggleOfficer(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
+        s = session()
 
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_change_role:
             return
@@ -208,8 +219,9 @@ class ToggleGuest(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
+        s = session()
 
-        user: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == event.message.from_id).first()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_change_role:
             return
