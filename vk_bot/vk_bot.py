@@ -1,6 +1,7 @@
 from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll
 
+from time import strftime
 from requests.exceptions import ReadTimeout
 
 import traceback
@@ -69,39 +70,40 @@ class VkBot:
         return wrapper
 
     def start(self):
-        logger = get_logger(__name__, '_BOT_EVENTS', 'midnight')
-        logger_errors = get_logger(__name__, '_BOT_ERRORS', 'midnight')
+        # logger = get_logger(__name__, '_BOT_EVENTS', 'midnight')
+        # logger_errors = get_logger(__name__, '_BOT_ERRORS', 'midnight')
         if self._before_start:
             print('Starting up . . .')
             self._before_start(self)
             print('Started up')
 
-        print(f"Bot {self._name} successfully started! Branch {os.environ.get('BRANCH', 'dev')}\n")
-        try:
-            while self.__not_kill:
+        print(f"[{strftime('%d.%m.%y %H:%M:%S')}] "
+              f"Bot {self._name} successfully started! Branch {os.environ.get('BRANCH', 'dev')}\n")
+        while self.__not_kill:
+            try:
                 for event in self._long_poll.check():
                     # Call def with same name as event type
                     # logger.info(f"{event.type.name}:\t{event.raw['event_id']} - {str(event.obj).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')}")
                     getattr(self._events, event.type.name)(self, event)
-        except KeyboardInterrupt:
-            print('\n', 'Stopping . . .', '\n')
-            self.__not_kill = False
-            if self._before_stop:
-                self._before_stop(self)
-            return
-        except ReadTimeout as exc:
-            logger_errors.warning("ReadTimeout")
-            # print(f'\n\nTimeout error {exc}')
-            # print('\n\tRestarting . . .\n')
-            self.start()
-        except:
-            logger_errors.error("Un-handled exception ! ! !", exc_info=True)
-            # logging.error(f"{time.strftime('%d %m %Y %H:%M:%S')}\t{traceback.format_exc(-3)}")
-            print('Error:', end='')
-            print('\n\nFull Trace')
-            print(traceback.format_exc())
-            print('\n\n\n\tRestarting . . .')
-            self.start()
+            except KeyboardInterrupt:
+                print('\n', 'Stopping . . .', '\n')
+                self.__not_kill = False
+                if self._before_stop:
+                    self._before_stop(self)
+                return
+            except ReadTimeout as exc:
+                # logger_errors.warning("ReadTimeout")
+                # print(f'\n\nTimeout error {exc}')
+                # print('\n\tRestarting . . .\n')
+                print(f"\n[{strftime('%d.%m.%y %H:%M:%S')}] Timeout error\nRestarting . . .")
+                pass
+            except:
+                # logger_errors.error("Un-handled exception ! ! !", exc_info=True)
+                # logging.error(f"{time.strftime('%d %m %Y %H:%M:%S')}\t{traceback.format_exc(-3)}")
+                print('Error:', end='')
+                print('\n\nFull Trace')
+                print(traceback.format_exc())
+                print(f"\n\n\n\t[{strftime('%d.%m.%y %H:%M:%S')}] Restarting . . .")
         return
 
     def __repr__(self) -> str:
