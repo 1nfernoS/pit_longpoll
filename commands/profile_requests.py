@@ -41,6 +41,10 @@ class Price(Command):
             count = int(msg[1])
             item_name = ' '.join(msg[2:])
         except ValueError:
+            if not all([i.isalpha() for i in msg[1]]):
+                del_id = bot.api.get_conversation_msg(msg_id['peer_id'], msg_id['conversation_message_id'])['id']
+                bot.api.del_msg(msg_id['peer_id'], del_id)
+                return
             count = 1
             item_name = ' '.join(msg[1:])
 
