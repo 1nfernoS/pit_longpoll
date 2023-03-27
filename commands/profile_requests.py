@@ -114,6 +114,10 @@ class Equip(Command):
             bot.api.send_chat_msg(event.chat_id, f"Не могу найти записей, покажите свой профиль, чтобы я записал информацию о вас и вашей гильдии")
             return
 
+        if user.user_role.role_can_moderate:
+            if 'reply_message' in event.message.keys():
+                user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.reply_message['from_id']).first()
+
         if not user.user_role.role_can_profile_app_check:
             bot.api.send_chat_msg(event.chat_id, f"Нет, это только для членов гильдии {GUILD_NAME}!")
             return

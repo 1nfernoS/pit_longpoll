@@ -18,7 +18,7 @@ from vk_bot.vk_bot import VkBot
 
 class Stats(Command):
     def __init__(self):
-        super().__init__(__class__.__name__, ('stats', 'пинок'))
+        super().__init__(__class__.__name__, ('stats', 'пинок', 'статы'))
         self.desc = 'Узнать сколько статов осталось до принудительного перехода на следующий этаж'
         self.require_check_stats = True
         # self.set_active(False)
@@ -28,6 +28,10 @@ class Stats(Command):
         s = session()
 
         user: UserStats = s.query(UserStats).filter(UserStats.user_id == event.message.from_id).first()
+
+        if user.user_info.user_role.role_can_moderate:
+            if 'reply_message' in event.message.keys():
+                user: UserInfo = s.query(UserStats).filter(UserStats.user_id == event.message.reply_message['from_id']).first()
 
         if not user.user_info.user_role.role_can_check_stats:
             return
@@ -98,7 +102,7 @@ class Notes(Command):
 
 class Balance(Command):
     def __init__(self):
-        super().__init__(__class__.__name__, ('баланс', 'кошелек', 'деньги', 'balance', 'wallet', 'money'))
+        super().__init__(__class__.__name__, ('баланс', 'деньги', 'balance', 'wallet', 'money'))
         self.desc = 'Узнать свой баланс. Только для членов гильдии'
         self.require_balance = True
         # self.set_active(False)
