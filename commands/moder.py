@@ -13,6 +13,7 @@ from vk_bot.vk_bot import VkBot
 leader_role = 1
 officer_role = 2
 guild_member_role = 5
+guild_newbie_role = 6
 guild_guest_role = 7
 other_role = 8
 ban_role = 9
@@ -205,6 +206,60 @@ class ToggleOfficer(Command):
                 event.message.reply_message['from_id'],
                 officer_role,
                 guild_member_role
+            )
+            bot.api.send_chat_msg(event.chat_id, msg)
+        return
+
+
+class ToggleGuildMember(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('соги', 'согильдиец', 'member'))
+        self.desc = 'Назначить согильдийца. Для лидеров и офицеров'
+        self.require_change_role = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        s = session()
+
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+
+        if not user.user_role.role_can_change_role:
+            return
+
+        if 'reply_message' in event.message.keys():
+            msg = toggle_role(
+                event.message.from_id,
+                event.message.reply_message['from_id'],
+                guild_member_role,
+                other_role
+            )
+            bot.api.send_chat_msg(event.chat_id, msg)
+        return
+
+
+class ToggleNewbie(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('новичек', 'испытательный', 'newbie'))
+        self.desc = 'Назначить роль новичка. Для лидеров и офицеров'
+        self.require_change_role = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        s = session()
+
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+
+        if not user.user_role.role_can_change_role:
+            return
+
+        if 'reply_message' in event.message.keys():
+            msg = toggle_role(
+                event.message.from_id,
+                event.message.reply_message['from_id'],
+                guild_newbie_role,
+                other_role
             )
             bot.api.send_chat_msg(event.chat_id, msg)
         return
