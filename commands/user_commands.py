@@ -2,12 +2,12 @@ from typing import List
 
 from commands import Command, command_list
 
-from ORM import session, UserInfo, UserStats
+from ORM import session, UserInfo, UserStats, Item
 
 from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
 
 # from DB import user_data, users
-from utils.emoji import level, strength, agility, endurance, gold
+from utils.emoji import level, strength, agility, endurance, gold, item
 from utils.math import commission_price
 from utils.keyboards import notes
 
@@ -154,6 +154,50 @@ class Balance(Command):
         message = f"Ваш долг: {gold}{-user.balance}(Положить {commission_price(-int(user.balance))})" \
             if user.balance < 0 \
             else f"Сейчас на счету: {gold}{user.balance}"
+        bot.api.send_chat_msg(event.chat_id, message)
+
+        return
+
+
+class Who(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('кто', ))
+        self.desc = '... ест [предмет](Без склонений). Среди тех, кто сдавал профиль или билд'
+        self.require_basic = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+
+        if user is None:
+            bot.api.send_chat_msg(event.chat_id, "Хм... О вас нет записей, покажите профиль хотя бы раз!!")
+            return
+
+        if not user.user_role.role_can_basic:
+            return
+
+        # msg_id = bot.api.send_chat_msg(event.chat_id, 'Ищу ценники . . .')[0]
+        msg = event.message.text.split(' ')
+        print(msg)
+        if len(msg) < 3:
+            return
+        if msg[1] != 'ест':
+            return
+        item_name = ' '.join(msg[2:])
+        search: Item = s.query(Item).filter(
+            Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ ){item_name}.*$"),
+            Item.item_has_price == 1).first()
+        print(search)
+        if not search:
+            bot.api.send_chat_msg(event.chat_id, 'Ничего не нашлось...')
+            return
+        guild_roles = (0, 1, 2, 3, 4, 5, 6)
+        message = f'{item}{search.item_name}. В экипировке у ' \
+                  f'{bot.api.get_names([i.user_id for i in search.item_users if i.user_role.role_id in guild_roles])}' \
+            if search.item_users else f'{item}{search.item_name}. Но этой книги ни у кого в билде нет'
+
         bot.api.send_chat_msg(event.chat_id, message)
 
         return
