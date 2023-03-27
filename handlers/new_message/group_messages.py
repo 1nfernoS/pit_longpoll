@@ -26,9 +26,7 @@ def bot_message(self: VkBot, event: VkBotEvent):
     # group's message in chat
 
     if "Ваш профиль:" in event.message.text:
-        logger.info(
-            'Profile\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',
-                                                                                                            ' | '))
+        # logger.info('Profile\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',' | '))
         msg_id = self.api.send_chat_msg(event.chat_id, 'Читаю профиль...')[0]
         answer = profile_message(self, event)
         photo = ''
@@ -45,17 +43,13 @@ def bot_message(self: VkBot, event: VkBotEvent):
 
     if 'положили' in event.message.text or 'взяли' in event.message.text:
         if event.chat_id == GUILD_CHAT_ID:
-            logger.info(
-                'Storage\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',
-                                                                                                                ' | '))
+            # logger.info('Storage\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',' | '))
             storage_reactions(self, event)
             pass
 
     if 'от игрока' in event.message.text:
         if event.chat_id == GUILD_CHAT_ID:
-            logger.info(
-                'Transfer\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',
-                                                                                                                 ' | '))
+            # logger.info('Transfer\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',' | '))
             pass
     return
 
@@ -108,8 +102,7 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
 
         if info.role_id is None:
             answer = 'Обновил информацию гильдии!\n' + answer
-            role_guild = 5
-            info.role_id = role_guild
+            info.role_id = role_guild = 5
 
     DB.add(info)
     DB.add(stats)
