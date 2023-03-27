@@ -84,8 +84,10 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
 
         if int(event.chat_id) == GUILD_CHAT_ID:
             if item_name.startswith('Книга - ') and item_.item_users:
+                guild_roles = (0, 1, 2, 3, 4, 5, 6)
                 in_equip: List[UserInfo] = item_.item_users
-                msg += f'{item}В экипировке у {self.api.get_names([i.user_id for i in in_equip])}'
+                msg += f'{item}В экипировке у ' \
+                       f'{self.api.get_names([i.user_id for i in in_equip if i.user_role.role_id in guild_roles])}'
     else:
         msg = f'Товар: {item}{item_name}\nЦена торговца: {gold}{item_price} ({gold}{commission_price})' + \
               f'\nВот только... Он не продается, Сам не знаю почему'

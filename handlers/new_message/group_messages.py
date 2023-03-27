@@ -35,8 +35,7 @@ def bot_message(self: VkBot, event: VkBotEvent):
                 if 'photo' in event.message['attachments'][0]:
                     at = event.message['attachments'][0]
                     photo = f"photo{at['photo']['owner_id']}_{at['photo']['id']}_{at['photo']['access_key']}"
-            msg_id_del = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)[
-                'id']
+            msg_id_del = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
             self.api.del_msg(event.message.peer_id, msg_id_del)
         self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer,
                           attachment=photo if photo else None)
