@@ -1,6 +1,6 @@
 from commands import Command
 
-from ORM import session, UserInfo, Role
+from ORM import session, UserInfo, Role, Logs
 
 # from DB import users
 
@@ -71,6 +71,12 @@ class Kick(Command):
         if event.message.reply_message['from_id'] == event.message.from_id:
             return
 
+        Logs(event.message.from_id, __class__.__name__,
+             event.message.text,
+             event.message.reply_message['text'],
+             event.message.reply_message['from_id']
+             ).make_record()
+
         kicked_user: UserInfo = \
             s.query(UserInfo).filter(UserInfo.user_id == event.message.reply_message['from_id']).first()
 
@@ -102,6 +108,7 @@ class Pin(Command):
 
         if 'reply_message' in event.message.keys():
             bot.api.pin_msg(event.chat_id, event.message.reply_message['conversation_message_id'])
+            Logs(event.message.from_id, __class__.__name__, event.message.text, event.message.reply_message['text']).make_record()
         else:
             bot.api.send_chat_msg(event.chat_id, 'Нет реплая для закрепа...')
         return
@@ -138,6 +145,12 @@ class Check(Command):
             bot.api.send_chat_msg(event.chat_id, 'Что-то не то, это не число')
             return
 
+        Logs(event.message.from_id, __class__.__name__,
+             event.message.text,
+             event.message.reply_message['text'],
+             event.message.reply_message['from_id']
+             ).make_record()
+
         changed_user: UserInfo = s.query(UserInfo).filter(
             UserInfo.user_id == event.message.reply_message['from_id']).first()
 
@@ -173,6 +186,10 @@ class ToggleLeader(Command):
             return
 
         if 'reply_message' in event.message.keys():
+
+            Logs(event.message.from_id, __class__.__name__, None, None,
+                 event.message.reply_message['from_id']).make_record()
+
             msg = toggle_role(
                 user.user_id,
                 event.message.reply_message['from_id'],
@@ -201,6 +218,10 @@ class ToggleOfficer(Command):
             return
 
         if 'reply_message' in event.message.keys():
+
+            Logs(event.message.from_id, __class__.__name__, None, None,
+                 event.message.reply_message['from_id']).make_record()
+
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],
@@ -228,6 +249,10 @@ class ToggleGuildMember(Command):
             return
 
         if 'reply_message' in event.message.keys():
+
+            Logs(event.message.from_id, __class__.__name__, None, None,
+                 event.message.reply_message['from_id']).make_record()
+
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],
@@ -255,6 +280,10 @@ class ToggleNewbie(Command):
             return
 
         if 'reply_message' in event.message.keys():
+
+            Logs(event.message.from_id, __class__.__name__, None, None,
+                 event.message.reply_message['from_id']).make_record()
+
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],
@@ -282,6 +311,10 @@ class ToggleGuest(Command):
             return
 
         if 'reply_message' in event.message.keys():
+
+            Logs(event.message.from_id, __class__.__name__, None, None,
+                 event.message.reply_message['from_id']).make_record()
+
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],

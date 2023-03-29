@@ -7,7 +7,7 @@ from vk_api.bot_longpoll import VkBotEvent
 # config and packages
 from config import GUILD_CHAT_ID
 
-from ORM import session, UserInfo, UserStats, Item
+from ORM import session, UserInfo, UserStats, Item, Logs
 
 from profile_api import get_profile, get_books
 
@@ -30,8 +30,12 @@ def user_message(self: VkBot, event: VkBotEvent):
             self.api.send_user_msg(event.message.from_id, ans)
             return
 
-        ans = 'Пару секунд, мне нужно изучить твои статы и экипировку... Один раз'
-        self.api.send_user_msg(event.message.from_id, ans)
+        Logs(event.message.from_id,
+             'Profile_link',
+             ).make_record()
+
+        ans = 'Пару секунд, мне нужно изучить твои статы и экипировку...'
+        msg_id = self.api.send_user_msg(event.message.from_id, ans)[0]
 
         s = event.message.text[event.message.text.find('act='):event.message.text.find('&group_id')]
         auth = s[s.find('auth_key') + 9:s.find('auth_key') + 41]
@@ -84,5 +88,5 @@ def user_message(self: VkBot, event: VkBotEvent):
         DB.add(info)
         DB.add(stats)
         DB.commit()
-        self.api.send_user_msg(event.message.from_id, ans)
+        self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], ans)
     return

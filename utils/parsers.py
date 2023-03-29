@@ -57,9 +57,9 @@ def parse_storage_action(text: str):
         count = int(re.findall(r'(?<=&#128216;|&#128213;)\d+(?=\*)', text)[0])
         item_name = re.findall(r'(?<=\*)\D+(?=!)', text)[0]
         DB = session()
-        item: Item = DB.query(Item).\
-            filter(Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name}.*$"),
-                   Item.item_has_price == 1).first()
+        item: Item = DB.query(Item).filter(
+            Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name}.*$"),
+            Item.item_has_price == 1).first()
         # item_id = search_item(item_name)['result'][0]['item_id']
 
         if not item:

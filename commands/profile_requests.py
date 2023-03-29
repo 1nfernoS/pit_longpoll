@@ -2,7 +2,7 @@ from typing import List
 
 from commands import Command
 
-from ORM import session, UserInfo, Item
+from ORM import session, UserInfo, Item, Logs
 
 from config import GUILD_NAME, DISCOUNT_PERCENT
 
@@ -30,6 +30,8 @@ class Price(Command):
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_balance:
             return
+
+        Logs(event.message.from_id, __class__.__name__, None, reason=event.message.text).make_record()
 
         msg_id = bot.api.send_chat_msg(event.chat_id, 'Ищу ценники . . .')[0]
         msg = event.message.text.split(' ')

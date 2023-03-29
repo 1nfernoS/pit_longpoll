@@ -7,7 +7,7 @@ from vk_api.bot_longpoll import VkBotEvent
 # config and packages
 from config import GUILD_NAME, GUILD_CHAT_ID, COMMISSION_PERCENT
 
-from ORM import session, UserInfo, UserStats
+from ORM import session, UserInfo, UserStats, Logs
 
 from utils.parsers import parse_profile, parse_storage_action
 from utils.formatters import str_datetime, datediff
@@ -26,7 +26,7 @@ def bot_message(self: VkBot, event: VkBotEvent):
     # group's message in chat
 
     if "Ваш профиль:" in event.message.text:
-        # logger.info('Profile\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',' | '))
+        Logs(event.message.from_id, 'Profile_message', event.message.text).make_record()
         msg_id = self.api.send_chat_msg(event.chat_id, 'Читаю профиль...')[0]
         answer = profile_message(self, event)
         photo = ''
@@ -42,13 +42,12 @@ def bot_message(self: VkBot, event: VkBotEvent):
 
     if 'положили' in event.message.text or 'взяли' in event.message.text:
         if event.chat_id == GUILD_CHAT_ID:
-            # logger.info('Storage\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',' | '))
             storage_reactions(self, event)
             pass
 
     if 'от игрока' in event.message.text:
         if event.chat_id == GUILD_CHAT_ID:
-            # logger.info('Transfer\t' + event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251').replace('\n',' | '))
+            Logs(event.message.from_id, 'Guild_Transfer', event.message.text).make_record()
             pass
     return
 
@@ -119,6 +118,12 @@ def storage_reactions(self: VkBot, event: VkBotEvent):
         user.balance += data['result_price'] * data['count']
         DB.add(user)
         DB.commit()
+        # 'id_vk': id_vk, 'count': count, 'item_name': item_name, 'price': price
+        Logs(user.user_id, 'Storage',
+             f"-{data['count']}*{data['item_name']}; +{data['result_price']}"
+             if data['result_price'] > 0
+             else f"+{data['count']}*{data['item_name']}; -{data['result_price']}",
+             on_user_id=user.user_id).make_record()
 
         msg = f"[id{user.user_id}|Готово], "
         msg += "пополняю баланс на" if data['result_price'] > 0 else "списываю с баланса"
@@ -134,7 +139,9 @@ def storage_reactions(self: VkBot, event: VkBotEvent):
         user.balance += data['count']
         DB.add(user)
         DB.commit()
-
+        Logs(user.user_id, 'Storage',
+             data['count'],
+             on_user_id=user.user_id).make_record()
         if data['count'] < 0:
             msg = f"О, [id{data['id_vk']}|Вы] взяли {-data['count']} золота!\n"
         else:

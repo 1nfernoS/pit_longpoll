@@ -12,7 +12,7 @@ from utils import parsers
 from utils.formatters import translate
 import profile_api
 
-from ORM import session, UserInfo, Item
+from ORM import session, UserInfo, Item, Logs
 
 from logger import get_logger
 
@@ -22,32 +22,35 @@ logger = get_logger(__name__, 'forwards')
 def forward_parse(self: VkBot, event: VkBotEvent):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     if fwd_txt.startswith(f'{item}1*'):
-        logger.info('dark_vendor\t' + fwd_txt.replace('\n', ' | '))
+        Logs(event.message.from_id, 'Dark_vendor', on_message=event.message.fwd_messages[0]['text']).make_record()
         dark_vendor(self, event)
         return
 
     if 'присоединились к осадному лагерю' in fwd_txt:
-        logger.info('siege\t' + fwd_txt.replace('\n', ' | '))
+        Logs(event.message.from_id, 'Siege', on_message='\n'.join([msg['text'] for msg in event.message.fwd_messages])).make_record()
         pass
 
     if 'обменяли элитные трофеи' in fwd_txt:
-        logger.info('elites\t' + fwd_txt.replace('\n', ' | '))
+        Logs(event.message.from_id, 'Elites', on_message=event.message.fwd_messages[0]['text']).make_record()
         pass
 
     if 'Символы' in fwd_txt:
-        logger.info('symbols\t' + fwd_txt.replace('\n', ' | '))
+        Logs(event.message.from_id, 'Symbols', on_message=event.message.fwd_messages[0]['text']).make_record()
         symbol_guesser(self, event)
         return
 
     if 'Путешествие продолжается...' in fwd_txt:
+        Logs(event.message.from_id, 'Travel', on_message=event.message.fwd_messages[0]['text']).make_record()
         travel_check(self, event)
         return
 
     if fwd_txt.startswith('Дверь с грохотом открывается'):
+        Logs(event.message.from_id, 'Door', on_message=event.message.fwd_messages[0]['text']).make_record()
         door_solver(self, event)
         return
 
     if fwd_txt.startswith('Книгу целиком уже не спасти'):
+        Logs(event.message.from_id, 'Book', on_message=event.message.fwd_messages[0]['text']).make_record()
         book_pages(self, event)
         return
 

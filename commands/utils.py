@@ -1,14 +1,12 @@
 from commands import Command
 
-from ORM import session, UserInfo
+from ORM import session, UserInfo, Logs
 
 from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
 
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
 from vk_bot.vk_bot import VkBot
-
-# from DB import users
 
 
 class Ping(Command):
@@ -26,9 +24,30 @@ class Ping(Command):
         if not user.user_role.role_can_basic:
             return
 
+        Logs(event.message.from_id, __class__.__name__).make_record()
+
         bot.api.send_chat_msg(event.chat_id, 'Я живой)')
         return
 
+class Grib(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('ping', 'пинг', 'тык'))
+        self.desc = 'Проверка живой я или нет'
+        self.require_basic = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+
+        if not user.user_role.role_can_basic:
+            return
+
+        Logs(event.message.from_id, __class__.__name__).make_record()
+
+        bot.api.send_chat_msg(event.chat_id, '&#127812;')
+        return
 
 class War(Command):
     def __init__(self):
@@ -76,7 +95,7 @@ class War(Command):
 class Role(Command):
     def __init__(self):
         super().__init__(__class__.__name__, ('роль', 'role'))
-        self.desc = 'Узнать роль свою или по реплаю/форварду'
+        self.desc = 'Узнать роль свою или по реплаю'
         self.require_basic = True
         # self.set_active(False)
         return
@@ -100,6 +119,12 @@ class Role(Command):
             bot.api.send_chat_msg(event.chat_id, answer)
         else:
             bot.api.send_chat_msg(event.chat_id, f'Ваша роль: {user.user_role.role_name}')
+
+        Logs(event.message.from_id, __class__.__name__, None, None,
+             event.message.reply_message['from_id']
+             if 'reply_message' in event.message.keys()
+             else event.message.from_id).make_record()
+
         return
 
 
@@ -124,6 +149,11 @@ class Id(Command):
             pass
         else:
             bot.api.send_chat_msg(event.chat_id, str(event.message.from_id))
+
+        Logs(event.message.from_id, __class__.__name__, None, None,
+             event.message.reply_message['from_id']
+             if 'reply_message' in event.message.keys()
+             else event.message.from_id).make_record()
         return
 
 
@@ -141,6 +171,8 @@ class Emoji(Command):
 
         if not user.user_role.role_can_utils:
             return
+
+        Logs(event.message.from_id, __class__.__name__).make_record()
 
         msg = event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
         msg = msg.split(' ', 1)[1].replace('&#', '').replace(';', '')
@@ -162,6 +194,8 @@ class Bill(Command):
 
         if not user.user_role.role_can_withdraw_bill:
             return
+
+        Logs(event.message.from_id, __class__.__name__).make_record()
 
         from utils.scripts import withdraw_bill
         withdraw_bill(bot)

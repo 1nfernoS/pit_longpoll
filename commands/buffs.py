@@ -2,7 +2,7 @@ from typing import List
 
 from vk_api.bot_longpoll import VkBotEvent
 
-from ORM import session, UserInfo, BuffUser
+from ORM import session, UserInfo, BuffUser, Logs
 from commands import Command
 from config import creator_id
 
@@ -29,8 +29,11 @@ class ToggleBuffer(Command):
         if 'reply_message' not in event.message.keys():
             return
 
+        user_id = event.message.reply_message['from_id']
+
+        Logs(event.message.from_id, __class__.__name__, on_user_id=user_id).make_record()
+
         with session() as s:
-            user_id = event.message.reply_message['from_id']
             buffer: BuffUser = s.query(BuffUser).filter(BuffUser.buff_user_id == user_id).first()
             buffer.buff_user_is_active = int(not bool(buffer.buff_user_is_active))
             s.add(buffer)
@@ -53,6 +56,8 @@ class Apostol(Command):
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
             return
+
+        Logs(event.message.from_id, __class__.__name__).make_record()
 
         from profile_api import get_voices
 
@@ -93,6 +98,8 @@ class Warlock(Command):
         if not user.user_role.role_can_get_buff:
             return
 
+        Logs(event.message.from_id, __class__.__name__).make_record()
+
         warlocks: List[BuffUser] = s.query(BuffUser).filter(BuffUser.buff_type_id == WARLOCK_ITEM_ID).all()
 
         if not warlocks:
@@ -121,6 +128,8 @@ class PaladinStuff(Command):
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
             return
+
+        Logs(event.message.from_id, __class__.__name__).make_record()
 
         paladins: List[BuffUser] = s.query(BuffUser).filter(BuffUser.buff_type_id == PALADIN_ITEM_ID).all()
         crusaders: List[BuffUser] = s.query(BuffUser).filter(BuffUser.buff_type_id == CRUSADER_ITEM_ID).all()

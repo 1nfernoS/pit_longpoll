@@ -2,7 +2,7 @@ from typing import List
 
 from commands import Command, command_list
 
-from ORM import session, UserInfo, UserStats, Item
+from ORM import session, UserInfo, UserStats, Item, Logs
 
 from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
 
@@ -36,6 +36,11 @@ class Stats(Command):
         if not user.user_info.user_role.role_can_check_stats:
             return
 
+        Logs(event.message.from_id, __class__.__name__, None, None,
+             event.message.reply_message['from_id']
+             if 'reply_message' in event.message.keys()
+             else event.message.from_id).make_record()
+
         message = f"{user.user_level}{level}: до пинка " \
                   f"{(user.user_level + 15) * 6 - user.user_strength - user.user_agility}{strength}/{agility}" \
                   f" или {user.user_level * 3 + 45 - user.user_endurance}{endurance}" \
@@ -63,6 +68,9 @@ class Help(Command):
         role_access = {i.replace('role_can_', ''): bool(getattr(user.user_role, i))
                        for i in dir(user.user_role)
                        if i.startswith('role_can_')}
+
+        Logs(event.message.from_id, __class__.__name__).make_record()
+
         # data = users.get_user(event.message.from_id)
         for cmd in command_list:
             requires = {i.replace('require_', ''): getattr(command_list[cmd], i)
@@ -95,6 +103,8 @@ class Notes(Command):
         if not user.user_role.role_can_basic:
             return
 
+        Logs(event.message.from_id, __class__.__name__).make_record()
+
         message = 'Заметки:'
         bot.api.send_chat_msg(event.chat_id, message, notes())
         return
@@ -118,6 +128,15 @@ class Balance(Command):
 
         if not user.user_role.role_can_balance:
             return
+
+        Logs(event.message.from_id,
+             __class__.__name__,
+             event.message.text,
+             None,
+             event.message.reply_message['from_id']
+             if 'reply_message' in event.message.keys()
+             else event.message.from_id
+             ).make_record()
 
         if user.user_role.role_can_check_all_balance:
             if 'reply_message' in event.message.keys():
@@ -185,6 +204,9 @@ class Who(Command):
             return
         if msg[1] != 'ест':
             return
+
+        Logs(event.message.from_id, __class__.__name__, event.message.text).make_record()
+
         item_name = ' '.join(msg[2:])
         search: Item = s.query(Item).filter(
             Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ ){item_name}.*$"),
@@ -257,6 +279,13 @@ class Transfer(Command):
             message = f"У id{user_to.user_id} нет прав баланса, проерьте роль или получателя!"
             bot.api.send_chat_msg(event.chat_id, message)
             return
+
+        Logs(event.message.from_id,
+             __class__.__name__,
+             event.message.text,
+             None,
+             event.message.reply_message['from_id']
+             ).make_record()
 
         user_from.balance -= money
         user_to.balance += money

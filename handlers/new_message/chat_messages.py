@@ -16,7 +16,7 @@ def chat_message(self: VkBot, event: VkBotEvent):
     for cmd in commands.command_list:
         if txt[0] in cmd:
             commands.command_list[cmd].run(self, event)
-            msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+            # msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
             # self.api.del_msg(event.message.peer_id, msg_id)
 
     return
