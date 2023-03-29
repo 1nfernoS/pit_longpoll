@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, Session, relationship
 
 from config import db_data
 
-__all__ = ['session', 'UserInfo', 'UserStats', 'Role', 'Item', 'BuffUser', 'BuffType', 'BuffCmd']
+__all__ = ['session', 'UserInfo', 'UserStats', 'Role', 'Item', 'BuffUser', 'BuffType', 'BuffCmd', 'Logs']
 
 __data_source = f"{db_data['dialect']}+{db_data['connector']}://" \
               f"{db_data['user']}:{db_data['password']}@" \
@@ -286,6 +286,40 @@ class BuffUser(Base):
 
     def __repr__(self):
         return f"<BuffUser {self.buff_user_id}: {self.buff_type_id}>"
+
+
+class Logs(Base):
+    __tablename__ = 'logs'
+
+    logs_entry_id: Mapped[int]
+    logs_timestamp: Mapped[datetime]
+    logs_user_id: Mapped[int]
+    logs_action: Mapped[str]
+    logs_on_user_id: Mapped[int]
+    logs_reason: Mapped[str]
+    logs_on_message: Mapped[str]
+
+    def __init__(self, user_id: int, action: str, reason: str = None,
+                 on_message: str = None, on_user_id: int = None):
+        self.logs_timestamp = datetime.now()
+        self.logs_user_id = user_id
+        self.logs_action = action
+        self.logs_on_user_id = on_user_id
+        self.logs_reason = reason
+        self.logs_on_message = on_message
+        return
+
+    def make_record(self):
+        with session() as s:
+            s.add(self)
+            s.commit()
+        return
+
+    def __str__(self):
+        return f"<Logs {self.logs_user_id}: {self.logs_action}>"
+
+    def __repr__(self):
+        return f"<Logs {self.logs_user_id}: {self.logs_action}>"
 
 
 metadata.reflect(__engine, extend_existing=True)
