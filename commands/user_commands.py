@@ -199,7 +199,6 @@ class Who(Command):
 
         # msg_id = bot.api.send_chat_msg(event.chat_id, 'Ищу ценники . . .')[0]
         msg = event.message.text.split(' ')
-        print(msg)
         if len(msg) < 3:
             return
         if msg[1] != 'ест':

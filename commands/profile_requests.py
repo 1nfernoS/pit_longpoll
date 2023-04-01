@@ -31,7 +31,7 @@ class Price(Command):
         if not user.user_role.role_can_balance:
             return
 
-        Logs(event.message.from_id, __class__.__name__, None, reason=event.message.text).make_record()
+        Logs(event.message.from_id, __class__.__name__, reason=event.message.text).make_record()
 
         msg_id = bot.api.send_chat_msg(event.chat_id, 'Ищу ценники . . .')[0]
         msg = event.message.text.split(' ')

@@ -122,7 +122,7 @@ def storage_reactions(self: VkBot, event: VkBotEvent):
         Logs(user.user_id, 'Storage',
              f"-{data['count']}*{data['item_name']}; +{data['result_price']}"
              if data['result_price'] > 0
-             else f"+{data['count']}*{data['item_name']}; -{data['result_price']}",
+             else f"+{data['count']}*{data['item_name']}; {data['result_price']}",
              on_user_id=user.user_id).make_record()
 
         msg = f"[id{user.user_id}|Готово], "

@@ -7,10 +7,10 @@ from ORM import session, UserInfo
 
 def withdraw_bill(bot: VkBot) -> None:
     members = bot.api.get_members(GUILD_CHAT_ID)
+    DB = session()
     for user_id in members:
         if user_id < 0:
             continue
-        DB = session()
         user: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == user_id).first()
         if not user:
             continue
