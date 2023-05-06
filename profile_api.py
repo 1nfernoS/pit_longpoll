@@ -138,6 +138,13 @@ def get_build(item_list: list) -> dict:
     return res
 
 
+def get_buff_class(auth_key: str, user_id: int) -> int:
+    for val in _inv(auth_key, user_id):
+        if val in [14088, 14093, 14256, 14257, 14264]:  # class ids
+            return val
+    return None
+
+
 def get_races(auth_key: str, user_id: int) -> List[int]:
     return [val for val in _inv(auth_key, user_id) if val in range(14413, 14420)]  # 14413-14419 is race ids
 
