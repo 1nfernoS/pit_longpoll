@@ -155,8 +155,9 @@ def get_voices(auth_key: str, user_id: int) -> int:
     logger.info(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
-
-    return int(soup.find_all('h4')[0].text[-5:-3])
+    voices = soup.find_all('h4')[0].text
+    import re
+    return int(re.findall(r'\d+(?=/\d+)', voices)[0])
 
 
 def price(item: int) -> int:
