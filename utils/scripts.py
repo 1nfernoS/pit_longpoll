@@ -23,6 +23,17 @@ def withdraw_bill(bot: VkBot) -> None:
     DB.commit()
     return
 
+def get_chat_id(token: str):
+    import vk_api
+    from vk_api.longpoll import VkEventType, VkLongPoll, CHAT_START_ID
+    vk = vk_api.VkApi(token=token, api_version='5.131')
+    api = vk.get_api()
+    dialoges = api.messages.getConversations()
+    chats = [i for i in dialoges['items'] if i['conversation']['peer']['type'] == 'chat']
+    for chat in chats:
+        if chat['conversation']['chat_settings']['title'] == 'Чат Гильдии "Тёмная сторона"':
+            return chat['conversation']['peer']['local_id']
+
 
 if __name__ == '__main__':
     import config
