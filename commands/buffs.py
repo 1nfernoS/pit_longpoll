@@ -70,7 +70,7 @@ class Apostol(Command):
 
         voices = {apo.buff_user_id: get_voices(apo.buff_user_profile_key, apo.buff_user_id) for apo in apostols}
 
-        if not any(voices):
+        if not any(voices.values()):
             bot.api.send_chat_msg(event.chat_id, "Мне жаль, но сейчас нет ни одного апостола с голосами")
             return
 
