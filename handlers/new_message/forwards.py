@@ -72,8 +72,8 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
     DB = session()
     item_: Item = DB.query(Item).filter(Item.item_name.ilike(f"{item_name}%"),Item.item_has_price == 1).first()
     if not item_:
-        msg = 'Кажется, такого предмета нет в базе'
-        self.api.send_chat_msg(event.chat_id, msg)
+        msg = 'Кажется, такой предмет не продается на аукционе'
+        self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
         return
 
     auc_price = profile_api.price(item_.item_id)
