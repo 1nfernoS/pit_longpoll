@@ -16,7 +16,7 @@ def withdraw_bill(bot: VkBot) -> None:
             continue
 
         if user.user_role.role_can_balance:
-            user.balance -= 18000 if user.user_stats.user_level < 100 else 36000
+            user.balance -= user.user_stats.user_level*140
 
         DB.add(user)
 
