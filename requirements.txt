@@ -1,5 +1,5 @@
-vk_api
-bs4
-mariadb
-mysql-connector-python
-SQLAlchemy
+vk_api==11.9.9
+bs4==0.0.1
+mariadb==1.1.5.post2
+mysql-connector-python==8.0.30
+SQLAlchemy==2.0.0
