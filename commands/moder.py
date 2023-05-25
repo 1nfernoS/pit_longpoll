@@ -80,12 +80,13 @@ class Kick(Command):
         kicked_user: UserInfo = \
             s.query(UserInfo).filter(UserInfo.user_id == event.message.reply_message['from_id']).first()
 
-        kicked_user.role_id = ban_role
-        s.add(kicked_user)
-        s.commit()
+        if kicked_user:
+            kicked_user.role_id = ban_role
+            s.add(kicked_user)
+            s.commit()
 
-        bot.api.kick(event.chat_id, kicked_user.user_id)
-
+        bot.api.kick(event.chat_id, event.message.reply_message['from_id'])
+        
         return
 
 
