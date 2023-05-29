@@ -31,7 +31,7 @@ def toggle_role(id_from: int, id_to: int, role_id: int, toggle_role_id: int) -> 
     if not user_to:
         return f"О id{user_to.user_id} нет записей, пусть покажет профиль хотя бы раз!"
 
-    if user_from.role_id < user_to.role_id:
+    if user_from.role_id > user_to.role_id:
         return "Вы не можете менять роль старшего по статусу"
 
     user_to.role_id = toggle_role_id \
