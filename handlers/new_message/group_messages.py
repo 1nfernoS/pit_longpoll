@@ -36,7 +36,7 @@ def bot_message(self: VkBot, event: VkBotEvent):
                     at = event.message['attachments'][0]
                     photo = f"photo{at['photo']['owner_id']}_{at['photo']['id']}_{at['photo']['access_key']}"
             msg_id_del = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
-            self.api.del_msg(event.message.peer_id, msg_id_del)
+            # self.api.del_msg(event.message.peer_id, msg_id_del)
         self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer,
                           attachment=photo if photo else None)
 
@@ -97,10 +97,17 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
         stats.user_luck = new_data
 
     if data['guild'] == GUILD_NAME:
-
-        if info.role_id is None:
+        # because all guild roles are below 7 (guests)
+        if info.role_id is None\
+                or info.role_id not in range(7):
             answer = 'Обновил информацию гильдии!\n' + answer
             info.role_id = role_guild = 5
+    else:
+        if info.role_id is None \
+                or info.role_id in range(7):
+            # if not banned and not in guild now
+            if info.role_id != 9:
+                info.role_id = other_role = 8
 
     DB.add(info)
     DB.add(stats)
