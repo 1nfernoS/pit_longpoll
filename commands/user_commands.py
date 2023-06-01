@@ -275,7 +275,7 @@ class Transfer(Command):
             return
 
         if not user_to.user_role.role_can_balance:
-            message = f"У id{user_to.user_id} нет прав баланса, проерьте роль или получателя!"
+            message = f"У id{user_to.user_id} нет прав баланса, проверьте роль или получателя!"
             bot.api.send_chat_msg(event.chat_id, message)
             return
 
