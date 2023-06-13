@@ -1,6 +1,6 @@
 from vk_bot.vk_bot import VkBot
 
-from config import GUILD_CHAT_ID
+from config import GUILD_CHAT_ID, creator_id
 
 from ORM import session, UserInfo
 
@@ -16,12 +16,15 @@ def withdraw_bill(bot: VkBot) -> None:
             continue
 
         if user.user_role.role_can_balance:
+            if user.user_id == int(creator_id):
+                continue
             user.balance -= user.user_stats.user_level*140
 
         DB.add(user)
 
     DB.commit()
     return
+
 
 def get_chat_id(token: str):
     import vk_api
