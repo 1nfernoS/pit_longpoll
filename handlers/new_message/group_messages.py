@@ -91,20 +91,19 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
                  f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}{emo.strength}/{emo.agility}" \
                  f"{(data['level'] + 15) * 3 - data['endurance']}{emo.endurance})"
 
-
     stats.user_level, stats.user_attack, stats.user_defence, \
         stats.user_strength, stats.user_agility, stats.user_endurance, \
         stats.user_luck = new_data
 
     if data['guild'] == GUILD_NAME:
         # because all guild roles are below 7 (guests)
-        if info.role_id is None\
-                or info.role_id not in range(7):
+        if info.role_id is None \
+                or info.role_id not in [0, 1, 2, 3, 4, 5, 6, 7]:
             answer = 'Обновил информацию гильдии!\n' + answer
             info.role_id = role_guild = 5
     else:
         if info.role_id is None \
-                or info.role_id in range(7):
+                or info.role_id not in [0, 1, 2, 3, 4, 5, 6, 7]:
             # if not banned and not in guild now
             if info.role_id != 9:
                 info.role_id = other_role = 8
