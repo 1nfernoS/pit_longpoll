@@ -37,9 +37,3 @@ def get_chat_id(token: str):
         if chat['conversation']['chat_settings']['title'] == 'Чат Гильдии "Тёмная сторона"':
             return chat['conversation']['peer']['local_id']
 
-
-if __name__ == '__main__':
-    import config
-    config.load('prod')
-    bot = VkBot(config.group_data['group_token'])
-    # withdraw_bill(bot)

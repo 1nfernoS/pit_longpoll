@@ -6,8 +6,7 @@ from handlers.events import event_message
 
 from vk_api.bot_longpoll import VkBotEvent
 
-config.load('prod')
-bot = VkBot(config.group_data['group_token'])
+bot = VkBot(config.group_token)
 
 
 @bot.startup()

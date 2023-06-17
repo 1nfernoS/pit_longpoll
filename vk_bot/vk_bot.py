@@ -113,11 +113,3 @@ class VkBot:
     def __str__(self) -> str:
         # Call str(var)
         return f'VkBot {self._name}(@id-{self._group_id})'
-
-
-if __name__ == '__main__':
-    import config
-    config.load('prod')
-    bot = VkBot(config.group_data['group_token'])
-    bot.start()
-    pass
