@@ -2,9 +2,9 @@
 venv/
 test.*
 .idea/
-prestart.py
 __pycache__/
 DB/scripts/kitty_pit.sql
 logs/
 pic_bot.py
 *.bat
+.env*

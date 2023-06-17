@@ -1,36 +1,59 @@
-import os
-import json
+from typing import Tuple
 
-import prestart
-prestart.init()
+from os import environ as env
+from sys import argv
 
-group_data = json.loads(os.environ.get('GROUP_DATA'))[os.environ.get('BRANCH', 'dev')]
-creator_id = os.environ.get('CREATOR_ID')
-db_data = json.loads(os.environ.get('DB_DATA'))
+from json import loads
+from dotenv import load_dotenv
 
-PIT_BOT = -182985865
-OVERSEER_BOT = -183040898
-GUILD_NAME = 'Темная сторона'
-GUILD_CHAT_ID = 1
-IGNORE_LIST = (PIT_BOT, OVERSEER_BOT, 211500453)
-ALLOWED_CHATS = (1, 5, 6)
-
-DISCOUNT_PERCENT = 20
-COMMISSION_PERCENT = 10
-
-APO_PAYMENT = 100
-
-NOTE_RULES = 'https://vk.com/@asstrickster_kitty-pravila-gildii'
-NOTE_ALL = 'https://vk.com/@asstrickster_kitty'
+# branch-depended
+group_token: str = ''
+db_data: dict = dict()
+# whitelist of chat id's for bot to listen
+ALLOWED_CHATS: Tuple[int, ...] = tuple(int(i) for i in env.get('ALLOWED_CHATS').split(','))
 
 
-def load(branch: str):
-    global group_data
-    data = json.loads(os.environ.get('GROUP_DATA'))
-    group_data = data.get(branch)
-    if group_data:
-        os.environ['BRANCH'] = branch
-    else:
-        group_data = json.loads(os.environ.get('GROUP_DATA'))['dev']
-        print(f"No branch '{branch}', loaded 'dev' branch")
+def load(branch_name: str):
+    if not load_dotenv('.env.' + branch_name):
+        print(f"No branch '{branch_name}', loaded 'dev' branch")
+        branch_name = 'dev'
+
+    if not load_dotenv('.env.' + branch_name):
+        raise EnvironmentError(f'No .env.{branch_name} file')
+
+    global group_token, db_data
+
+    group_token = env.get('group_token')
+    db_data = loads(env.get('db_data'))
     return
+
+
+# Load constants
+PIT_BOT: int = -182985865
+OVERSEER_BOT: int = -183040898
+COMMISSION_PERCENT: int = 10
+
+
+# load env
+if not load_dotenv('.env'):
+    raise EnvironmentError('No .env file')
+
+
+# id's of users in chat but not in guild (bots, guests, etc)
+IGNORE_LIST: Tuple[int, ...] = (PIT_BOT, OVERSEER_BOT, *[int(i) for i in env.get('IGNORE').split(',')])
+
+GUILD_NAME: str = env.get('GUILD_NAME')
+GUILD_CHAT_ID: int = int(env.get('GUILD_CHAT_ID'))
+
+DISCOUNT_PERCENT: int = int(env.get('PERCENT_DISCOUNT'))
+
+NOTE_RULES: str = env.get('NOTE_RULES')
+NOTE_ALL: str = env.get('NOTE_ALL')
+
+APO_PAYMENT: int = int(env.get('PAYMENT_APO'))
+
+creator_id: int = int(env.get('CREATOR_ID'))
+
+branch = env.get('BRANCH')
+
+load(branch)
