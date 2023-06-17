@@ -23,7 +23,7 @@ class ToggleBuffer(Command):
         return
 
     def run(self, bot: VkBot, event: VkBotEvent):
-        if event.message.from_id != int(creator_id):
+        if event.message.from_id != creator_id:
             return
 
         if 'reply_message' not in event.message.keys():

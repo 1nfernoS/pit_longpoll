@@ -16,7 +16,7 @@ def withdraw_bill(bot: VkBot) -> None:
             continue
 
         if user.user_role.role_can_balance:
-            if user.user_id == int(creator_id):
+            if user.user_id == creator_id:
                 continue
             user.balance -= user.user_stats.user_level*140
 

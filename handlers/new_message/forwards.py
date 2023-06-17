@@ -89,7 +89,7 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
               f'{gold}{guild_price}' \
               f'({gold}{guild_commission_price})\n\n'
 
-        if int(event.chat_id) == GUILD_CHAT_ID:
+        if event.chat_id == GUILD_CHAT_ID:
             if item_name.startswith('Книга - ') and item_.item_users:
                 guild_roles = (0, 1, 2, 3, 4, 5, 6)
                 in_equip: List[UserInfo] = item_.item_users
