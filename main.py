@@ -18,7 +18,7 @@ def before_start(b: VkBot, *args):
 
 @bot.on_stop()
 def before_stop(b: VkBot, *args):
-    b.api.send_chat_msg(config.GUILD_CHAT_ID, f'Я спать, тыкайте [{config.creator_id}|его], если что')
+    b.api.send_chat_msg(config.GUILD_CHAT_ID, f'Я спать, тыкайте [id{config.creator_id}|его], если что')
     return
 
 

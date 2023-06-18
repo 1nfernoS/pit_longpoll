@@ -1,9 +1,8 @@
 from datetime import datetime
-from typing import List, Dict, Type
+from typing import List, Dict
 
-from sqlalchemy import MetaData, create_engine
-from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.orm import Mapped, Session, relationship
+from sqlalchemy import create_engine, ForeignKey
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, relationship, mapped_column
 
 from config import db_data
 
@@ -15,11 +14,9 @@ __data_source = f"{db_data['dialect']}+{db_data['connector']}://" \
 
 __engine = create_engine(__data_source)
 
-metadata = MetaData()
-# metadata.reflect(engine)
 
-
-Base = automap_base(metadata=metadata)
+class Base(DeclarativeBase):
+    pass
 
 
 def session() -> Session:
@@ -29,7 +26,7 @@ def session() -> Session:
 class Item(Base):
     __tablename__ = 'item'
 
-    item_id: Mapped[int]
+    item_id: Mapped[int] = mapped_column(primary_key=True)
     item_name: Mapped[str]
     item_has_price: Mapped[bool]
 
@@ -37,6 +34,7 @@ class Item(Base):
                                                         viewonly=True)
 
     def __init__(self, item_id: int, name: str, has_price: bool = False):
+        super().__init__()
         self.item_id = item_id
         self.item_name = name
         self.item_has_price = has_price
@@ -52,7 +50,7 @@ class Item(Base):
 class Role(Base):
     __tablename__ = 'role'
 
-    role_id: Mapped[int]
+    role_id: Mapped[int] = mapped_column(primary_key=True)
     role_name: Mapped[str]
     role_can_basic: Mapped[int]
     role_can_get_buff: Mapped[int]
@@ -67,13 +65,14 @@ class Role(Base):
     role_can_change_role: Mapped[int]
     role_can_utils: Mapped[int]
 
-    role_users: Mapped[List["UserInfo"]] = relationship(viewonly=True)
+    role_users: Mapped[List["UserInfo"]] = relationship(back_populates='user_role', viewonly=True)
 
     def __init__(self, role_id: int, name: str, can_basic: bool = False, can_get_buff: bool = False,
                  can_check_stats: bool = False, can_balance: bool = False, can_profile_app_check: bool = False,
                  can_change_balance: bool = False, can_moderate: bool = False, can_kick: bool = False,
                  can_check_all_balance: bool = False, can_withdraw_bill: bool = False, can_change_role: bool = False,
                  can_utils: bool = False):
+        super().__init__()
         if role_id < 0:
             raise ValueError
         self.role_id = role_id
@@ -127,7 +126,7 @@ class Role(Base):
 class UserStats(Base):
     __tablename__ = 'user_stats'
 
-    user_id: Mapped[int]
+    user_id: Mapped[int] = mapped_column(ForeignKey('user_info.user_id'), primary_key=True)
     class_id: Mapped[int]
     user_level: Mapped[int]
     user_attack: Mapped[int]
@@ -140,12 +139,13 @@ class UserStats(Base):
     user_concentration: Mapped[int]
     last_update: Mapped[datetime]
 
-    user_info: Mapped['UserInfo'] = relationship(viewonly=True, back_populates='user_stats')
+    user_info: Mapped['UserInfo'] = relationship(back_populates='user_stats', viewonly=True)
 
     def __init__(self, user_id: int, class_id: int = None, level: int = 1,
                  attack: int = 5, defence: int = 5, strength: int = 5, agility: int = 5, endurance: int = 5,
                  luck: int = 1, accuracy: int = 1, concentration: int = 1,
                  last_update: datetime = datetime.now()):
+        super().__init__()
         self.user_id = user_id
         self.class_id = class_id
         self.user_level = level
@@ -186,18 +186,17 @@ class UserStats(Base):
 class UserInfo(Base):
     __tablename__ = 'user_info'
 
-    user_id: Mapped[int]
+    user_id: Mapped[int] = mapped_column(primary_key=True)
     user_profile_key: Mapped[str]
-    role_id: Mapped[int]
+    role_id: Mapped[int] = mapped_column(ForeignKey('role.role_id'))
     balance: Mapped[int]
 
-    user_items: Mapped[List["Item"]] = relationship(secondary='equipment', back_populates='item_users',
-                                                    overlaps="item_collection,userinfo_collection")
-    user_stats: Mapped["UserStats"] = relationship(back_populates='user_info', overlaps='userinfo,userstats_collection')
-
+    user_items: Mapped[List["Item"]] = relationship(secondary='equipment', back_populates='item_users')
+    user_stats: Mapped["UserStats"] = relationship(back_populates='user_info')
     user_role: Mapped["Role"] = relationship(back_populates='role_users', viewonly=True)
 
     def __init__(self, user_id: int, profile_key: str = None, role_id: int = 8, balance: int = 0):
+        super().__init__()
         self.user_id = user_id
         self.user_profile_key = profile_key
         self.role_id = role_id
@@ -211,18 +210,24 @@ class UserInfo(Base):
         return f'<UserInfo {self.user_id} ({self.role_id})>'
 
 
+class Equipment(Base):
+    __tablename__ = 'equipment'
+
+    user_id: Mapped[int] = mapped_column(ForeignKey(UserInfo.user_id), primary_key=True)
+    item_id: Mapped[int] = mapped_column(ForeignKey(Item.item_id), primary_key=True)
+
+
 class BuffType(Base):
     __tablename__ = 'buff_type'
 
-    buff_type_id: Mapped[int]
+    buff_type_id: Mapped[int] = mapped_column(primary_key=True)
     buff_type_name: Mapped[str]
 
-    buff_users: Mapped[List["BuffUser"]] = relationship(back_populates='buff_user_type',
-                                                        overlaps='buffuser_collection,bufftype')
-    buff_commands: Mapped[List["BuffCmd"]] = relationship(secondary='buff_type_cmd', back_populates='buff_cmd_type',
-                                                          overlaps='buffcmd_collection,bufftype_collection')
+    buff_users: Mapped[List["BuffUser"]] = relationship(back_populates='buff_user_type')
+    buff_commands: Mapped[List["BuffCmd"]] = relationship(secondary='buff_type_cmd', back_populates='buff_cmd_type')
 
     def __init__(self, type_id: int, type_name: str):
+        super().__init__()
         self.buff_type_id = type_id
         self.buff_type_name = type_name
         return
@@ -237,13 +242,14 @@ class BuffType(Base):
 class BuffCmd(Base):
     __tablename__ = 'buff_cmd'
 
-    buff_cmd_id: Mapped[int]
+    buff_cmd_id: Mapped[int] = mapped_column(primary_key=True)
     buff_cmd_text: Mapped[str]
 
     buff_cmd_type: Mapped[BuffType] = relationship(secondary='buff_type_cmd', back_populates='buff_commands',
-                                                   viewonly=True, overlaps='bufftype_collection')
+                                                   viewonly=True)
 
     def __init__(self, cmd_id: int, cmd_text: str):
+        super().__init__()
         self.buff_cmd_id = cmd_id
         self.buff_cmd_text = cmd_text
         return
@@ -255,22 +261,30 @@ class BuffCmd(Base):
         return f"<BuffCmd {self.buff_cmd_id}: {self.buff_cmd_text}>"
 
 
+class BuffTypeCmd(Base):
+    __tablename__ = 'buff_type_cmd'
+
+    buff_type_id: Mapped[int] = mapped_column(ForeignKey(BuffType.buff_type_id), primary_key=True)
+    buff_cmd_id: Mapped[int] = mapped_column(ForeignKey(BuffCmd.buff_cmd_id), primary_key=True)
+
+
 class BuffUser(Base):
     __tablename__ = 'buff_user'
 
-    buff_user_id: Mapped[int]
+    buff_user_id: Mapped[int] = mapped_column(primary_key=True)
     buff_user_is_active: Mapped[bool]
     buff_user_profile_key: Mapped[str]
     buff_user_token: Mapped[str]
-    buff_type_id: Mapped[int]
+    buff_type_id: Mapped[int] = mapped_column(ForeignKey(BuffType.buff_type_id))
     buff_user_race1: Mapped[int]
     buff_user_race2: Mapped[int]
     buff_user_chat_id: Mapped[int]
 
-    buff_user_type: Mapped[BuffType] = relationship(back_populates='buff_users', overlaps="bufftype", viewonly=True)
+    buff_user_type: Mapped[BuffType] = relationship(back_populates='buff_users', viewonly=True)
 
     def __init__(self, user_id: int, is_active: bool, profile_key: str, token: str,
                  type_id: int, race1: int, race2: int, chat_id: int):
+        super().__init__()
         self.buff_user_id = user_id
         self.buff_user_is_active = is_active
         self.buff_user_profile_key = profile_key
@@ -291,7 +305,7 @@ class BuffUser(Base):
 class Logs(Base):
     __tablename__ = 'logs'
 
-    logs_entry_id: Mapped[int]
+    logs_entry_id: Mapped[int] = mapped_column(primary_key=True)
     logs_timestamp: Mapped[datetime]
     logs_user_id: Mapped[int]
     logs_action: Mapped[str]
@@ -301,6 +315,7 @@ class Logs(Base):
 
     def __init__(self, user_id: int, action: str, reason: str = None,
                  on_message: str = None, on_user_id: int = None):
+        super().__init__()
         self.logs_timestamp = datetime.now()
         self.logs_user_id = user_id
         self.logs_action = action
@@ -322,36 +337,5 @@ class Logs(Base):
         return f"<Logs {self.logs_user_id}: {self.logs_action}>"
 
 
-metadata.reflect(__engine, extend_existing=True)
-Base.prepare()
-
-tables = (UserInfo, UserStats, Item, Role, BuffUser, BuffCmd, BuffType)
-# connection = engine.connect()
-
 if __name__ == '__main__':
-
-    # search = 'удар'
-    # items: List[Type[Item]] = session().query(Item)\
-    #     .filter(Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){search}.*$")).all()
-    # print([str(i) for i in items])
-    # me: UserInfo = session.query(UserInfo).filter(UserInfo.user_id == 158154503).first()
-    # it: Item = session.query(Item).filter(Item.item_id == 13650).first()
-    # equip: List[Item] = me.user_items
-    # print(me.user_items)
-    # me.user_items.append(it)
-    # print(me.user_items)
-    # session.add(me)
-    # session.commit()
-    #
-    # me: UserInfo = session.query(UserInfo).filter(UserInfo.user_id == 158154503).first()
-    # print(me.user_items)
-    #
-    # me.user_items.remove(it)
-    # print(me.user_items)
-    # session.add(me)
-    # session.commit()
-    #
-    # me: UserInfo = session.query(UserInfo).filter(UserInfo.user_id == 158154503).first()
-    # print(me.user_items)
-
     pass
