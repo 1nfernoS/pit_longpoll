@@ -14,10 +14,6 @@ import profile_api
 
 from ORM import session, UserInfo, Item, Logs
 
-from logger import get_logger
-
-logger = get_logger(__name__, 'forwards')
-
 
 def forward_parse(self: VkBot, event: VkBotEvent):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
@@ -56,7 +52,7 @@ def forward_parse(self: VkBot, event: VkBotEvent):
 
 
     else:
-        logger.info('other\t' + fwd_txt.replace('\n', ' | '))
+        Logs('other\t' + fwd_txt.replace('\n', ' | '))
     # puzzles
 
     return

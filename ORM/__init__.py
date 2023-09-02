@@ -12,7 +12,7 @@ __data_source = f"{db_data['dialect']}+{db_data['connector']}://" \
               f"{db_data['user']}:{db_data['password']}@" \
               f"{db_data['host']}/{db_data['database']}"
 
-__engine = create_engine(__data_source)
+__engine = create_engine(__data_source, pool_size=10, max_overflow=20)
 
 
 class Base(DeclarativeBase):

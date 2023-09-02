@@ -8,3 +8,6 @@ logs/
 pic_bot.py
 *.bat
 .env*
+*.sql
+*.log
+start_bot.sh

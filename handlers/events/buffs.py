@@ -39,7 +39,7 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
         forward_messages=str(msg_id)
     )
 
-    for i in range(5):
+    for i in range(3):
         time.sleep(0.5)
         for event in long_poll.check():
             if event.type == VkEventType.MESSAGE_NEW and event.from_group and not event.from_me:
