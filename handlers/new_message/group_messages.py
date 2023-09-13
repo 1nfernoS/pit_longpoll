@@ -103,7 +103,7 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
             info.role_id = role_guild = 5
     else:
         if info.role_id is None \
-                or info.role_id not in [0, 1, 2, 3, 4, 5, 6, 7]:
+                or info.role_id not in [0, 1, 2, 3, 4, 5, 6, 7, 11]:
             # if not banned and not in guild now
             if info.role_id != 9:
                 info.role_id = other_role = 8
