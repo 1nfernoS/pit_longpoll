@@ -98,7 +98,7 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
     if data['guild'] == GUILD_NAME:
         # because all guild roles are below 7 (guests)
         if info.role_id is None \
-                or info.role_id not in [0, 1, 2, 3, 4, 5, 6, 7]:
+                or info.role_id not in [0, 1, 2, 3, 4, 5, 6, 7, 11]:
             answer = 'Обновил информацию гильдии!\n' + answer
             info.role_id = role_guild = 5
     else:
