@@ -37,6 +37,10 @@ creator_id: int = int(env.get('CREATOR_ID'))
 # branch-depended
 branch = env.get('BRANCH')
 
+storager_id: int=  0
+storager_chat: int = 0
+storager_token: str = ''
+
 group_token: str = ''
 db_data: dict = dict()
 # whitelist of chat id's for bot to listen
@@ -51,11 +55,15 @@ def load(branch_name: str):
     if not load_dotenv('.env.' + branch_name):
         raise EnvironmentError(f'No .env.{branch_name} file')
 
-    global group_token, db_data, ALLOWED_CHATS
+    global group_token, db_data, ALLOWED_CHATS, storager_id, storager_chat, storager_token
 
     group_token = env.get('group_token')
     db_data = loads(env.get('db_data'))
     ALLOWED_CHATS = tuple(int(i) for i in env.get('ALLOWED_CHATS').split(','))
+
+    storager_id = int(env.get('storager_id'))
+    storager_chat = int(env.get('storager_chat'))
+    storager_token = env.get('storager_token')
     return
 
 

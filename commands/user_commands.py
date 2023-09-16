@@ -1,10 +1,13 @@
 from typing import List
 
+import vk_api
+
+import profile_api
 from commands import Command, command_list
 
-from ORM import session, UserInfo, UserStats, Item, Logs
+from ORM import session, UserInfo, UserStats, Item, Logs, Role
 
-from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
+from config import creator_id, GUILD_CHAT_ID, GUILD_NAME, storager_token, storager_chat
 
 # from DB import user_data, users
 from dictionaries.emoji import level, strength, agility, endurance, gold, item
@@ -13,7 +16,7 @@ from utils.math import commission_price, discount_price
 from utils.keyboards import notes
 
 # import for typing hints
-from vk_api.bot_longpoll import VkBotEvent
+from vk_api.bot_longpoll import VkBotEvent, CHAT_START_ID
 from vk_bot.vk_bot import VkBot
 
 
@@ -32,7 +35,8 @@ class Stats(Command):
 
         if user.user_info.user_role.role_can_moderate:
             if 'reply_message' in event.message.keys():
-                user: UserInfo = s.query(UserStats).filter(UserStats.user_id == event.message.reply_message['from_id']).first()
+                user: UserInfo = s.query(UserStats).filter(
+                    UserStats.user_id == event.message.reply_message['from_id']).first()
 
         if not user.user_info.user_role.role_can_check_stats:
             return
@@ -300,4 +304,109 @@ class Transfer(Command):
             else f"Сейчас на счету: {gold}{user_from.balance}"
 
         bot.api.send_chat_msg(event.chat_id, message)
+        return
+
+
+class Want(Command):
+
+    def __init__(self):
+        super().__init__(__class__.__name__, ('хочу',))
+        self.desc = 'Получить со склада желаемый предмет'
+        self.require_basic = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+
+        if not user.user_role.role_can_basic:
+            return
+
+        Logs(event.message.from_id, __class__.__name__, reason=event.message.text).make_record()
+
+        msg = event.message.text.split(' ')
+        if len(msg) == 1:
+            return
+
+        try:
+            count = int(msg[1])
+            item_name = ' '.join(msg[2:])
+        except ValueError:
+            if not all([i.isalpha() for i in msg[1]]):
+                return
+            count = 1
+            item_name = ' '.join(msg[1:])
+
+        if len(item_name) < 3:
+            return
+
+        search: List[Item] = s.query(Item).filter(
+            Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name[:-2]}.*$"),
+            Item.item_has_price == 1).all()
+
+        search = [i for i in search
+                  if i.item_id
+                  in items.valuables +
+                  items.ordinary_books_active + items.ordinary_books_passive +
+                  items.ingredients_drops + items.ingredients_special]
+
+        if not search:
+            bot.api.send_chat_msg(event.chat_id, f'Что-то не могу найти {item_name}')
+            return
+
+        role: Role = user.user_role
+
+        search: Item = search[0]
+
+        if search.item_id in items.valuables:
+            if not role.role_can_take_money:
+                return
+
+            if user.balance < count:
+                message = f'Недостаточно средств на балансе'
+                bot.api.send_chat_msg(event.chat_id, message)
+                return
+
+            message = f'Выдать {count} {search.item_name}'
+
+        elif search.item_id in items.ordinary_books_active + items.ordinary_books_passive:
+            if not role.role_can_take_books:
+                return
+
+            if count > 10:
+                return
+
+            price = discount_price(count * profile_api.price(search.item_id))
+
+            if user.balance < price:
+                message = f'Недостаточно средств, это стоит {price}, ' \
+                          f'не хватает {gold}{price - user.balance}' \
+                          f'(Положить {commission_price(price - user.balance)})'
+                bot.api.send_chat_msg(event.chat_id, message)
+                return
+
+            message = f'Выдать {search.item_name.replace("Книга - ", "")} - {count} штук'
+
+        elif search.item_id in items.ingredients_drops + items.ingredients_special:
+            if not role.role_can_take_ingredients:
+                return
+
+            message = f'Выдать {search.item_name} - {count} штук'
+        else:
+            return
+
+        storager = vk_api.VkApi(token=storager_token, api_version='5.131')
+        storager_api = storager.get_api()
+
+        storager_api.messages.send(
+            peer_ids=CHAT_START_ID + storager_chat,
+            message=message,
+            random_id=0,
+            disable_mentions=True,
+            reply_to=storager_api.messages.
+            getByConversationMessageId(peer_id=CHAT_START_ID + storager_chat,
+                                       conversation_message_ids=event.message['conversation_message_id']
+                                       )['items'][0]['id']
+        )
         return
