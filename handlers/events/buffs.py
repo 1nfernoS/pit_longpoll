@@ -6,8 +6,8 @@ from vk_api.longpoll import VkEventType, VkLongPoll, CHAT_START_ID
 from ORM import session
 import ORM
 
-from utils.buffs import POSSIBLE_ANSWERS, BUFF_RACE
-from utils.emoji import gold
+from dictionaries.buffs import POSSIBLE_ANSWERS, BUFF_RACE
+from dictionaries.emoji import gold
 
 from config import OVERSEER_BOT, APO_PAYMENT
 

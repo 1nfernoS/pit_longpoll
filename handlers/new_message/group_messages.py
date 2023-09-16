@@ -5,14 +5,14 @@ from datetime import datetime
 from vk_api.bot_longpoll import VkBotEvent
 
 # config and packages
-from config import GUILD_NAME, GUILD_CHAT_ID, COMMISSION_PERCENT
+from config import GUILD_NAME, GUILD_CHAT_ID
 
 from ORM import session, UserInfo, UserStats, Logs
 
 from utils.parsers import parse_profile, parse_storage_action
 from utils.formatters import str_datetime, datediff
 from utils.math import commission_price
-import utils.emoji as emo
+import dictionaries.emoji as emo
 
 from logger import get_logger
 

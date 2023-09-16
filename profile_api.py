@@ -4,6 +4,8 @@ import json
 
 from typing import List, Union, Dict
 
+from dictionaries import items
+
 from logger import get_logger
 
 logger = get_logger(__name__, 'profile_requests')
@@ -93,48 +95,27 @@ def get_profile(auth: str, id_vk: int) -> dict:
 
 
 def get_books(item_list: list) -> list:
-    BOOK_LIST = {
-        13408: 13580, 13409: 13581, 13547: 13582, 13553: 13583, 13586: 13592, 13593: 13595, 13598: 13600, 13601: 13603,
-        13604: 13606, 13607: 13609, 13610: 13612, 13613: 13615, 13616: 13619, 13621: 13623, 13625: 13626, 13627: 13628,
-        13638: 13639, 13641: 13642, 13643: 13644, 13645: 13646, 13647: 13648, 13649: 13650, 13651: 13652, 13653: 13654,
-        13655: 13656, 13657: 13658, 13659: 13660, 13661: 13662, 13663: 13664, 13665: 13666, 13667: 13668, 13669: 13670,
-        13671: 13672, 13673: 13674, 13676: 13677, 13678: 13679, 13680: 13681, 13682: 13683, 13684: 13685, 13686: 13687,
-        13688: 13689, 13690: 13691, 13692: 13693, 13694: 13695, 13696: 13697, 13698: 13699, 14506: 14505, 14508: 14507,
-        14778: 14777, 14780: 14779, 14971: 14970, 14973: 14972, 14987: 14986, 14989: 14988, 15220: 15219
-    }
-    ADM_DICT = {
-        14128: [13652], 14130: [13646], 14132: [13660], 14134: [13642, 13639], 14136: [13668], 14138: [13683],
-        14140: [13644], 14142: [13681], 14144: [13650], 14302: [13652, 13646, 13660],
-        14304: [13642, 13639, 13668, 13683],
-        14306: [13644, 13681, 13650], 14573: [13697], 14575: [13672], 14577: [13693], 14579: [13697, 13672, 13693],
-        14869: [13658], 14920: [13685], 15019: [13691], 15021: [13662], 15023: [13664], 15025: [13691, 13662, 13664]
-    }
+    __BOOK_LIST = items.equipped_to_ordinary_active.copy()
+    __BOOK_LIST.update(items.equipped_to_ordinary_passive.copy())
+    __ADM_DICT = items.adm_items_dict
     res = list()
     for item in item_list:
-        if item in BOOK_LIST.keys():
-            res.append(BOOK_LIST[item])
-        if item in ADM_DICT.keys():
-            res += ADM_DICT[item]
+        if item in __BOOK_LIST.keys():
+            res.append(__BOOK_LIST[item])
+        if item in __ADM_DICT.keys():
+            res += __ADM_DICT[item]
     return res
 
 
 def get_build(item_list: list) -> dict:
-    BOOK_LIST = [13408, 13409, 13547, 13553, 13586, 13593, 13598, 13601, 13604, 13607, 13610, 13613, 13616, 13621,
-                 13625, 13627, 13638, 13641, 13643, 13645, 13647, 13649, 13651, 13653, 13655, 13657, 13659, 13661,
-                 13663, 13665, 13667, 13669, 13671, 13673, 13676, 13678, 13680, 13682, 13684, 13686, 13688, 13690,
-                 13692, 13694, 13696, 13698, 14506, 14508, 14778, 14780, 14971, 14973, 14987, 14989, 15220]
-    ADM_DICT = {
-        14128: [13651], 14130: [13645], 14132: [13659], 14134: [13641, 13638], 14136: [13667], 14138: [13682],
-        14140: [13643], 14142: [13680], 14144: [13649], 14302: [13651, 13645, 13659], 14304: [13641, 13638, 13667, 13682],
-        14306: [13643, 13680, 13649], 14573: [13696], 14575: [13671], 14577: [13692], 14579: [13696, 13671, 13692],
-        14869: [13657], 14920: [13684], 15019: [13690], 15021: [13661], 15023: [13663], 15025: [13690, 13661, 13663]
-    }
+    __BOOK_LIST = items.equipped_books_active + items.equipped_books_passive
+    __ADM_DICT = items.adm_items_dict
     res = {'books': [], 'adms': []}
     for item in item_list:
-        if item in BOOK_LIST:
+        if item in __BOOK_LIST:
             res['books'].append(item)
-        if item in ADM_DICT.keys():
-            res['adms'] += ADM_DICT[item]
+        if item in __ADM_DICT.keys():
+            res['adms'] += __ADM_DICT[item]
     return res
 
 
@@ -146,7 +127,7 @@ def get_buff_class(auth_key: str, user_id: int) -> int:
 
 
 def get_races(auth_key: str, user_id: int) -> List[int]:
-    return [val for val in _inv(auth_key, user_id) if val in range(14413, 14420)]  # 14413-14419 is race ids
+    return [val for val in _inv(auth_key, user_id) if val in items.races]
 
 
 def get_voices(auth_key: str, user_id: int) -> int:

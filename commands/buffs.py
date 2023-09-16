@@ -7,7 +7,7 @@ from commands import Command
 from config import creator_id
 
 from utils import keyboards
-from utils.buffs import APOSTOL_ITEM_ID, WARLOCK_ITEM_ID, PALADIN_ITEM_ID, CRUSADER_ITEM_ID, LIGHT_INC_ITEM_ID
+from dictionaries.buffs import APOSTOL_ITEM_ID, WARLOCK_ITEM_ID, PALADIN_ITEM_ID, CRUSADER_ITEM_ID, LIGHT_INC_ITEM_ID
 
 from vk_bot.vk_bot import VkBot
 

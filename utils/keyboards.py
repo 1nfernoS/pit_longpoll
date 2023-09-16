@@ -4,8 +4,8 @@ import vk_api.keyboard as keyboard
 
 from ORM import session, BuffType, BuffCmd
 
-from utils import buffs
-from utils.emoji import cancel, clear, heal_trauma, take_trauma
+from dictionaries import buffs
+from dictionaries.emoji import cancel, clear, heal_trauma, take_trauma
 
 from config import NOTE_ALL, NOTE_RULES
 

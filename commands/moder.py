@@ -4,7 +4,7 @@ from ORM import session, UserInfo, Role, Logs
 
 # from DB import users
 
-from utils.emoji import gold
+from dictionaries.emoji import gold
 
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent

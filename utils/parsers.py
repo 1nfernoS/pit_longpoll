@@ -7,7 +7,7 @@ from config import DISCOUNT_PERCENT
 # from DB.items import get_item_by_name, search_item, search_regexp
 from ORM import session, Item
 
-from utils import emoji
+from dictionaries import emoji, items
 
 
 def parse_profile(text: str) -> dict:
@@ -89,16 +89,11 @@ def parse_storage_action(text: str):
 
 
 def guesser(text: str) -> list:
-    # ingredients
-    __possible = [14436, 14453, 14452, 14438, 14440, 14441, 14628, 14627, 14442, 14460, 14462, 14470, 14472, 14550]
-    # potions
-    __possible += [14609, 14610, 14487, 14449, 14629, 14447]
-    # rings
-    __possible += [14238, 14316, 14318, 14240, 14242]
-    # materials
-    __possible += [14793, 14794, 14795, 14796]
-    # maps
-    __possible += [14660, 14661, 14662, 14663, 14664, 14665, 14963, 14270, 15301]
+    __possible = items.ingredients_drops
+    __possible += items.potions_other
+    __possible += items.rings_drops
+    __possible += items.materials_raw
+    __possible += items.maps
     # other: faith stone
     __possible += [14182]
 

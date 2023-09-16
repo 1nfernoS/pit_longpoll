@@ -9,7 +9,7 @@ from config import GUILD_NAME, DISCOUNT_PERCENT
 import profile_api
 
 import utils.math
-from utils.emoji import gold, item, tab, active_book, passive_book
+from dictionaries.emoji import gold, item, tab, active_book, passive_book
 
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
