@@ -7,8 +7,9 @@ from ORM import session, UserInfo, UserStats, Item, Logs
 from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
 
 # from DB import user_data, users
-from utils.emoji import level, strength, agility, endurance, gold, item
-from utils.math import commission_price
+from dictionaries.emoji import level, strength, agility, endurance, gold, item
+import dictionaries.items as items
+from utils.math import commission_price, discount_price
 from utils.keyboards import notes
 
 # import for typing hints
@@ -79,7 +80,7 @@ class Help(Command):
             if all([role_access[r] for r in requires]):
                 message += '[' + ', '.join(cmd) + '] - ' + command_list[cmd].get_description() + '\n'
 
-        # message += '\n ПРИМЕЧАНИЕ: После использования, сообщение ' \
+        # message += '\n ПРИМЕЧАНИЕ: После использования, сообщение' \
         #            'с командой автоматически удаляется, чтобы уменьшить количество флуда'
         message += f'\n За идеями/ошибками/вопросами обращаться [id{creator_id}|сюда], ' \
                    f'желательно с приставкой "по котику" или что-то в этом роде'
@@ -143,7 +144,8 @@ class Balance(Command):
                 reply_user: UserInfo = s.query(UserInfo).filter(
                     UserInfo.user_id == event.message.reply_message['from_id']).first()
 
-                message = f"Счет игрока: {reply_user.balance}" if reply_user is not None else "Нет записей, пусть сдаст профиль"
+                message = f"Счет игрока: {reply_user.balance}" if reply_user is not None \
+                    else "Нет записей, пусть сдаст профиль"
                 bot.api.send_chat_msg(event.chat_id, message)
                 return
 
@@ -180,7 +182,7 @@ class Balance(Command):
 
 class Who(Command):
     def __init__(self):
-        super().__init__(__class__.__name__, ('кто', ))
+        super().__init__(__class__.__name__, ('кто',))
         self.desc = '... ест [предмет](Без склонений). Среди тех, кто сдавал профиль или билд'
         self.require_basic = True
         # self.set_active(False)

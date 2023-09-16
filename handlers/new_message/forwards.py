@@ -7,9 +7,10 @@ from vk_bot.vk_bot import VkBot
 
 from config import GUILD_CHAT_ID, DISCOUNT_PERCENT, creator_id
 import utils.math
-from utils.emoji import item, gold, empty
+from dictionaries.emoji import item, gold, empty
 from utils import parsers
 from utils.formatters import translate
+from utils.words import frequent_letter
 import profile_api
 
 from ORM import session, UserInfo, Item, Logs
@@ -105,15 +106,15 @@ def symbol_guesser(self: VkBot, event: VkBotEvent):
     if empty not in fwd_txt.split('\n')[1]:
         return
 
-    if not fwd_txt.split('\n')[1].replace(empty, '').replace(' ', ''):
-        self.api.send_chat_msg(event.chat_id, 'Ну так не интересно, попробуй хотя бы одну букву сам')
-        return
-
     msg_id = self.api.send_chat_msg(event.chat_id, 'Символы... Символы... Сейчас вспомню')[0]
     res_list = parsers.guesser(fwd_txt)
+    best_guess = frequent_letter(res_list)
     if res_list:
-        msg = 'Ну точно! Это наверняка что-то из этого:\n'
-        msg += '\n'.join(res_list)
+        if not fwd_txt.split('\n')[1].replace(empty, '').replace(' ', ''):
+            msg = f'Ну так не интересно! Попробуй букву {best_guess.upper()}\n'
+        else:
+            msg = 'Ну точно! Это наверняка что-то из этого:\n'
+            msg += '\n'.join(res_list)
     else:
         msg = 'Что-то не пойму, что это может быть'
     self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
