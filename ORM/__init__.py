@@ -64,6 +64,9 @@ class Role(Base):
     role_can_withdraw_bill: Mapped[int]
     role_can_change_role: Mapped[int]
     role_can_utils: Mapped[int]
+    role_can_take_money: Mapped[int]
+    role_can_take_books: Mapped[int]
+    role_can_take_ingredients: Mapped[int]
 
     role_users: Mapped[List["UserInfo"]] = relationship(back_populates='user_role', viewonly=True)
 
@@ -71,7 +74,8 @@ class Role(Base):
                  can_check_stats: bool = False, can_balance: bool = False, can_profile_app_check: bool = False,
                  can_change_balance: bool = False, can_moderate: bool = False, can_kick: bool = False,
                  can_check_all_balance: bool = False, can_withdraw_bill: bool = False, can_change_role: bool = False,
-                 can_utils: bool = False):
+                 can_utils: bool = False, can_take_money: bool = False, can_take_books: bool = False,
+                 can_take_ingredients: bool = False):
         super().__init__()
         if role_id < 0:
             raise ValueError
@@ -89,13 +93,17 @@ class Role(Base):
         self.role_can_withdraw_bill = int(can_withdraw_bill)
         self.role_can_change_role = int(can_change_role)
         self.role_can_utils = int(can_utils)
+        self.role_can_take_money = int(can_take_money)
+        self.role_can_take_books = int(can_take_books)
+        self.role_can_take_ingredients = int(can_take_ingredients)
         return
 
     def role_level_access(self) -> int:
         return int(f"{self.role_can_basic}{self.role_can_get_buff}{self.role_can_check_stats}{self.role_can_balance}"
                    f"{self.role_can_profile_app_check}{self.role_can_change_balance}{self.role_can_moderate}"
                    f"{self.role_can_kick}{self.role_can_check_all_balance}{self.role_can_withdraw_bill}"
-                   f"{self.role_can_change_role}{self.role_can_utils}", 2)
+                   f"{self.role_can_change_role}{self.role_can_utils}{self.role_can_take_money}"
+                   f"{self.role_can_take_books}{self.role_can_take_ingredients}", 2)
 
     def dict_access(self) -> Dict[str, int]:
         return {
@@ -110,7 +118,10 @@ class Role(Base):
             'role_can_check_all_balance': self.role_can_check_all_balance,
             'role_can_withdraw_bill': self.role_can_withdraw_bill,
             'role_can_change_role': self.role_can_change_role,
-            'role_can_utils': self.role_can_utils
+            'role_can_utils': self.role_can_utils,
+            'role_can_take_money': self.role_can_take_money,
+            'role_can_take_books': self.role_can_take_books,
+            'role_can_take_ingredients': self.role_can_take_ingredients
         }
 
     def bin_access(self) -> str:
