@@ -19,14 +19,15 @@ class VkMethods:
     def __init__(self, api):
         self._api = api
 
-    def send_chat_msg(self, chat_id: int, msg: str, kbd: (dict, None) = None, **kwargs) -> List[dict]:
+    def send_chat_msg(self, chat_id: int, msg: str, kbd: (dict, None) = None, disable_mentions: bool = True,
+                      **kwargs) -> List[dict]:
         msg = _get_image() + msg
         return self._api.messages.send(
             peer_ids=[CHAT_START_ID + chat_id],
             message=msg,
             keyboard=kbd if kbd else None,
             random_id=0,
-            disable_mentions=True,
+            disable_mentions=disable_mentions,
             **kwargs
         )
 

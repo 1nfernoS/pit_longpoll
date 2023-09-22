@@ -359,25 +359,32 @@ class Want(Command):
 
         search: Item = search[0]
 
-        if search.item_id in items.valuables:
+        if search.item_id == items.gold:
             if not role.role_can_take_money:
                 return
 
-            if user.balance < count:
-                message = f'Недостаточно средств на балансе'
-                bot.api.send_chat_msg(event.chat_id, message)
+            if count < 100:
+                bot.api.send_chat_msg(event.chat_id, f'Нельзя выдать меньше 100{gold}')
                 return
 
-            message = f'Выдать {count} {search.item_name}'
+            if user.balance < count:
+                bot.api.send_chat_msg(event.chat_id, f'Недостаточно средств на балансе')
+                return
+
+            message = f'Выдать {count} золота'
+            user.balance -= count
+            answer = f"Осталось на счету: {gold}{user.balance}"
 
         elif search.item_id in items.ordinary_books_active + items.ordinary_books_passive:
             if not role.role_can_take_books:
                 return
 
             if count > 10:
+                bot.api.send_chat_msg(event.chat_id, f'Многовато книг за раз, больше 10 не дам!')
                 return
 
-            price = discount_price(count * profile_api.price(search.item_id))
+            book_price = profile_api.price(search.item_id)
+            price = discount_price(count * book_price)
 
             if user.balance < price:
                 message = f'Недостаточно средств, это стоит {price}, ' \
@@ -387,12 +394,19 @@ class Want(Command):
                 return
 
             message = f'Выдать {search.item_name.replace("Книга - ", "")} - {count} штук'
+            user.balance -= price
+
+            answer = f"Выдал {search.item_name.replace('Книга - ', '')}, списываю с баланса{gold}{price}"
+            answer += f"({count}*{gold}{discount_price(book_price)})" if count > 1 else ""
+            answer += f"\n[id{user.user_id}|Сейчас на счету]: {gold}{user.balance}"
+            answer += f"\n(Если книга не выдалась, тегайте лидеров или напишите им в лс)"
 
         elif search.item_id in items.ingredients_drops + items.ingredients_special:
             if not role.role_can_take_ingredients:
                 return
 
             message = f'Выдать {search.item_name} - {count} штук'
+            answer = ''
         else:
             return
 
@@ -409,4 +423,11 @@ class Want(Command):
                                        conversation_message_ids=event.message['conversation_message_id']
                                        )['items'][0]['id']
         )
+
+        s.add(user)
+        s.commit()
+
+        if answer:
+            bot.api.send_chat_msg(event.chat_id, answer)
+
         return

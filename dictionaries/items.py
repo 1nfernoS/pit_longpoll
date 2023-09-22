@@ -1,7 +1,9 @@
 
 races = [14413, 14414, 14415, 14416, 14417, 14418, 14419]
 
-valuables = [13322, 14069]
+gold = 13322
+scatter = 14069
+valuables = [gold, scatter]
 
 ingredients_drops = [14436, 14453, 14452, 14438, 14440, 14441, 14628, 14627, 14442, 14460, 14462, 14470, 14472, 14550]
 ingredients_special = [14439, 14491, 14527]  # water and seashell
