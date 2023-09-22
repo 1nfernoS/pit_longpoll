@@ -1,5 +1,6 @@
-from datetime import datetime
-from typing import List, Dict
+from datetime import datetime, time, timedelta
+from typing import Dict, Any, List
+import json
 
 from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, relationship, mapped_column
@@ -313,13 +314,38 @@ class BuffUser(Base):
         return f"<BuffUser {self.buff_user_id}: {self.buff_type_id}>"
 
 
+class LogsType(Base):
+
+    __tablename__ = 'logs_type'
+
+    logs_type_id: Mapped[int] = mapped_column(primary_key=True)
+    logs_type_name: Mapped[str]
+
+    def __init__(self, name: str):
+        super().__init__()
+        self.logs_type_name = name
+        return
+
+    def register(self):
+        with session() as s:
+            s.add(self)
+            s.commit()
+        return
+
+    def __str__(self):
+        return f"<LogsType {self.logs_type_id}: {self.logs_type_name}>"
+
+    def __repr__(self):
+        return f"<LogsType {self.logs_type_id}: {self.logs_type_name}>"
+
+
 class Logs(Base):
     __tablename__ = 'logs'
 
     logs_entry_id: Mapped[int] = mapped_column(primary_key=True)
     logs_timestamp: Mapped[datetime]
     logs_user_id: Mapped[int]
-    logs_action: Mapped[str]
+    logs_action: Mapped[int]
     logs_on_user_id: Mapped[int]
     logs_reason: Mapped[str]
     logs_on_message: Mapped[str]
@@ -327,9 +353,15 @@ class Logs(Base):
     def __init__(self, user_id: int, action: str, reason: str = None,
                  on_message: str = None, on_user_id: int = None):
         super().__init__()
+
+        type_id: LogsType = session().query(LogsType).filter(LogsType.logs_type_name == action).first()
+        if not type_id:
+            LogsType(action).register()
+            type_id: LogsType = session().query(LogsType).filter(LogsType.logs_type_name == action).one()
+
         self.logs_timestamp = datetime.now()
         self.logs_user_id = user_id
-        self.logs_action = action
+        self.logs_action = type_id.logs_type_id
         self.logs_on_user_id = on_user_id
         self.logs_reason = reason
         self.logs_on_message = on_message
