@@ -4,6 +4,8 @@ from ORM import session, UserInfo, Logs
 
 from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
 
+from utils.scripts import update_items
+
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
 from vk_bot.vk_bot import VkBot
@@ -29,9 +31,10 @@ class Ping(Command):
         bot.api.send_chat_msg(event.chat_id, 'Я живой)')
         return
 
+
 class Grib(Command):
     def __init__(self):
-        super().__init__(__class__.__name__, ('ping', 'пинг', 'тык'))
+        super().__init__(__class__.__name__, ('гриб', 'grib'))
         self.desc = 'Проверка живой я или нет'
         self.require_basic = True
         # self.set_active(False)
@@ -198,7 +201,43 @@ class Bill(Command):
         Logs(event.message.from_id, __class__.__name__).make_record()
 
         from utils.scripts import withdraw_bill
-        withdraw_bill(bot)
+        withdraw_bill(bot.api.get_members(GUILD_CHAT_ID))
         bot.api.send_chat_msg(event.chat_id, f"Списал налог с баланса, проверять можно командой баланс")
+
+        return
+
+
+class UpdateItems(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('обнови', 'update', 'обновить'))
+        self.desc = 'Обновить предметы от А до В. Только для создателя'
+        self.require_utils = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: VkBot, event: VkBotEvent):
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+
+        if not user.user_role.role_can_utils:
+            return
+
+        Logs(event.message.from_id, __class__.__name__).make_record()
+
+        data = event.message.text.split()
+        if len(data) < 3:
+            return
+
+        if data[1] in ('предметы', 'items'):
+            start = data[2]
+            stop = data[3]
+        else:
+            start = data[1]
+            stop = data[2]
+
+        bot.api.send_chat_msg(event.chat_id, 'Обновляю предметы, это займет некоторое время и я не буду отвечать...\n'
+                                             'Я скажу как закончу')
+        update_items(int(start), int(stop))
+        bot.api.send_chat_msg(event.chat_id, f'Предметы с {start} по {stop} успешно обновлены и внесены в базу')
 
         return
