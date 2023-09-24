@@ -37,7 +37,7 @@ creator_id: int = int(env.get('CREATOR_ID'))
 # branch-depended
 branch = env.get('BRANCH')
 
-storager_id: int=  0
+storager_id: int = 0
 storager_chat: int = 0
 storager_token: str = ''
 
