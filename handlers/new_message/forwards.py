@@ -1,11 +1,8 @@
 import re
-from typing import List
+from typing import List, TYPE_CHECKING
 import datetime
 
-from vk_api.bot_longpoll import VkBotEvent
-
 from utils.parsers import get_siege
-from vk_bot.vk_bot import VkBot
 
 from config import GUILD_CHAT_ID, DISCOUNT_PERCENT, creator_id
 import utils.math
@@ -17,8 +14,12 @@ import profile_api
 
 from ORM import session, UserInfo, Item, Logs, Task
 
+if TYPE_CHECKING:
+    from vk_bot.vk_bot import VkBot
+    from vk_api.bot_longpoll import VkBotEvent
 
-def forward_parse(self: VkBot, event: VkBotEvent):
+
+def forward_parse(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
 
     # if 'выловили рыбу' in fwd_txt:
@@ -42,14 +43,15 @@ def forward_parse(self: VkBot, event: VkBotEvent):
         return
 
     if 'присоединились к осадному лагерю' in fwd_txt:
-        Logs(event.message.from_id, 'Siege', on_message='\n'.join([msg['text'] for msg in event.message.fwd_messages])).make_record()
+        Logs(event.message.from_id, 'Siege',
+             on_message='\n'.join([msg['text'] for msg in event.message.fwd_messages])).make_record()
         siege_report(self, event)
-        pass
+        return
 
     if 'обменяли элитные трофеи' in fwd_txt:
         Logs(event.message.from_id, 'Elites', on_message=event.message.fwd_messages[0]['text']).make_record()
         elites_response(self, event)
-        pass
+        return
 
     if 'Символы' in fwd_txt:
         Logs(event.message.from_id, 'Symbols', on_message=event.message.fwd_messages[0]['text']).make_record()
@@ -77,7 +79,7 @@ def forward_parse(self: VkBot, event: VkBotEvent):
     return
 
 
-def dark_vendor(self: VkBot, event: VkBotEvent):
+def dark_vendor(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     msg_id = self.api.send_chat_msg(event.chat_id, 'Проверяю торговца...')[0]
     fwd_split = fwd_txt.split('\n')
@@ -118,7 +120,7 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
     return
 
 
-def symbol_guesser(self: VkBot, event: VkBotEvent):
+def symbol_guesser(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
 
     if empty not in fwd_txt.split('\n')[1]:
@@ -139,40 +141,18 @@ def symbol_guesser(self: VkBot, event: VkBotEvent):
     return
 
 
-def travel_check(self: VkBot, event: VkBotEvent):
-    _safe_list = ('Впереди все спокойно.', 'Впереди не видно никаких препятствий.', 'Время пересечь мост через реку.',
-                  'Вы бодры как никогда.', 'Густые деревья шумят на ветру.', 'Густые заросли травы по правую руку.',
-                  'Дорога ведет прямиком к приключениям.', 'Дорога проходит мимо озера.', 'Идти легко, как никогда.',
-                  'На небе ни единого облачка.', 'Не время останавливаться!', 'Ничего не предвещает беды.',
-                  'Нужно двигаться дальше.', 'От широкой дороги ветвится небольшая тропинка.',
-                  'Пение птиц доносится из соседнего леса.', 'Погода просто отличная.',
-                  'Самое время найти еще что-то интересное.', 'Солнечная поляна виднеется впереди.',
-                  'Стрекот сверчков заглушает другие звуки.', 'Только вперед!', 'Тропа ведет в густой лес.')
-
-    _warn_list = ('Вас клонит в сон от усталости...', 'Возможно, стоит повернуть назад?..',
-                  'Вдалеке слышны страшные крики...', 'Местность становится все опаснее и опаснее...',
-                  'Нужно быть предельно осторожным...', 'Нужно ли продолжать путь...',
-                  'Опасность может таиться за каждым деревом...', 'Путь становится все труднее...',
-                  'С каждым шагом чувство тревоги нарастает...', 'Становится сложно разглядеть дорогу впереди...',
-                  'Сердце громко стучит в груди...', 'Туман начинает сгущаться...', 'Тучи сгущаются над дорогой...')
-
-    _danger_list = ('Боль разрывает Вас на части...', 'В воздухе витает отчетливый запах смерти...',
-                    'Воздух просто гудит от опасности...', 'Вы уже на пределе...',
-                    'Еще немного, и Вы падаете без сил...', 'Кажется, конец близок...',
-                    'Крик отчаяния вырывается у Вас из груди...', 'Ноги дрожат от предчувствия беды...',
-                    'Нужно бежать отсюда!', 'Силы быстро Вас покидают...', 'Смерть таится за каждым поворотом...',
-                    'Чувство тревоги бьет в колокол!', 'Кажется, конец близок...',
-                    'Еще немного, и Вы падете без сил...')
+def travel_check(self: "VkBot", event: "VkBotEvent"):
+    from dictionaries.puzzle_answers import travel_danger_list, travel_safe_list, travel_warn_list
 
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     fwd_txt = translate(fwd_txt)
     txt = fwd_txt.split('\n')[-1]
 
-    if txt in _safe_list:
+    if txt in travel_safe_list:
         answer = f"(+1) Можно продолжать путешествие"
-    elif txt in _warn_list:
+    elif txt in travel_warn_list:
         answer = f"(+2) Можно продолжать путешествие"
-    elif txt in _danger_list:
+    elif txt in travel_danger_list:
         answer = f"(+3) Событие предшествует смертельному!"
     else:
         answer = f"(+?) Неизвестное событие, сообщите в полигон или [id{creator_id}|ему]"
@@ -181,101 +161,30 @@ def travel_check(self: VkBot, event: VkBotEvent):
     return
 
 
-def door_solver(self: VkBot, event: VkBotEvent):
-    _answers = {
-        'Похоже, нужно поставить фигурку на определенный участок карты...': 'Темнолесье',
-        'Итак, как же звали воина...': 'Гер, Натаниэль, Эмбер',
-        'Видимо, этот камень нужно вложить в одну из вытянутых рук.': 'Человек',
-        'В груди моей горел пожар, но сжег меня дотла. Ты имя назови мое, и получи сполна...': 'Роза',
-        'Итак, эльфа нужно расположить...': 'Северо-восток, Северо-запад, Юг материка',
-        'Сяэпьчео рущэр': 'Берем строку, прогоняем по шифру Цезаря... \nЛадно, это "Гробница веков"',
-        'Начнем с юркого гоблина...': 'Разрезать мечом, Ударить молотом, Уколоть кинжалом',
-        'Видимо, порядок этих барельефов как-то связан с рычагами...': 'Грах, Ева, Трор, Смотритель',
-        'Итак, главным реагентом добавим...': 'Пещерный корень, Первозданная вода, Рыбий жир',
-        'КАКОВ ЦВЕТ СЕРДЦА?': 'Фиолетовый',
-        'Где в настоящее время находится истинный спуск на путь к Сердцу Глубин?': 'Темнолесье',
-        'Возможно, нужно что-то произнести? Или нет?..': 'Уйти. Да, просто уйти',
-        'В каком же порядке активировать плиты?..': 'Осень, Зима, Весна, Лето'
-    }
+def door_solver(self: "VkBot", event: "VkBotEvent"):
+    from dictionaries.puzzle_answers import door_answers
 
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     fwd_txt = translate(fwd_txt)
 
-    for answer in _answers:
+    for answer in door_answers:
         if answer in fwd_txt:
-            self.api.send_chat_msg(event.chat_id, 'Открываем дверь, а там ответ: ' + _answers[answer])
+            self.api.send_chat_msg(event.chat_id, 'Открываем дверь, а там ответ: ' + door_answers[answer])
             return
 
     self.api.send_chat_msg(event.chat_id, f"Ой, а я не знаю ответ\nCообщите в полигон или [id{creator_id}|ему]")
     return
 
 
-def book_pages(self: VkBot, event: VkBotEvent):
-    _answers = {
-        'только в неожиданный момент, свободной от оружия рукой, в незащищенную зону': 'Грязный удар',
-        'эти бойцы не носили, однако это позволяло полностью сосредоточиться на агрессии в бою, имея': 'Гладиатор',
-        'даже, казалось бы, всего одно умение, но именно оно может стать серьезным козырем': 'Инициативность',
-        'использовать особые пластины в доспехе, чтобы прикрыть эти места': 'Прочность ',
-        'самое эффективное из них, позволяющее ослабить противника прямо во время': 'Проклятие тьмы',
-        'не брезговать осмотреть каждый карман, даже если с первого взгляда кажется, что': 'Мародер',
-        'обитают ближе ко дну, чаще скрываясь в водорослях': 'Рыбак',
-        'истинный путь, в зависимости от совершенных деяний и поступков': 'Воздаяние',
-        'более важен размах, который усилит тяжесть удара и позволит пробить': 'Дробящий удар',
-        'выследить их можно по особым магическим знакам, которые оставляют только хранители': 'Охотник за головами',
-        'главное - точно соблюдать время между ними, и тогда появится возможность повторного': 'Расчётливость ',
-        'поможет сэкономить время при перевязке, уменьшив': 'Быстрое восстановление',
-        'если они небольшие - затянутся сами собой, даже в бою, не требуя дополнительного лечения': 'Регенерация',
-        'такую позу, которая максимально подчеркнет опасность': 'Устрашение',
-        'падал, но снова вставал, продолжая путь к своей цели': 'Упорность',
-        'не столько длина пореза, сколько его глубина': 'Кровотечение',
-        'своевременно и быстро совершенное - может спасти жизнь от любого, даже смертельного удара': 'Подвижность',
-        'использовать собственный факел даже в том случае, если вокруг нет ни единого другого источника': 'Огонек надежды',
-        'иногда важнее, чем атака. Переждав несколько ударов, можно восстановить': 'Защитная стойка',
-        'но не стоит страшиться - ведь Вам, в отличие от противника, он не причинит вреда, а наоборот': 'Целебный огонь',
-        'если связывать их в одну охапку, то они займут меньше места в': 'Запасливость',
-        'и пусть эти приметы и не всегда будут полезны, но в случае, когда': 'Суеверность',
-        'прямой удар острием вперед. Лезвие должно войти достаточно': 'Колющий удар',
-        'грязь под ногами, как самый простой вариант. Цельтесь в глаза, чтобы': 'Слепота',
-        'позволит быстро откупорить крышку и одним глотком осушить': 'Водохлеб',
-        'нанести удар вдоль, максимально сблизившись с противником, чтобы он точно не смог': 'Режущий удар',
-        'следить за каждым движением, которое может оказаться врагом, меньше обращая внимания на окружающее': 'Бесстрашие',
-        'отрешившись от внешнего мира, однако при этом не надейтесь избежать': 'Стойка сосредоточения',
-        'резким взмахом, едва задевая самым острием по широкому': 'Рассечение',
-        'в сочленение между пластинами, и только тогда они': 'Раскол',
-        'не обязательно настроены агрессивно, многих из них можно обойти просто': 'Исследователь',
-        'проникает в саму кровь врага, отравляя ее и не позволяя': 'Заражение',
-        'убедиться, что вокруг нет ни единого источника света, и собрать вокруг': 'Сила теней',
-        'переродиться из пепла, но только в том случае, если': 'Феникс',
-        'будет достигнут только если противник находится при смерти, и уже не может': 'Расправа',
-        'не подставляя свои слабые точки под вероятную траекторию': 'Неуязвимый',
-        'жизненные силы вокруг себя и направить их поток в свое тело': 'Слабое исцеление',
-        'не только следить за всем, происходящим вокруг, но и не забывать о собственных карманах': 'Внимательность',
-        'и всю накопленную за это время силу высвободить в одном': 'Мощный удар',
-        'и кровь, заливающая глаза, придаст силы и ярости для одного': 'Берсеркер',
-        'очистить разум от посторонних мыслей, сосредоточившись на': 'Непоколебимый',
-        'вонзить в плоть, незащищенную броней. Лучшей точкой является шея, если': 'Удар вампира',
-        'резкий и громкий звук, который собьет концентрацию противника': 'Ошеломление',
-        'позволит быстрее перетаскивать камни, разбирая обвалившийся участок': 'Расторопность',
-        'не всегда ценность находки может быть видна сразу, иногда приходится': 'Собиратель',
-        'и если провести удар прямо в этот момент, то противник попросту не успеет': 'Контратака',
-        'спасительной жидкостью, которая, иногда, является полезнее любого заклинания': 'Ведьмак',
-        'впитывать знания в любой ситуации, совершенствуя свои': 'Ученик',
-        'дополнительный вес, придающий силу удара вместе с разгоном': 'Таран',
-        'разрезать вдоль, аккуратно поддев ножом внутреннюю часть': 'Браконьер',
-        'зарисовать на бумаге, каждый поворот, каждую': 'Картограф',
-        'выверенные движения позволят снять пробку быстрее и сократить время': 'Ловкость рук',
-        'в нужный момент подставить свой клинок под удар, отведя': 'Парирование',
-        'пригнувшись максимально мягко ступая по каменному': 'Незаметность',
-        'правильно напрягая мышцы, чтобы позволить им': 'Атлетика',
-        'иммунитет организма, таким образом отравление не сможет': 'Устойчивость'
-    }
+def book_pages(self: "VkBot", event: "VkBotEvent"):
+    from dictionaries.puzzle_answers import book_pages
 
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     fwd_txt = translate(fwd_txt)
 
-    for answer in _answers:
-        if answer in fwd_txt:
-            self.api.send_chat_msg(event.chat_id, 'Это страница из книги ' + _answers[answer])
+    for puzzle in book_pages:
+        if puzzle in fwd_txt:
+            self.api.send_chat_msg(event.chat_id, 'Это страница из книги ' + book_pages[puzzle])
             return
 
     self.api.send_chat_msg(event.chat_id, f"Ой, а я не знаю ответ\nCообщите в полигон или [id{creator_id}|ему]")
@@ -283,7 +192,7 @@ def book_pages(self: VkBot, event: VkBotEvent):
     return
 
 
-def elites_response(self: VkBot, event: VkBotEvent):
+def elites_response(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     date = datetime.datetime.fromtimestamp(event.message.fwd_messages[0]['date'])
     now = datetime.datetime.now(tz=None)
@@ -323,7 +232,7 @@ def elites_response(self: VkBot, event: VkBotEvent):
     return
 
 
-def siege_report(self: VkBot, event: VkBotEvent):
+def siege_report(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     date = datetime.datetime.fromtimestamp(event.message.fwd_messages[0]['date'])
     now = datetime.datetime.now(tz=None)
@@ -353,13 +262,13 @@ def siege_report(self: VkBot, event: VkBotEvent):
     return
 
 
-def task_reminder(self: VkBot, event: VkBotEvent):
+def task_reminder(self: "VkBot", event: "VkBotEvent"):
     return
 
 
-def fishing(self: VkBot, event: VkBotEvent):
+def fishing(self: "VkBot", event: "VkBotEvent"):
     return
 
 
-def ruins(self: VkBot, event: VkBotEvent):
+def ruins(self: "VkBot", event: "VkBotEvent"):
     return

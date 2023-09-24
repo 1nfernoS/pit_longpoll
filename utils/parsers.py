@@ -4,7 +4,6 @@ from typing import List, Dict
 
 from config import DISCOUNT_PERCENT
 
-# from DB.items import get_item_by_name, search_item, search_regexp
 from ORM import session, Item
 
 from dictionaries import emoji, items

@@ -1,7 +1,6 @@
 from typing import Tuple
 
 from os import environ as env
-from sys import argv
 
 from json import loads
 from dotenv import load_dotenv
@@ -42,6 +41,8 @@ storager_chat: int = 0
 storager_token: str = ''
 
 LEADER_CHAT_ID: int = 0
+LOGS_CHAT_ID: int = 0
+ERROR_CHAT_ID: int = 0
 
 group_token: str = ''
 db_data: dict = dict()
@@ -57,7 +58,8 @@ def load(branch_name: str):
     if not load_dotenv('.env.' + branch_name):
         raise EnvironmentError(f'No .env.{branch_name} file')
 
-    global group_token, db_data, ALLOWED_CHATS, storager_id, storager_chat, storager_token, LEADER_CHAT_ID
+    global group_token, db_data, ALLOWED_CHATS, storager_id, storager_chat, storager_token, \
+        LEADER_CHAT_ID, LOGS_CHAT_ID, ERROR_CHAT_ID
 
     group_token = env.get('GROUP_TOKEN')
     db_data = loads(env.get('DB_DATA'))
@@ -68,6 +70,8 @@ def load(branch_name: str):
     storager_token = env.get('STORAGER_TOKEN')
 
     LEADER_CHAT_ID = int(env.get('LEADER_CHAT_ID'))
+    LOGS_CHAT_ID = int(env.get('LOGS_CHAT_ID'))
+    ERROR_CHAT_ID = int(env.get('ERROR_CHAT_ID'))
     return
 
 

@@ -2,13 +2,14 @@ from commands import Command
 
 from ORM import session, UserInfo, Logs
 
-from config import creator_id, GUILD_CHAT_ID, GUILD_NAME
+from config import GUILD_CHAT_ID, GUILD_NAME
 
 from utils.scripts import update_items
 
-# import for typing hints
-from vk_api.bot_longpoll import VkBotEvent
-from vk_bot.vk_bot import VkBot
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from vk_api.bot_longpoll import VkBotEvent
+    from vk_bot.vk_bot import VkBot
 
 
 class Ping(Command):
@@ -19,7 +20,7 @@ class Ping(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -40,7 +41,7 @@ class Grib(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -52,6 +53,7 @@ class Grib(Command):
         bot.api.send_chat_msg(event.chat_id, '&#127812;')
         return
 
+
 class War(Command):
     def __init__(self):
         super().__init__(__class__.__name__, ('war', 'война'))
@@ -59,17 +61,18 @@ class War(Command):
         self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         if event.message.from_id not in bot.api.get_members(GUILD_CHAT_ID):
             war_list = f'Нет, это только для членов гильдии {GUILD_NAME}!'
         else:
-            # f"1. Имя Фамилия (расы - класс): &#128481;{attack} &#128737;{defence} &#128074;{strength} &#128400;{agility} &#10084;{endurance} &#127808;{luck}" \
+            # f"1. Имя Фамилия (расы - класс): &#128481;{attack} &#128737;{defence}
+            # &#128074;{strength} &#128400;{agility} &#10084;{endurance} &#127808;{luck}" \
             war_list = "У нас сейчас нет войны с кем-либо!"
         bot.api.send_chat_msg(event.chat_id, war_list)
         return
 
     @staticmethod
-    def __template(bot: VkBot, event: VkBotEvent) -> str:
+    def __template(bot: "VkBot", event: "VkBotEvent") -> str:
         """
         template generator for run
         :return:
@@ -103,7 +106,7 @@ class Role(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -139,7 +142,7 @@ class Id(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -168,7 +171,7 @@ class Emoji(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -191,7 +194,7 @@ class Bill(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -215,7 +218,7 @@ class UpdateItems(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 

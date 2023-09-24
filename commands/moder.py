@@ -2,21 +2,13 @@ from commands import Command
 
 from ORM import session, UserInfo, Role, Logs
 
-# from DB import users
-
 from dictionaries.emoji import gold
+from dictionaries.roles import *
 
-# import for typing hints
-from vk_api.bot_longpoll import VkBotEvent
-from vk_bot.vk_bot import VkBot
-
-leader_role = 1
-officer_role = 2
-guild_member_role = 5
-guild_newbie_role = 6
-guild_guest_role = 7
-other_role = 8
-ban_role = 9
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from vk_api.bot_longpoll import VkBotEvent
+    from vk_bot.vk_bot import VkBot
 
 
 def toggle_role(id_from: int, id_to: int, role_id: int, toggle_role_id: int) -> str:
@@ -56,7 +48,7 @@ class Kick(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -81,7 +73,7 @@ class Kick(Command):
             s.query(UserInfo).filter(UserInfo.user_id == event.message.reply_message['from_id']).first()
 
         if kicked_user:
-            kicked_user.role_id = ban_role
+            kicked_user.role_id = blacklist
             s.add(kicked_user)
             s.commit()
 
@@ -99,7 +91,7 @@ class Pin(Command):
         self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -124,7 +116,7 @@ class Check(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -178,7 +170,7 @@ class ToggleLeader(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -194,8 +186,8 @@ class ToggleLeader(Command):
             msg = toggle_role(
                 user.user_id,
                 event.message.reply_message['from_id'],
-                leader_role,
-                guild_member_role
+                leader,
+                guild_member
             )
 
             bot.api.send_chat_msg(event.chat_id, msg)
@@ -210,7 +202,7 @@ class ToggleOfficer(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -226,8 +218,8 @@ class ToggleOfficer(Command):
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],
-                officer_role,
-                guild_member_role
+                officer,
+                guild_member
             )
             bot.api.send_chat_msg(event.chat_id, msg)
         return
@@ -241,7 +233,7 @@ class ToggleGuildMember(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -257,8 +249,8 @@ class ToggleGuildMember(Command):
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],
-                guild_member_role,
-                other_role
+                guild_member,
+                others
             )
             bot.api.send_chat_msg(event.chat_id, msg)
         return
@@ -272,7 +264,7 @@ class ToggleNewbie(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -288,8 +280,8 @@ class ToggleNewbie(Command):
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],
-                guild_newbie_role,
-                other_role
+                guild_newbie,
+                others
             )
             bot.api.send_chat_msg(event.chat_id, msg)
         return
@@ -303,7 +295,7 @@ class ToggleGuest(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -319,8 +311,8 @@ class ToggleGuest(Command):
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],
-                guild_guest_role,
-                other_role
+                guild_guests,
+                others
             )
             bot.api.send_chat_msg(event.chat_id, msg)
         return

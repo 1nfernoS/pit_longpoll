@@ -1,9 +1,4 @@
-from typing import Dict
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from vk_bot.vk_bot import VkBot
+from typing import Dict, TYPE_CHECKING
 
 from config import GUILD_CHAT_ID, creator_id
 
@@ -11,6 +6,8 @@ from ORM import session, UserInfo, Item
 
 from profile_api import get_name, price
 
+if TYPE_CHECKING:
+    from vk_bot.vk_bot import VkBot
 
 def withdraw_bill(bot: "VkBot") -> None:
     members = bot.api.get_members(GUILD_CHAT_ID)

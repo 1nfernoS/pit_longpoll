@@ -1,14 +1,17 @@
 import json
 
-from vk_api.bot_longpoll import VkBotEvent, CHAT_START_ID
+from vk_api.bot_longpoll import CHAT_START_ID
 from vk_api.exceptions import VkApiError
-
-from vk_bot.vk_bot import VkBot
 
 from .buffs import buff
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from vk_bot.vk_bot import VkBot
+    from vk_api.bot_longpoll import VkBotEvent
 
-def event_message(self: VkBot, event: VkBotEvent):
+
+def event_message(self: "VkBot", event: "VkBotEvent"):
     pl = event.object.payload
     action = pl.get('action')
     if not action:

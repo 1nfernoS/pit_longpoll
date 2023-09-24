@@ -6,9 +6,10 @@ from ORM import session, UserInfo, Task, Logs
 
 import tasks
 
-# import for typing hints
-from vk_api.bot_longpoll import VkBotEvent
-from vk_bot.vk_bot import VkBot
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from vk_api.bot_longpoll import VkBotEvent
+    from vk_bot.vk_bot import VkBot
 
 
 class Remind(Command):
@@ -19,7 +20,7 @@ class Remind(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 

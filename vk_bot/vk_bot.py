@@ -4,10 +4,6 @@ from typing import List
 from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll
 
-from ORM import session, Task
-import tasks
-from dictionaries.tasks_list import init_tasks
-
 from time import strftime
 from requests.exceptions import ReadTimeout
 
@@ -18,13 +14,8 @@ from signal import signal, SIGTERM
 from vk_bot.vk_methods import VkMethods
 from vk_bot.vk_events import VkEvent
 
-from logger import get_logger
-
 
 class VkBot:
-    # __slots__ = ['_events', '_name', '_token', '_group_id', '_vk', '_long_poll', 'api', '_before_start', '_before_stop']
-    __not_kill = True
-
     def __init__(self, token: str) -> None:
         self._events = VkEvent()
         self._token = token
@@ -41,17 +32,6 @@ class VkBot:
 
         return
 
-    def _tasks_check(self):
-        s = session()
-        now = datetime.datetime.now()
-        task_list: List[Task] = s.query(Task).all()
-        for t in task_list:
-            if t.task_when <= now:
-                getattr(tasks, t.task_target)(self, t.task_args)
-                s.delete(t)
-                s.commit()
-        return
-
     def set_start(self, func: callable):
         self._before_start = func
         return
@@ -60,6 +40,7 @@ class VkBot:
         def wrapper(func: callable):
             self.set_start(func)
             return
+
         return wrapper
 
     def set_stop(self, func: callable):
@@ -71,6 +52,7 @@ class VkBot:
         def wrapper(func: callable):
             self.set_stop(func)
             return
+
         return wrapper
 
     def set_handler(self, event_type: str, handler: callable):
@@ -88,8 +70,7 @@ class VkBot:
         return wrapper
 
     def start(self):
-        # logger = get_logger(__name__, '_BOT_EVENTS', 'midnight')
-        # logger_errors = get_logger(__name__, '_BOT_ERRORS', 'midnight')
+        from dictionaries.tasks_list import init_tasks
         if self._before_start:
             print('Starting up . . .')
             self._before_start(self)
@@ -100,31 +81,49 @@ class VkBot:
 
         init_tasks()
 
-        while self.__not_kill:
+        # TODO: Find a proper way to stop bot without "kill -9"
+        self._main_loop()
+
+        return
+
+    def _main_loop(self):
+        while True:
             try:
-                for event in self._long_poll.check():
-                    # Call def with same name as event type
-                    getattr(self._events, event.type.name)(self, event)
+                self._event_loop()
                 self._tasks_check()
             except KeyboardInterrupt:
                 print('\n', 'Stopping . . .', '\n')
-                self.__not_kill = False
-                if self._before_stop:
-                    self._before_stop(self)
+                self._before_stop(self) if self._before_stop else None
                 return
-            except ReadTimeout as exc:
-                # logger_errors.warning("ReadTimeout")
-                # print(f'\n\nTimeout error {exc}')
-                # print('\n\tRestarting . . .\n')
-                print(f"\n[{strftime('%d.%m.%y %H:%M:%S')}] Timeout error\nRestarting . . .")
-                pass
+            except ReadTimeout:
+                continue
             except:
-                # logger_errors.error("Un-handled exception ! ! !", exc_info=True)
-                # logging.error(f"{time.strftime('%d %m %Y %H:%M:%S')}\t{traceback.format_exc(-3)}")
-                print('Error:', end='')
-                print('\n\nFull Trace')
-                print(traceback.format_exc())
+                error = traceback.format_exc(-5)
+                print(error)
                 print(f"\n\n\n\t[{strftime('%d.%m.%y %H:%M:%S')}] Restarting . . .")
+                self.api.send_error(f"[{strftime('%d.%m.%y %H:%M:%S')}]\n\n" + error)
+                continue
+        return
+
+    def _tasks_check(self):
+        from ORM import session, Task
+        import tasks
+
+        s = session()
+        now = datetime.datetime.now()
+        task_list: List[Task] = s.query(Task).all()
+        for t in task_list:
+            if t.task_when > now:
+                continue
+            getattr(tasks, t.task_target)(self, t.task_args)
+            s.delete(t)
+            s.commit()
+        return
+
+    def _event_loop(self):
+        for event in self._long_poll.check():
+            # Call def with same name as event type
+            getattr(self._events, event.type.name)(self, event)
         return
 
     def __repr__(self) -> str:

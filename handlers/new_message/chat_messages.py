@@ -1,13 +1,12 @@
-# requirement's import
-from vk_api.bot_longpoll import VkBotEvent
-
 import commands
 
-# import for typing hints
-from vk_bot.vk_bot import VkBot
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from vk_bot.vk_bot import VkBot
+    from vk_api.bot_longpoll import VkBotEvent
 
 
-def chat_message(self: VkBot, event: VkBotEvent):
+def chat_message(self: "VkBot", event: "VkBotEvent"):
     # Potential command parse
     txt = event.message.text.lower().split()
     if not txt[0][0].isalnum():
@@ -16,7 +15,5 @@ def chat_message(self: VkBot, event: VkBotEvent):
     for cmd in commands.command_list:
         if txt[0] in cmd:
             commands.command_list[cmd].run(self, event)
-            # msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
-            # self.api.del_msg(event.message.peer_id, msg_id)
 
     return

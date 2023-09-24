@@ -1,21 +1,16 @@
-# builtins
-import json
-
-# requirement's import
-from vk_api.bot_longpoll import VkBotEvent
-
-# config and packages
 from config import GUILD_CHAT_ID
 
 from ORM import session, UserInfo, UserStats, Item, Logs, BuffUser
 
 from profile_api import get_profile, get_books
 
-# import for typing hints
-from vk_bot.vk_bot import VkBot
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from vk_bot.vk_bot import VkBot
+    from vk_api.bot_longpoll import VkBotEvent
 
 
-def user_message(self: VkBot, event: VkBotEvent):
+def user_message(self: "VkBot", event: "VkBotEvent"):
     # direct message from user
     if len(event.message.attachments) != 0:
         at = event.message.attachments[0]
@@ -33,7 +28,7 @@ def user_message(self: VkBot, event: VkBotEvent):
     return
 
 
-def reg_pit_profile(self: VkBot, event: VkBotEvent):
+def reg_pit_profile(self: "VkBot", event: "VkBotEvent"):
     if event.message.from_id not in self.api.get_members(GUILD_CHAT_ID):
         ans = "Я надеюсь, ты понимаешь, что только что предоставил ПОЛНЫЙ доступ к своему профилю?\n" \
               "Ладно уж, я в него не полезу, но лучше так больше не делай"
@@ -102,30 +97,28 @@ def reg_pit_profile(self: VkBot, event: VkBotEvent):
     return
 
 
-def reg_pit_buffer(self: VkBot, event: VkBotEvent):
+def reg_pit_buffer(self: "VkBot", event: "VkBotEvent"):
     links = event.message.text.split()[1:]
     vk_data, pit_data = None, None
+
+    msg_pit_err = 'Не могу найти ссылку на профиль колодца... Точно указал как в статье а не приложение вк?'
     if 'oauth.vk.com' in links[0]:
         vk_data = extract_url(links[0])
         if 'vip3.activeusers.ru/app.php' in links[1]:
             pit_data = extract_url(links[1])
         else:
-
-            self.api.send_user_msg(event.message.from_id,
-                                   'Не могу найти ссылку на профиль колодца... Точно указал как в статье а не приложение вк?')
+            self.api.send_user_msg(event.message.from_id, msg_pit_err)
             return
     elif 'oauth.vk.com' in links[1]:
         vk_data = extract_url(links[1])
         if 'vip3.activeusers.ru/app.php' in links[0]:
             pit_data = extract_url(links[0])
         else:
-            self.api.send_user_msg(event.message.from_id,
-                                   'Не могу найти ссылку на профиль колодца... Точно указал как в статье а не приложение вк?')
+            self.api.send_user_msg(event.message.from_id, msg_pit_err)
             return
     else:
-
-        self.api.send_user_msg(event.message.from_id,
-                               'Не могу найти ссылку с токеном вк... Точно скопировал ее целиком?')
+        msg = 'Не могу найти ссылку с токеном вк... Точно скопировал ее целиком?'
+        self.api.send_user_msg(event.message.from_id, msg)
         return
 
     if not pit_data['viewer_id'] == vk_data['user_id'] == str(event.message.from_id):
@@ -145,6 +138,7 @@ def reg_pit_buffer(self: VkBot, event: VkBotEvent):
                                                       'способный накладывать заклинания? \nЯ закрою глаза и забуду, '
                                                       'но лучше так не делай')
         return
+
     races = get_races(pit_data['auth_key'], pit_data['viewer_id'])
     try:
         race1, race2 = races

@@ -1,6 +1,4 @@
-from typing import List
-
-from vk_api.bot_longpoll import VkBotEvent
+from typing import List, TYPE_CHECKING
 
 from ORM import session, UserInfo, BuffUser, Logs
 from commands import Command
@@ -9,10 +7,9 @@ from config import creator_id
 from utils import keyboards
 from dictionaries.buffs import APOSTOL_ITEM_ID, WARLOCK_ITEM_ID, PALADIN_ITEM_ID, CRUSADER_ITEM_ID, LIGHT_INC_ITEM_ID
 
-from vk_bot.vk_bot import VkBot
-
-
-# TODO: Add commands for paladin stuff by reply/for self
+if TYPE_CHECKING:
+    from vk_bot.vk_bot import VkBot
+    from vk_api.bot_longpoll import VkBotEvent
 
 
 class ToggleBuffer(Command):
@@ -23,7 +20,7 @@ class ToggleBuffer(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         if event.message.from_id != creator_id:
             return
 
@@ -51,7 +48,7 @@ class Apostol(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
 
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -93,7 +90,7 @@ class Warlock(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
@@ -123,7 +120,7 @@ class PaladinStuff(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
 
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()

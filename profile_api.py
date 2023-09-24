@@ -1,14 +1,12 @@
-from bs4 import BeautifulSoup
 import requests
 import json
 
 from typing import List, Union, Dict
 
+from bs4 import BeautifulSoup
+
 from dictionaries import items
 
-from logger import get_logger
-
-logger = get_logger(__name__, 'profile_requests')
 
 # TODO: Refactor for urllib
 def get_name(item_id: int) -> str:
@@ -22,7 +20,6 @@ def get_name(item_id: int) -> str:
 
 def lvl_active(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]]]:
     url = f'https://vip3.activeusers.ru/app.php?act=pages&id=620&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214'
-    logger.info(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     t_res = soup.body.find_all('div', class_='portlet-body')[0]
@@ -43,7 +40,6 @@ def lvl_active(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]]
 
 def lvl_passive(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]]]:
     url = f'https://vip3.activeusers.ru/app.php?act=pages&id=622&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214'
-    logger.info(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     t_res = soup.body.find_all('div', class_='portlet-body')[0]
@@ -65,8 +61,6 @@ def lvl_passive(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]
 def _stats(auth_key: str, user_id: int) -> dict:
     url = f"https://vip3.activeusers.ru/app.php?act=user&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214"
 
-    logger.info(f"[GET] Request to {url}")
-
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     stat = []
     for i in soup.body.find_all('span', class_='money-list-rescount'):
@@ -79,8 +73,6 @@ def _stats(auth_key: str, user_id: int) -> dict:
 
 def _inv(auth_key: str, user_id: int):
     url = f"https://vip3.activeusers.ru/app.php?act=user&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214"
-
-    logger.info(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     t1 = soup.body.find_all('div', class_='resitems items clearfix')[2]
@@ -133,8 +125,6 @@ def get_races(auth_key: str, user_id: int) -> List[int]:
 def get_voices(auth_key: str, user_id: int) -> int:
     url = f"https://vip3.activeusers.ru/app.php?act=item&id=14264&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214"
 
-    logger.info(f"[GET] Request to {url}")
-
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     voices = soup.find_all('h4')[0].text
     import re
@@ -143,7 +133,6 @@ def get_voices(auth_key: str, user_id: int) -> int:
 
 def price(item: int) -> int:
     url = f'https://vip3.activeusers.ru/app.php?act=item&id={item}&auth_key=5153d58b92d71bda47f1dac05afc187a&viewer_id=158154503&group_id=182985865&api_id=7055214'
-    logger.info(f"[GET] Request to {url}")
 
     soup = BeautifulSoup(requests.get(url).content, 'html.parser')
     try:
@@ -158,30 +147,6 @@ def price(item: int) -> int:
             return -1
     except TypeError:
         return -1
-
-
-def upd_items(start_id=12000, stop_id=20000):
-
-    import time
-    import json
-
-    items = json.loads(open('items.json', 'r').read())
-
-    for i in range(start_id, stop_id):
-        time.sleep(0.1)
-        n = get_name(i)
-        if n != '':
-            print('\n', i, ': ', n, sep='', end=' ')
-            if price(i) > 0:
-                items[i] = {'name': n, 'sell': 1}
-            else:
-                items[i] = {'name': n, 'sell': 0}
-        else:
-            print(i, end=' ')
-
-    open('items.json', 'w').write(json.dumps(items))
-
-    return
 
 
 def sellable_items():
@@ -231,4 +196,5 @@ def header(param: int = 0):
 
 
 if __name__ == '__main__':
-    upd_items(12000, 15000)
+    # upd_items(12000, 15000)
+    pass

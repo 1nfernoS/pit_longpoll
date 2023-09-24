@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from commands import Command
 
@@ -11,9 +11,9 @@ import profile_api
 import utils.math
 from dictionaries.emoji import gold, item, tab, active_book, passive_book
 
-# import for typing hints
-from vk_api.bot_longpoll import VkBotEvent
-from vk_bot.vk_bot import VkBot
+if TYPE_CHECKING:
+    from vk_api.bot_longpoll import VkBotEvent
+    from vk_bot.vk_bot import VkBot
 
 
 class Price(Command):
@@ -24,7 +24,7 @@ class Price(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
 
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -55,8 +55,6 @@ class Price(Command):
                              'Добавьте пару букв к поиску, чтобы их было хотя бы 3')
             return
 
-        # search = items.search_item(item_name)
-
         search: List[Item] = s.query(Item).filter(
             Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name}.*$"),
             Item.item_has_price == 1).all()
@@ -75,9 +73,11 @@ class Price(Command):
             guild_price = utils.math.discount_price(auc_price)
             guild_commission_price = utils.math.commission_price(guild_price)
             answer += f"\n{gold}{auc_price*count} " if count > 1 else f"\n{gold}{auc_price} "
-            answer += f"[-{DISCOUNT_PERCENT}%:{gold}{guild_price*count}" if count > 1 else f"[-{DISCOUNT_PERCENT}%:{gold}{guild_price}"
-            answer += f"({gold}{guild_commission_price*count})] " if count > 1 else f"({gold}{guild_commission_price})] "
-            answer += f"{item}{count}*{i.item_name}" if count > 1 else f"{item}{i.item_name}"
+            answer += f"[-{DISCOUNT_PERCENT}%:{gold}{guild_price*count}" \
+                if count > 1 \
+                else f"[-{DISCOUNT_PERCENT}%:{gold}{guild_price}"
+            answer += f"({gold}{guild_commission_price*count})] " if count > 1 else f"({gold}{guild_commission_price})]"
+            answer += f" {item}{count}*{i.item_name}" if count > 1 else f"{item}{i.item_name}"
             cnt += 1
 
         answer = f"Нашел следующее:" + answer if cnt > 0 else 'Ничего не нашлось...'
@@ -102,27 +102,29 @@ class Equip(Command):
 
         for book in item_list:
             b_item: Item = s.query(Item).filter(Item.item_id == book).first()
-            # name = items.get_item_by_id(book)
 
             book_name = b_item.item_name.replace("(А) ", f"{tab}{active_book}").replace("(П) ", f"{tab}{passive_book}")
             message += '\n' + f'{book_name}'
-            lvl = [v for k, v in skills.items() if b_item.item_name[4:].startswith(k)]
+            # lvl = [v for k, v in skills.items() if b_item.item_name[4:].startswith(k)]
+            lvl = None
             if lvl:
                 message += f" - {lvl[0][0]} ({int(lvl[0][1] * 100)}%)"
         return message
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user:
-            bot.api.send_chat_msg(event.chat_id, f"Не могу найти записей, покажите свой профиль, чтобы я записал информацию о вас и вашей гильдии")
+            msg = f"Не могу найти записей, покажите свой профиль, чтобы я записал информацию о вас и вашей гильдии"
+            bot.api.send_chat_msg(event.chat_id, msg)
             return
 
         if user.user_role.role_can_moderate:
             if 'reply_message' in event.message.keys():
-                user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.reply_message['from_id']).first()
+                reply_to = event.message.reply_message['from_id']
+                user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == reply_to).first()
 
         if not user.user_role.role_can_profile_app_check:
             bot.api.send_chat_msg(event.chat_id, f"Нет, это только для членов гильдии {GUILD_NAME}!")
@@ -141,7 +143,6 @@ class Equip(Command):
 
         inv = [int(i) for i in profile['items']]
 
-        class_id = inv[0] if inv[0] != 14108 else inv[1]
         build = profile_api.get_books(inv)
 
         user.user_items = [s.query(Item).filter(Item.item_id == i).first()
@@ -151,17 +152,18 @@ class Equip(Command):
 
         build = profile_api.get_build(inv)
 
-        skills = profile_api.lvl_active(user.user_profile_key, user.user_id)
-        skills.update(profile_api.lvl_passive(user.user_profile_key, user.user_id))
+        # skills = profile_api.lvl_active(user.user_profile_key, user.user_id)
+        # skills.update(profile_api.lvl_passive(user.user_profile_key, user.user_id))
 
+        # TODO: use new page of skill_level
         message = f'Билд {bot.api.get_names([user.user_id])}:'
         if build['books']:
             message += '\nКниги:'
-            message += self.__get_list(build['books'], skills)
+            message += self.__get_list(build['books'], None)
 
         if build['adms']:
             message += '\nВ адмах:'
-            message += self.__get_list(build['adms'], skills)
+            message += self.__get_list(build['adms'], None)
 
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], message)
         return

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, TYPE_CHECKING
 
 import vk_api
 
@@ -15,9 +15,9 @@ import dictionaries.items as items
 from utils.math import commission_price, discount_price
 from utils.keyboards import notes
 
-# import for typing hints
-from vk_api.bot_longpoll import VkBotEvent, CHAT_START_ID
-from vk_bot.vk_bot import VkBot
+if TYPE_CHECKING:
+    from vk_api.bot_longpoll import VkBotEvent, CHAT_START_ID
+    from vk_bot.vk_bot import VkBot
 
 
 class Stats(Command):
@@ -28,7 +28,7 @@ class Stats(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
 
         user: UserStats = s.query(UserStats).filter(UserStats.user_id == event.message.from_id).first()
@@ -65,7 +65,7 @@ class Help(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         message = 'Команды можно вводить как с префиксом, так и без\nВарианты использования - что делает\n'
 
         s = session()
@@ -84,11 +84,11 @@ class Help(Command):
             if all([role_access[r] for r in requires]):
                 message += '[' + ', '.join(cmd) + '] - ' + command_list[cmd].get_description() + '\n'
 
-        # message += '\n ПРИМЕЧАНИЕ: После использования, сообщение' \
-        #            'с командой автоматически удаляется, чтобы уменьшить количество флуда'
         message += f'\n За идеями/ошибками/вопросами обращаться [id{creator_id}|сюда], ' \
                    f'желательно с приставкой "по котику" или что-то в этом роде'
-        bot.api.send_chat_msg(event.chat_id, message)
+
+        bot.api.send_user_msg(event.message.from_id, message)
+        bot.api.send_chat_msg(event.chat_id, "Отправил список доступных команд в лс!")
         return
 
 
@@ -101,7 +101,7 @@ class Notes(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -123,7 +123,7 @@ class Balance(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -143,43 +143,46 @@ class Balance(Command):
              else event.message.from_id
              ).make_record()
 
-        if user.user_role.role_can_check_all_balance:
-            if 'reply_message' in event.message.keys():
-                reply_user: UserInfo = s.query(UserInfo).filter(
-                    UserInfo.user_id == event.message.reply_message['from_id']).first()
+        if not user.user_role.role_can_check_all_balance:
+            message = f"Ваш долг: {gold}{-user.balance}(Положить {commission_price(-int(user.balance))})" \
+                if user.balance < 0 \
+                else f"Сейчас на счету: {gold}{user.balance}"
+            bot.api.send_chat_msg(event.chat_id, message)
+            return
 
-                message = f"Счет игрока: {reply_user.balance}" if reply_user is not None \
-                    else "Нет записей, пусть сдаст профиль"
-                bot.api.send_chat_msg(event.chat_id, message)
-                return
+        if 'reply_message' in event.message.keys():
+            reply_user: UserInfo = s.query(UserInfo).filter(
+                UserInfo.user_id == event.message.reply_message['from_id']).first()
 
-            elif len(event.message.text.split(' ')) == 2:
-                if event.message.text.split(' ')[1] != 'все':
-                    return
+            message = f"Счет игрока: {reply_user.balance}" if reply_user is not None \
+                else "Нет записей, пусть сдаст профиль"
+            bot.api.send_chat_msg(event.chat_id, message)
+            return
 
-                msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
+        if len(event.message.text.split(' ')) != 2:
+            return
 
-                print(msg_id)
+        if event.message.text.split(' ')[1] != 'все':
+            return
 
-                guild_roles = (0, 1, 2, 3, 4, 5, 6)
-                users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
+        msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
 
-                print(users)
-                members = bot.api.get_members(GUILD_CHAT_ID)
-                message = f'Баланс игроков гильдии {GUILD_NAME}:\n'
+        print(msg_id)
 
-                message += '\n'.join(f"@id{user.user_id}: {user.balance}{gold}"
-                                     for user in users
-                                     if user.user_id in members)
-                print(users)
-                bot.api.send_user_msg(event.message.from_id, message)
-                bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Отправил список в лс')
-                return
+        guild_roles = (0, 1, 2, 3, 4, 5, 6)
+        users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
 
-        message = f"Ваш долг: {gold}{-user.balance}(Положить {commission_price(-int(user.balance))})" \
-            if user.balance < 0 \
-            else f"Сейчас на счету: {gold}{user.balance}"
-        bot.api.send_chat_msg(event.chat_id, message)
+        print(users)
+        members = bot.api.get_members(GUILD_CHAT_ID)
+        message = f'Баланс игроков гильдии {GUILD_NAME}:\n'
+
+        message += '\n'.join(f"@id{user.user_id}: {user.balance}{gold}"
+                             for user in users
+                             if user.user_id in members)
+        print(users)
+        bot.api.send_user_msg(event.message.from_id, message)
+        bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Отправил список в лс')
+        return
 
         return
 
@@ -192,7 +195,7 @@ class Who(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -216,7 +219,7 @@ class Who(Command):
         search: Item = s.query(Item).filter(
             Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ ){item_name}.*$"),
             Item.item_has_price == 1).first()
-        print(search)
+
         if not search:
             bot.api.send_chat_msg(event.chat_id, 'Ничего не нашлось...')
             return
@@ -238,7 +241,7 @@ class Transfer(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user_from: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -316,7 +319,7 @@ class Want(Command):
         # self.set_active(False)
         return
 
-    def run(self, bot: VkBot, event: VkBotEvent):
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -358,6 +361,8 @@ class Want(Command):
         role: Role = user.user_role
 
         search: Item = search[0]
+
+        # TODO: move balance changes to group message
 
         if search.item_id == items.gold:
             if not role.role_can_take_money:

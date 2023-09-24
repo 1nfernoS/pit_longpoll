@@ -67,7 +67,6 @@ if __name__ == 'commands':
                    if not i.startswith('__') and type(getattr(module, i)) == type
                    and i not in ('Command', 'VkBot', 'VkBotEvent', 'datetime')]
         for i in modules:
-            print(i)
             getattr(module, i)()
 
     print('\n' + 40 * '-',

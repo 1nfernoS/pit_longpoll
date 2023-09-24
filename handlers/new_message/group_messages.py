@@ -1,10 +1,5 @@
-# builtins
 from datetime import datetime
 
-# requirement's import
-from vk_api.bot_longpoll import VkBotEvent
-
-# config and packages
 from config import GUILD_NAME, GUILD_CHAT_ID
 
 from ORM import session, UserInfo, UserStats, Logs
@@ -14,15 +9,13 @@ from utils.formatters import str_datetime, datediff
 from utils.math import commission_price
 import dictionaries.emoji as emo
 
-from logger import get_logger
-
-# import for typing hints
-from vk_bot.vk_bot import VkBot
-
-logger = get_logger(__name__, 'group_messages')
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from vk_bot.vk_bot import VkBot
+    from vk_api.bot_longpoll import VkBotEvent
 
 
-def bot_message(self: VkBot, event: VkBotEvent):
+def bot_message(self: "VkBot", event: "VkBotEvent"):
     # group's message in chat
 
     if "Ваш профиль:" in event.message.text:
@@ -52,7 +45,7 @@ def bot_message(self: VkBot, event: VkBotEvent):
     return
 
 
-def profile_message(self: VkBot, event: VkBotEvent) -> str:
+def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
     DB = session()
     data = parse_profile(event.message.text)
     info: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == data['id_vk']).first()
@@ -74,14 +67,10 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
                  f"{emo.luck}{data['luck']}({data['luck'] - stats.user_luck})\n" \
                  f"(До пинка {(data['level'] + 15) * 6 - data['strength'] - data['agility']}{emo.strength}/{emo.agility}" \
                  f" или {(data['level'] + 15) * 3 - data['endurance']}{emo.endurance})"
-
-        # user_data.update_user_data(*new_data)
     else:
         info = UserInfo(user_id=data['id_vk'])
-        # info.user_id = data['id_vk']
 
         stats = UserStats(user_id=data['id_vk'])
-        # stats.user_id = data['id_vk']
 
         answer = f"{data['name']}, статы записаны!\n" \
                  f"[ {data['class_name']} | {data['race']} ]\n" \
@@ -95,15 +84,16 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
         stats.user_strength, stats.user_agility, stats.user_endurance, \
         stats.user_luck = new_data
 
+    in_guild_roles = [0, 1, 2, 3, 4, 5, 6, 7, 11]
+
     if data['guild'] == GUILD_NAME:
-        # because all guild roles are below 7 (guests)
         if info.role_id is None \
-                or info.role_id not in [0, 1, 2, 3, 4, 5, 6, 7, 11]:
+                or info.role_id not in in_guild_roles:
             answer = 'Обновил информацию гильдии!\n' + answer
             info.role_id = role_guild = 5
     else:
         if info.role_id is None \
-                or info.role_id not in [0, 1, 2, 3, 4, 5, 6, 7, 11]:
+                or info.role_id not in in_guild_roles:
             # if not banned and not in guild now
             if info.role_id != 9:
                 info.role_id = other_role = 8
@@ -114,7 +104,7 @@ def profile_message(self: VkBot, event: VkBotEvent) -> str:
     return answer
 
 
-def storage_reactions(self: VkBot, event: VkBotEvent):
+def storage_reactions(self: "VkBot", event: "VkBotEvent"):
     data = parse_storage_action(event.message.text)
     if data['item_type'] == 'item':
         return
@@ -124,7 +114,7 @@ def storage_reactions(self: VkBot, event: VkBotEvent):
         user.balance += data['result_price'] * data['count']
         DB.add(user)
         DB.commit()
-        # 'id_vk': id_vk, 'count': count, 'item_name': item_name, 'price': price
+
         Logs(user.user_id, 'Storage',
              f"-{data['count']}*{data['item_name']}; +{data['result_price']}"
              if data['result_price'] > 0
