@@ -59,15 +59,15 @@ def load(branch_name: str):
 
     global group_token, db_data, ALLOWED_CHATS, storager_id, storager_chat, storager_token, LEADER_CHAT_ID
 
-    group_token = env.get('group_token')
-    db_data = loads(env.get('db_data'))
+    group_token = env.get('GROUP_TOKEN')
+    db_data = loads(env.get('DB_DATA'))
     ALLOWED_CHATS = tuple(int(i) for i in env.get('ALLOWED_CHATS').split(','))
 
-    storager_id = int(env.get('storager_id'))
-    storager_chat = int(env.get('storager_chat'))
-    storager_token = env.get('storager_token')
+    storager_id = int(env.get('STORAGER_ID'))
+    storager_chat = int(env.get('STORAGER_CHAT'))
+    storager_token = env.get('STORAGER_TOKEN')
 
-    LEADER_CHAT_ID = int(env.get('leader_chat_id'))
+    LEADER_CHAT_ID = int(env.get('LEADER_CHAT_ID'))
     return
 
 
