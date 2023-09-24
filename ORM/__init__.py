@@ -7,7 +7,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, relationship, mappe
 
 from config import db_data
 
-__all__ = ['session', 'UserInfo', 'UserStats', 'Role', 'Item', 'BuffUser', 'BuffType', 'BuffCmd', 'Logs']
+__all__ = ['session', 'UserInfo', 'UserStats', 'Role', 'Item', 'BuffUser', 'BuffType', 'BuffCmd', 'Logs', 'Task']
 
 __data_source = f"{db_data['dialect']}+{db_data['connector']}://" \
               f"{db_data['user']}:{db_data['password']}@" \
@@ -202,17 +202,22 @@ class UserInfo(Base):
     user_profile_key: Mapped[str]
     role_id: Mapped[int] = mapped_column(ForeignKey('role.role_id'))
     balance: Mapped[int]
+    elites_count: Mapped[int]
+    siege_flag: Mapped[bool]
 
     user_items: Mapped[List["Item"]] = relationship(secondary='equipment', back_populates='item_users')
     user_stats: Mapped["UserStats"] = relationship(back_populates='user_info')
     user_role: Mapped["Role"] = relationship(back_populates='role_users', viewonly=True)
 
-    def __init__(self, user_id: int, profile_key: str = None, role_id: int = 8, balance: int = 0):
+    def __init__(self, user_id: int, profile_key: str = None, role_id: int = 8, balance: int = 0, elites_count: int = 0,
+                 siege_flag: bool = False):
         super().__init__()
         self.user_id = user_id
         self.user_profile_key = profile_key
         self.role_id = role_id
         self.balance = balance
+        self.elites_count = elites_count
+        self.siege_flag = siege_flag
         return
 
     def __repr__(self):
@@ -378,6 +383,47 @@ class Logs(Base):
 
     def __repr__(self):
         return f"<Logs {self.logs_user_id}: {self.logs_action}>"
+
+
+class Task(Base):
+
+    __tablename__ = 'tasks'
+
+    task_id: Mapped[int] = mapped_column(primary_key=True)
+    task_when: Mapped[datetime]
+    task_target: Mapped[str]
+    task_args: Mapped[str]
+    task_is_regular: Mapped[bool]
+    task_repeat_delay: Mapped[datetime]
+    task_call_after: Mapped[str]
+    task_timestamp: Mapped[datetime]
+
+    def __init__(self, when: datetime, target: callable, args: Dict[str, Any] = None, is_regular: bool = False,
+                 repeat_delay: datetime = 0, call_after: callable = None):
+        super().__init__()
+        if when < datetime.now():
+            raise ValueError('Task can\'t be in past')
+        self.task_when = when
+
+        self.task_target = target.__name__
+        self.task_args = json.dumps(args)
+        self.task_is_regular = is_regular
+        self.task_repeat_delay = repeat_delay
+        self.task_call_after = call_after.__name__ if call_after else None
+        self.task_timestamp = datetime.now()
+        return
+
+    def add(self):
+        with session() as s:
+            s.add(self)
+            s.commit()
+            return
+
+    def __str__(self):
+        return f"<Task({int(self.task_is_regular)}) {self.task_target}<{self.task_when}>: [{self.task_args}]>"
+
+    def __repr__(self):
+        return f"<Task({int(self.task_is_regular)}) {self.task_target}<{self.task_when}>: [{self.task_args}]>"
 
 
 if __name__ == '__main__':

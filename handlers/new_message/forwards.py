@@ -15,11 +15,27 @@ from utils.formatters import translate
 from utils.words import frequent_letter
 import profile_api
 
-from ORM import session, UserInfo, Item, Logs
+from ORM import session, UserInfo, Item, Logs, Task
 
 
 def forward_parse(self: VkBot, event: VkBotEvent):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+
+    # if 'выловили рыбу' in fwd_txt:
+    #     Logs(event.message.from_id, 'Fishing', on_message=event.message.fwd_messages[0]['text']).make_record()
+    #     # TODO: make def for it
+    #     return
+
+    # if 'обыск руин' in fwd_txt:
+    #     Logs(event.message.from_id, 'Ruins', on_message=event.message.fwd_messages[0]['text']).make_record()
+    #     # TODO: make def for it
+    #     return
+
+    if 'заданий больше не осталось' in fwd_txt:
+        Logs(event.message.from_id, 'guild_task_remind', on_message=event.message.fwd_messages[0]['text']).make_record()
+        # TODO: make def for it
+        return
+
     if fwd_txt.startswith(f'{item}1*'):
         Logs(event.message.from_id, 'Dark_vendor', on_message=event.message.fwd_messages[0]['text']).make_record()
         dark_vendor(self, event)
@@ -334,4 +350,16 @@ def siege_report(self: VkBot, event: VkBotEvent):
     self.api.send_chat_msg(event.chat_id, msg)
 
     # TODO: logs in chat for logs
+    return
+
+
+def task_reminder(self: VkBot, event: VkBotEvent):
+    return
+
+
+def fishing(self: VkBot, event: VkBotEvent):
+    return
+
+
+def ruins(self: VkBot, event: VkBotEvent):
     return

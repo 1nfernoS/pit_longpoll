@@ -1,5 +1,12 @@
+import datetime
+from typing import List
+
 from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll
+
+from ORM import session, Task
+import tasks
+from dictionaries.tasks_list import init_tasks
 
 from time import strftime
 from requests.exceptions import ReadTimeout
@@ -32,6 +39,17 @@ class VkBot:
         self._before_start = None
         self._before_stop = None
 
+        return
+
+    def _tasks_check(self):
+        s = session()
+        now = datetime.datetime.now()
+        task_list: List[Task] = s.query(Task).all()
+        for t in task_list:
+            if t.task_when <= now:
+                getattr(tasks, t.task_target)(self, t.task_args)
+                s.delete(t)
+                s.commit()
         return
 
     def set_start(self, func: callable):
@@ -79,12 +97,15 @@ class VkBot:
 
         print(f"[{strftime('%d.%m.%y %H:%M:%S')}] "
               f"Bot {self._name} successfully started! Branch {os.environ.get('BRANCH', 'dev')}\n")
+
+        init_tasks()
+
         while self.__not_kill:
             try:
                 for event in self._long_poll.check():
                     # Call def with same name as event type
-                    # logger.info(f"{event.type.name}:\t{event.raw['event_id']} - {str(event.obj).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')}")
                     getattr(self._events, event.type.name)(self, event)
+                self._tasks_check()
             except KeyboardInterrupt:
                 print('\n', 'Stopping . . .', '\n')
                 self.__not_kill = False

@@ -2,7 +2,6 @@ import importlib
 from typing import Tuple
 import os
 
-
 # import for typing hints
 from vk_api.bot_longpoll import VkBotEvent
 from vk_bot.vk_bot import VkBot
@@ -64,11 +63,13 @@ class Command:
 if __name__ == 'commands':
     for m in [cmd[:-3] for cmd in os.listdir('commands') if not cmd.startswith('__')]:
         module = importlib.import_module('commands.' + m)
-        [getattr(module, i)() for i in dir(module)
-         if not i.startswith('__') and type(getattr(module, i)) == type
-         and i not in ('Command', 'VkBot', 'VkBotEvent')]
+        modules = [i for i in dir(module)
+                   if not i.startswith('__') and type(getattr(module, i)) == type
+                   and i not in ('Command', 'VkBot', 'VkBotEvent', 'datetime')]
+        for i in modules:
+            print(i)
+            getattr(module, i)()
 
     print('\n' + 40 * '-',
           '\nLoaded commands: ', ', '.join(f"{command_list[i]}" for i in command_list),
           '\n' + 40 * '-', '\n')
-
