@@ -33,7 +33,7 @@ class Remind(Command):
             'text': ' '.join(event.message.text.split()[1:]),
             'msg_id': bot.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
         }
-        Task(datetime.now() + timedelta(seconds=10), tasks.remind, args).add()
+        Task(datetime.now() + timedelta(hours=1), tasks.remind, args).add()
 
         bot.api.send_chat_msg(event.chat_id, 'Хорошо, напомню через часик')
         return
