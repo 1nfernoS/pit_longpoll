@@ -1,8 +1,10 @@
 import re
 from typing import List
+import datetime
 
 from vk_api.bot_longpoll import VkBotEvent
 
+from utils.parsers import get_siege
 from vk_bot.vk_bot import VkBot
 
 from config import GUILD_CHAT_ID, DISCOUNT_PERCENT, creator_id
@@ -25,10 +27,12 @@ def forward_parse(self: VkBot, event: VkBotEvent):
 
     if 'присоединились к осадному лагерю' in fwd_txt:
         Logs(event.message.from_id, 'Siege', on_message='\n'.join([msg['text'] for msg in event.message.fwd_messages])).make_record()
+        siege_report(self, event)
         pass
 
     if 'обменяли элитные трофеи' in fwd_txt:
         Logs(event.message.from_id, 'Elites', on_message=event.message.fwd_messages[0]['text']).make_record()
+        elites_response(self, event)
         pass
 
     if 'Символы' in fwd_txt:
@@ -51,10 +55,8 @@ def forward_parse(self: VkBot, event: VkBotEvent):
         book_pages(self, event)
         return
 
-
     else:
-        Logs('other\t' + fwd_txt.replace('\n', ' | '))
-    # puzzles
+        Logs(event.message.from_id, 'other\t' + fwd_txt.replace('\n', ' | '))
 
     return
 
@@ -67,7 +69,7 @@ def dark_vendor(self: VkBot, event: VkBotEvent):
     item_price = int(re.findall(r'\d+', fwd_split[1][9:])[0])
 
     DB = session()
-    item_: Item = DB.query(Item).filter(Item.item_name.ilike(f"{item_name}%"),Item.item_has_price == 1).first()
+    item_: Item = DB.query(Item).filter(Item.item_name.ilike(f"{item_name}%"), Item.item_has_price == 1).first()
     if not item_:
         msg = 'Кажется, такой предмет не продается на аукционе'
         self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
@@ -221,7 +223,7 @@ def book_pages(self: VkBot, event: VkBotEvent):
         'позволит быстро откупорить крышку и одним глотком осушить': 'Водохлеб',
         'нанести удар вдоль, максимально сблизившись с противником, чтобы он точно не смог': 'Режущий удар',
         'следить за каждым движением, которое может оказаться врагом, меньше обращая внимания на окружающее': 'Бесстрашие',
-        'отрешившись от внешнего мира, однако при этом не надейтесь избежать': 'Стойка сосредочения',
+        'отрешившись от внешнего мира, однако при этом не надейтесь избежать': 'Стойка сосредоточения',
         'резким взмахом, едва задевая самым острием по широкому': 'Рассечение',
         'в сочленение между пластинами, и только тогда они': 'Раскол',
         'не обязательно настроены агрессивно, многих из них можно обойти просто': 'Исследователь',
@@ -247,7 +249,9 @@ def book_pages(self: VkBot, event: VkBotEvent):
         'зарисовать на бумаге, каждый поворот, каждую': 'Картограф',
         'выверенные движения позволят снять пробку быстрее и сократить время': 'Ловкость рук',
         'в нужный момент подставить свой клинок под удар, отведя': 'Парирование',
-        'пригнувшись максимально мягко ступая по каменному': 'Незаметность'
+        'пригнувшись максимально мягко ступая по каменному': 'Незаметность',
+        'правильно напрягая мышцы, чтобы позволить им': 'Атлетика',
+        'иммунитет организма, таким образом отравление не сможет': 'Устойчивость'
     }
 
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
@@ -260,4 +264,74 @@ def book_pages(self: VkBot, event: VkBotEvent):
 
     self.api.send_chat_msg(event.chat_id, f"Ой, а я не знаю ответ\nCообщите в полигон или [id{creator_id}|ему]")
 
+    return
+
+
+def elites_response(self: VkBot, event: VkBotEvent):
+    fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+    date = datetime.datetime.fromtimestamp(event.message.fwd_messages[0]['date'])
+    now = datetime.datetime.now(tz=None)
+
+    s = session()
+    user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+
+    if not user:
+        return
+
+    if user.user_role.role_id in (7, 8, 9):
+        return
+
+    if date.date() != now.date():
+        self.api.send_chat_msg(event.chat_id, 'Мне нужны элитные трофеи сданные лишь сегодня')
+        return
+
+    if user.user_stats.user_level < 100:
+        limit = 40
+    elif user.user_stats.user_level < 250:
+        limit = 90
+    else:
+        limit = 120
+
+    count = parsers.get_elites(fwd_txt)
+
+    user.elites_count += count
+    s.add(user)
+    s.commit()
+    msg = f"Добавил {count} к элитным трофеям! Сдано за месяц: {user.elites_count}\n"
+    msg += f"Осталось сдать {limit - user.elites_count} штук" \
+        if limit > user.elites_count \
+        else f"Сданы все необходимые трофеи"
+    self.api.send_chat_msg(event.chat_id, msg)
+
+    # TODO: logs in chat for logs
+    return
+
+
+def siege_report(self: VkBot, event: VkBotEvent):
+    fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+    date = datetime.datetime.fromtimestamp(event.message.fwd_messages[0]['date'])
+    now = datetime.datetime.now(tz=None)
+
+    s = session()
+    user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+
+    if not user:
+        return
+
+    if user.user_role.role_id in (7, 8, 9):
+        return
+
+    if date.date() != now.date():
+        self.api.send_chat_msg(event.chat_id, 'Я не принимаю отчеты по осаде за другие дни')
+        # return
+
+    data = get_siege(fwd_txt)
+
+    user.siege_flag = True
+    s.add(user)
+    s.commit()
+    msg = f"Зарегистрировал твое участие в осаде за {data['name']}"
+    self.api.send_chat_msg(event.chat_id, msg)
+
+    # TODO: logs in chat for logs
     return

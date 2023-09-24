@@ -1,4 +1,9 @@
-from typing import List
+from typing import Dict
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from vk_bot.vk_bot import VkBot
 
 from config import GUILD_CHAT_ID, creator_id
 
@@ -7,7 +12,8 @@ from ORM import session, UserInfo, Item
 from profile_api import get_name, price
 
 
-def withdraw_bill(members: List[int]) -> None:
+def withdraw_bill(bot: "VkBot") -> None:
+    members = bot.api.get_members(GUILD_CHAT_ID)
     DB = session()
     for user_id in members:
         if user_id < 0:
@@ -27,13 +33,68 @@ def withdraw_bill(members: List[int]) -> None:
     return
 
 
+def check_siege_report(bot: "VkBot") -> Dict[int, bool]:
+    members = bot.api.get_members(GUILD_CHAT_ID)
+    result = {}
+    DB = session()
+    for user_id in members:
+        if user_id < 0:
+            continue
+        user: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == user_id).first()
+        if not user:
+            continue
+
+        # not depended from guild roles
+        if user.user_role.role_id in (7, 8, 9):
+            continue
+
+        result[user.user_id] = user.siege_flag
+
+    return result
+
+
+def check_elites(bot: "VkBot") -> Dict[int, Dict[str, int]]:
+    members = bot.api.get_members(GUILD_CHAT_ID)
+    result = {}
+    DB = session()
+    for user_id in members:
+        if user_id < 0:
+            continue
+        user: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == user_id).first()
+        if not user:
+            continue
+
+        # not depended from guild roles
+        if user.user_role.role_id in (7, 8, 9):
+            continue
+
+        if user.user_stats.user_level < 100:
+            limit = 40
+        elif user.user_stats.user_level < 250:
+            limit = 90
+        else:
+            limit = 120
+
+        result[user.user_id] = {
+            'level': user.user_stats.user_level,
+            'limit': limit,
+            'elites': user.elites_count
+        }
+
+        user.elites_count = 0
+        DB.add(user)
+    DB.commit()
+
+    return result
+
+
 def get_chat_id(token: str):
     import vk_api
     from vk_api.longpoll import VkEventType, VkLongPoll, CHAT_START_ID
     vk = vk_api.VkApi(token=token, api_version='5.131')
     api = vk.get_api()
-    dialoges = api.messages.getConversations()
-    chats = [i for i in dialoges['items'] if i['conversation']['peer']['type'] == 'chat']
+    dialogs = api.messages.getConversations()
+    chats = [i for i in dialogs['items'] if i['conversation']['peer']['type'] == 'chat']
     for chat in chats:
         if chat['conversation']['chat_settings']['title'] == 'Чат Гильдии "Тёмная сторона"':
             return chat['conversation']['peer']['local_id']

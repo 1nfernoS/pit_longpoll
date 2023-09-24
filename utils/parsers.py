@@ -1,6 +1,6 @@
 from datetime import datetime
 import re
-from typing import List
+from typing import List, Dict
 
 from config import DISCOUNT_PERCENT
 
@@ -23,7 +23,7 @@ def parse_profile(text: str) -> dict:
     DB = session()
     class_item: Item = DB.query(Item).filter(Item.item_name.ilike(f"{class_name}")).first()
     # class_id = get_item_by_name(class_name)
-    race = t[1][sep+1:]
+    race = t[1][sep + 1:]
 
     guild = t[2][18:]
     is_officer = guild.endswith(officer_emoji)
@@ -38,7 +38,8 @@ def parse_profile(text: str) -> dict:
     attack = int(re.findall(r'(?<=&#128481;)\d+', t[7])[0])
     defence = int(re.findall(r'(?<=&#128737;)\d+', t[7])[0])
 
-    res = {'id_vk': id_vk, 'guild': guild, 'is_officer': is_officer, 'class_id': class_item.item_id if class_item else None,
+    res = {'id_vk': id_vk, 'guild': guild, 'is_officer': is_officer,
+           'class_id': class_item.item_id if class_item else None,
            'level': level, 'strength': strength, 'agility': agility, 'endurance': endurance, 'luck': luck,
            'attack': attack, 'defence': defence, 'last_update': datetime.now(), 'class_name': class_name,
            'race': race, 'name': name}
@@ -108,6 +109,23 @@ def guesser(text: str) -> list:
         if i.item_id in __possible or '-' in i.item_name:
             res.append(i.item_name.replace('Книга - ', ''))
 
+    return res
+
+
+def get_elites(text: str) -> int:
+    data = text.split('\n')[0]
+    count = int(re.findall(r'(?<=\()\d+(?=\))', data)[0])
+    return count
+
+
+def get_siege(text: str) -> Dict[str, str]:
+    data = text.split('\n')
+    name = data[0].split('Вы успешно присоединились к осадному лагерю гильдии')[-1].strip()
+    role = re.findall(r'(?<=\(\+)\d+&#\d+;(?=\))', data[1])[0]
+    res = {
+        'name': name,
+        'role': role
+    }
     return res
 
 

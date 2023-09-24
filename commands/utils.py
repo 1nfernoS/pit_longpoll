@@ -201,7 +201,7 @@ class Bill(Command):
         Logs(event.message.from_id, __class__.__name__).make_record()
 
         from utils.scripts import withdraw_bill
-        withdraw_bill(bot.api.get_members(GUILD_CHAT_ID))
+        withdraw_bill(bot)
         bot.api.send_chat_msg(event.chat_id, f"Списал налог с баланса, проверять можно командой баланс")
 
         return
