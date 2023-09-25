@@ -101,6 +101,7 @@ def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
     DB.add(info)
     DB.add(stats)
     DB.commit()
+    DB.close()
     return answer
 
 

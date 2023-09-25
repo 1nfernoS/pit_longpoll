@@ -109,8 +109,8 @@ class VkBot:
         from ORM import session, Task
         import tasks
 
-        s = session()
         now = datetime.datetime.now()
+        s = session()
         task_list: List[Task] = s.query(Task).all()
         for t in task_list:
             if t.task_when > now:

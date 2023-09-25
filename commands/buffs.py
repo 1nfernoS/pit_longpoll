@@ -37,7 +37,7 @@ class ToggleBuffer(Command):
             s.add(buffer)
             s.commit()
             bot.api.send_chat_msg(event.chat_id, f"Баффер стал {bool(buffer.buff_user_is_active)} ")
-        s.close()
+
         return
 
 

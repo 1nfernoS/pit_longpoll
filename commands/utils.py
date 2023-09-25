@@ -30,6 +30,7 @@ class Ping(Command):
         Logs(event.message.from_id, __class__.__name__).make_record()
 
         bot.api.send_chat_msg(event.chat_id, 'Я живой)')
+        s.close()
         return
 
 
@@ -51,6 +52,7 @@ class Grib(Command):
         Logs(event.message.from_id, __class__.__name__).make_record()
 
         bot.api.send_chat_msg(event.chat_id, '&#127812;')
+        s.close()
         return
 
 
@@ -130,7 +132,7 @@ class Role(Command):
              event.message.reply_message['from_id']
              if 'reply_message' in event.message.keys()
              else event.message.from_id).make_record()
-
+        s.close()
         return
 
 
@@ -144,7 +146,6 @@ class Id(Command):
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
         s = session()
-
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_utils:
@@ -160,6 +161,7 @@ class Id(Command):
              event.message.reply_message['from_id']
              if 'reply_message' in event.message.keys()
              else event.message.from_id).make_record()
+        s.close()
         return
 
 
@@ -183,6 +185,7 @@ class Emoji(Command):
         msg = event.message.text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
         msg = msg.split(' ', 1)[1].replace('&#', '').replace(';', '')
         bot.api.send_chat_msg(event.chat_id, msg)
+        s.close()
         return
 
 
@@ -206,7 +209,7 @@ class Bill(Command):
         from utils.scripts import withdraw_bill
         withdraw_bill(bot)
         bot.api.send_chat_msg(event.chat_id, f"Списал налог с баланса, проверять можно командой баланс")
-
+        s.close()
         return
 
 

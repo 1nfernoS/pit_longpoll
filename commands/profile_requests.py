@@ -109,6 +109,7 @@ class Equip(Command):
             lvl = None
             if lvl:
                 message += f" - {lvl[0][0]} ({int(lvl[0][1] * 100)}%)"
+        s.close()
         return message
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
