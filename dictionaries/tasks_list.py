@@ -5,7 +5,8 @@ from tasks import bill, bill2, elites, siege
 
 
 def init_tasks() -> None:
-    task_list = session().query(Task).all()
+    with session() as s:
+        task_list = s.query(Task).all()
     task_list_names = [t.task_target for t in task_list]
 
     now = dt.datetime.now()

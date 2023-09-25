@@ -101,6 +101,7 @@ def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
     DB.add(info)
     DB.add(stats)
     DB.commit()
+    DB.close()
     return answer
 
 
@@ -146,5 +147,5 @@ def storage_reactions(self: "VkBot", event: "VkBotEvent"):
             if user.balance < 0 else f"Сейчас на счету: {emo.gold}{user.balance}"
         self.api.send_chat_msg(event.chat_id, msg)
         return
-
+    DB.close()
     return

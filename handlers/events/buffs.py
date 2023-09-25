@@ -66,5 +66,5 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
         DB.commit()
 
         res += f"\n[id{user_from.user_id}|На счету]: {user_from.balance}{gold}"
-
+    DB.close()
     return res

@@ -359,10 +359,12 @@ class Logs(Base):
                  on_message: str = None, on_user_id: int = None):
         super().__init__()
 
-        type_id: LogsType = session().query(LogsType).filter(LogsType.logs_type_name == action).first()
+        s = session()
+        type_id: LogsType = s.query(LogsType).filter(LogsType.logs_type_name == action).first()
         if not type_id:
             LogsType(action).register()
-            type_id: LogsType = session().query(LogsType).filter(LogsType.logs_type_name == action).one()
+            type_id: LogsType = s.query(LogsType).filter(LogsType.logs_type_name == action).one()
+        s.close()
 
         self.logs_timestamp = datetime.now()
         self.logs_user_id = user_id
