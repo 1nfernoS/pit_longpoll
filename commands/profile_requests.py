@@ -150,7 +150,6 @@ class Equip(Command):
                            for i in build]
         s.add(user)
         s.commit()
-        s.close()
         build = profile_api.get_build(inv)
 
         # skills = profile_api.lvl_active(user.user_profile_key, user.user_id)
@@ -167,4 +166,6 @@ class Equip(Command):
             message += self.__get_list(build['adms'], None)
 
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], message)
+
+        s.close()
         return

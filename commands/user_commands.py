@@ -132,7 +132,7 @@ class Balance(Command):
         s = session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
-        if user is None:
+        if not user:
             bot.api.send_chat_msg(event.chat_id, "Хм... О вас нет записей, покажите профиль хотя бы раз!!")
             return
 
@@ -148,42 +148,43 @@ class Balance(Command):
              else event.message.from_id
              ).make_record()
 
-        if not user.user_role.role_can_check_all_balance:
-            message = f"Ваш долг: {gold}{-user.balance}(Положить {commission_price(-int(user.balance))})" \
-                if user.balance < 0 \
-                else f"Сейчас на счету: {gold}{user.balance}"
-            bot.api.send_chat_msg(event.chat_id, message)
+        if user.user_role.role_can_check_all_balance:
+            if 'reply_message' in event.message.keys():
+                reply_user: UserInfo = s.query(UserInfo).filter(
+                    UserInfo.user_id == event.message.reply_message['from_id']).first()
+
+                message = f"Счет игрока: {reply_user.balance}" if reply_user is not None \
+                    else "Нет записей, пусть сдаст профиль"
+                bot.api.send_chat_msg(event.chat_id, message)
+                return
+
+            if len(event.message.text.split(' ')) != 2:
+                return
+
+            if event.message.text.split(' ')[1] != 'все':
+                return
+
+            msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
+
+            guild_roles = (0, 1, 2, 3, 4, 5, 6)
+            users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
+
+            members = bot.api.get_members(GUILD_CHAT_ID)
+            message = f'Баланс игроков гильдии {GUILD_NAME}:\n'
+
+            message += '\n'.join(f"@id{user.user_id}: {user.balance}{gold}"
+                                 for user in users
+                                 if user.user_id in members)
+
+            bot.api.send_user_msg(event.message.from_id, message)
+            bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Отправил список в лс')
             return
 
-        if 'reply_message' in event.message.keys():
-            reply_user: UserInfo = s.query(UserInfo).filter(
-                UserInfo.user_id == event.message.reply_message['from_id']).first()
+        message = f"Ваш долг: {gold}{-user.balance}(Положить {commission_price(-int(user.balance))})" \
+            if user.balance < 0 \
+            else f"Сейчас на счету: {gold}{user.balance}"
+        bot.api.send_chat_msg(event.chat_id, message)
 
-            message = f"Счет игрока: {reply_user.balance}" if reply_user is not None \
-                else "Нет записей, пусть сдаст профиль"
-            bot.api.send_chat_msg(event.chat_id, message)
-            return
-
-        if len(event.message.text.split(' ')) != 2:
-            return
-
-        if event.message.text.split(' ')[1] != 'все':
-            return
-
-        msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
-
-        guild_roles = (0, 1, 2, 3, 4, 5, 6)
-        users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
-
-        members = bot.api.get_members(GUILD_CHAT_ID)
-        message = f'Баланс игроков гильдии {GUILD_NAME}:\n'
-
-        message += '\n'.join(f"@id{user.user_id}: {user.balance}{gold}"
-                             for user in users
-                             if user.user_id in members)
-
-        bot.api.send_user_msg(event.message.from_id, message)
-        bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Отправил список в лс')
 
         s.close()
 
