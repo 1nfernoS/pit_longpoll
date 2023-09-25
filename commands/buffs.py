@@ -37,6 +37,7 @@ class ToggleBuffer(Command):
             s.add(buffer)
             s.commit()
             bot.api.send_chat_msg(event.chat_id, f"Баффер стал {bool(buffer.buff_user_is_active)} ")
+        s.close()
         return
 
 
@@ -79,7 +80,7 @@ class Apostol(Command):
 
             kbd = keyboards.apostol(apo.buff_user_id, msg_id, event.chat_id, apo.buff_user_race1, apo.buff_user_race2)
             bot.api.send_chat_msg(event.chat_id, f"[id{apo.buff_user_id}|Голос]: {voices[apo.buff_user_id]}", kbd=kbd)
-
+        s.close()
         return
 
 
@@ -109,7 +110,7 @@ class Warlock(Command):
 
             kbd = keyboards.warlock(buffer.buff_user_id, msg_id, event.chat_id)
             bot.api.send_chat_msg(event.chat_id, f"[id{buffer.buff_user_id}|Чернокнижник]", kbd=kbd)
-
+        s.close()
         return
 
 
@@ -151,4 +152,5 @@ class PaladinStuff(Command):
             for buffer in light_incs:
                 kbd = keyboards.light_inc(buffer.buff_user_id, msg_id, event.chat_id)
                 bot.api.send_chat_msg(event.chat_id, f"[id{buffer.buff_user_id}|Воплощение света]", kbd=kbd)
+        s.close()
         return

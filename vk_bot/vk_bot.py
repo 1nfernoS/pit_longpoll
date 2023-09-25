@@ -118,6 +118,7 @@ class VkBot:
             getattr(tasks, t.task_target)(self, t.task_args)
             s.delete(t)
             s.commit()
+        s.close()
         return
 
     def _event_loop(self):

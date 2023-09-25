@@ -34,7 +34,7 @@ def toggle_role(id_from: int, id_to: int, role_id: int, toggle_role_id: int) -> 
 
     s.add(user_to)
     s.commit()
-
+    s.close()
     return msg
 
 
@@ -78,7 +78,7 @@ class Kick(Command):
             s.commit()
 
         bot.api.kick(event.chat_id, event.message.reply_message['from_id'])
-        
+        s.close()
         return
 
 
@@ -104,6 +104,7 @@ class Pin(Command):
             Logs(event.message.from_id, __class__.__name__, event.message.text, event.message.reply_message['text']).make_record()
         else:
             bot.api.send_chat_msg(event.chat_id, 'Нет реплая для закрепа...')
+        s.close()
         return
 
 
@@ -159,6 +160,7 @@ class Check(Command):
 
         bot.api.send_chat_msg(event.chat_id, f"Готово, изменил баланс на {money}{gold}, "
                                              f"теперь счету {changed_user.balance}{gold}")
+        s.close()
         return
 
 
@@ -191,6 +193,7 @@ class ToggleLeader(Command):
             )
 
             bot.api.send_chat_msg(event.chat_id, msg)
+        s.close()
         return
 
 
@@ -222,6 +225,7 @@ class ToggleOfficer(Command):
                 guild_member
             )
             bot.api.send_chat_msg(event.chat_id, msg)
+        s.close()
         return
 
 
@@ -253,6 +257,7 @@ class ToggleGuildMember(Command):
                 others
             )
             bot.api.send_chat_msg(event.chat_id, msg)
+        s.close()
         return
 
 
@@ -284,6 +289,7 @@ class ToggleNewbie(Command):
                 others
             )
             bot.api.send_chat_msg(event.chat_id, msg)
+        s.close()
         return
 
 
@@ -315,4 +321,5 @@ class ToggleGuest(Command):
                 others
             )
             bot.api.send_chat_msg(event.chat_id, msg)
+        s.close()
         return

@@ -164,6 +164,7 @@ def reg_pit_buffer(self: "VkBot", event: "VkBotEvent"):
         buffer.buff_user_chat_id = chat_id
     DB.add(buffer)
     DB.commit()
+    DB.close()
 
     self.api.send_user_msg(event.message.from_id, 'Отлично, теперь ты один из бафферов!')
     return

@@ -83,7 +83,7 @@ class Price(Command):
         answer = f"Нашел следующее:" + answer if cnt > 0 else 'Ничего не нашлось...'
 
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer)
-
+        s.close()
         return
 
 
@@ -149,7 +149,7 @@ class Equip(Command):
                            for i in build]
         s.add(user)
         s.commit()
-
+        s.close()
         build = profile_api.get_build(inv)
 
         # skills = profile_api.lvl_active(user.user_profile_key, user.user_id)

@@ -27,6 +27,7 @@ def withdraw_bill(bot: "VkBot") -> None:
         DB.add(user)
 
     DB.commit()
+    DB.close()
     return
 
 
@@ -46,7 +47,7 @@ def check_siege_report(bot: "VkBot") -> Dict[int, bool]:
             continue
 
         result[user.user_id] = user.siege_flag
-
+    DB.close()
     return result
 
 
@@ -81,7 +82,7 @@ def check_elites(bot: "VkBot") -> Dict[int, Dict[str, int]]:
         user.elites_count = 0
         DB.add(user)
     DB.commit()
-
+    DB.close()
     return result
 
 

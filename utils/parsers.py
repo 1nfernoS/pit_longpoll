@@ -42,6 +42,7 @@ def parse_profile(text: str) -> dict:
            'level': level, 'strength': strength, 'agility': agility, 'endurance': endurance, 'luck': luck,
            'attack': attack, 'defence': defence, 'last_update': datetime.now(), 'class_name': class_name,
            'race': race, 'name': name}
+    DB.close()
     return res
 
 
@@ -107,7 +108,7 @@ def guesser(text: str) -> list:
     for i in item_list:
         if i.item_id in __possible or '-' in i.item_name:
             res.append(i.item_name.replace('Книга - ', ''))
-
+    DB.close()
     return res
 
 

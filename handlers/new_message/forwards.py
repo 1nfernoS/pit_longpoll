@@ -117,6 +117,7 @@ def dark_vendor(self: "VkBot", event: "VkBotEvent"):
               f'\nВот только... Он не продается, Сам не знаю почему'
 
     self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
+    DB.close()
     return
 
 
@@ -222,6 +223,7 @@ def elites_response(self: "VkBot", event: "VkBotEvent"):
     user.elites_count += count
     s.add(user)
     s.commit()
+    s.close()
     msg = f"Добавил {count} к элитным трофеям! Сдано за месяц: {user.elites_count}\n"
     msg += f"Осталось сдать {limit - user.elites_count} штук" \
         if limit > user.elites_count \
@@ -255,6 +257,7 @@ def siege_report(self: "VkBot", event: "VkBotEvent"):
     user.siege_flag = True
     s.add(user)
     s.commit()
+    s.close()
     msg = f"Зарегистрировал твое участие в осаде за {data['name']}"
     self.api.send_chat_msg(event.chat_id, msg)
 

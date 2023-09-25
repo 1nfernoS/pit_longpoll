@@ -54,6 +54,7 @@ class Stats(Command):
             else "До пинка... Хм... О вас нет записей, покажите профиль хотя бы раз!!"
 
         bot.api.send_chat_msg(event.chat_id, message)
+        s.close()
         return
 
 
@@ -90,6 +91,8 @@ class Help(Command):
 
         bot.api.send_user_msg(event.message.from_id, message)
         bot.api.send_chat_msg(event.chat_id, "Отправил список доступных команд в лс!")
+
+        s.close()
         return
 
 
@@ -113,6 +116,7 @@ class Notes(Command):
 
         message = 'Заметки:'
         bot.api.send_chat_msg(event.chat_id, message, notes())
+        s.close()
         return
 
 
@@ -168,22 +172,20 @@ class Balance(Command):
 
         msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
 
-        print(msg_id)
-
         guild_roles = (0, 1, 2, 3, 4, 5, 6)
         users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
 
-        print(users)
         members = bot.api.get_members(GUILD_CHAT_ID)
         message = f'Баланс игроков гильдии {GUILD_NAME}:\n'
 
         message += '\n'.join(f"@id{user.user_id}: {user.balance}{gold}"
                              for user in users
                              if user.user_id in members)
-        print(users)
+
         bot.api.send_user_msg(event.message.from_id, message)
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Отправил список в лс')
-        return
+
+        s.close()
 
         return
 
@@ -230,6 +232,7 @@ class Who(Command):
             if search.item_users else f'{item}{search.item_name}. Но этой книги ни у кого в билде нет'
 
         bot.api.send_chat_msg(event.chat_id, message)
+        s.close()
 
         return
 
@@ -302,6 +305,7 @@ class Transfer(Command):
         s.add(user_from)
         s.add(user_to)
         s.commit()
+        s.close()
 
         message = f"Перевел {gold}{money}\n"
         message += "Ваш долг: {gold}{-balance}(Положить {commission_price(-balance)})" if user_from.balance < 0 \
@@ -432,6 +436,7 @@ class Want(Command):
 
         s.add(user)
         s.commit()
+        s.close()
 
         if answer:
             bot.api.send_chat_msg(event.chat_id, answer)

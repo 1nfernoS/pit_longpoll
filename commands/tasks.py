@@ -37,5 +37,6 @@ class Remind(Command):
         Task(datetime.now() + timedelta(hours=1), tasks.remind, args).add()
 
         bot.api.send_chat_msg(event.chat_id, 'Хорошо, напомню через часик')
+        s.close()
         return
 

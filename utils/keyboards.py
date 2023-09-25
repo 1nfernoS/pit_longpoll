@@ -39,7 +39,7 @@ def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None
 
     kbd.add_line()
     kbd.add_callback_button(cancel, keyboard.VkKeyboardColor.NEGATIVE, {'action': 'remove'})
-
+    DB.close()
     return kbd.get_keyboard()
 
 
@@ -59,7 +59,7 @@ def warlock(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd.add_line()
     kbd.add_callback_button(cancel, keyboard.VkKeyboardColor.NEGATIVE, {'action': 'remove'})
-
+    DB.close()
     return kbd.get_keyboard()
 
 
@@ -79,7 +79,7 @@ def paladin(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd.add_line()
     kbd.add_callback_button(cancel, keyboard.VkKeyboardColor.NEGATIVE, {'action': 'remove'})
-
+    DB.close()
     return kbd.get_keyboard()
 
 
@@ -103,7 +103,7 @@ def crusader(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd.add_line()
     kbd.add_callback_button(cancel, keyboard.VkKeyboardColor.NEGATIVE, {'action': 'remove'})
-
+    DB.close()
     return kbd.get_keyboard()
 
 
@@ -127,7 +127,7 @@ def light_inc(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd.add_line()
     kbd.add_callback_button(cancel, keyboard.VkKeyboardColor.NEGATIVE, {'action': 'remove'})
-
+    DB.close()
     return kbd.get_keyboard()
 
 

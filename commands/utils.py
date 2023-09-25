@@ -242,5 +242,5 @@ class UpdateItems(Command):
                                              'Я скажу как закончу')
         update_items(int(start), int(stop))
         bot.api.send_chat_msg(event.chat_id, f'Предметы с {start} по {stop} успешно обновлены и внесены в базу')
-
+        s.close()
         return
