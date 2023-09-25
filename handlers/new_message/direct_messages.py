@@ -93,6 +93,7 @@ def reg_pit_profile(self: "VkBot", event: "VkBotEvent"):
     DB.add(info)
     DB.add(stats)
     DB.commit()
+    DB.close()
     self.api.send_user_msg(event.message.from_id, ans)
     return
 
@@ -164,6 +165,7 @@ def reg_pit_buffer(self: "VkBot", event: "VkBotEvent"):
         buffer.buff_user_chat_id = chat_id
     DB.add(buffer)
     DB.commit()
+    DB.close()
 
     self.api.send_user_msg(event.message.from_id, 'Отлично, теперь ты один из бафферов!')
     return

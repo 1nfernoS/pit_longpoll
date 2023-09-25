@@ -13,9 +13,8 @@ from config import NOTE_ALL, NOTE_RULES
 def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None) -> str:
 
     kbd = keyboard.VkKeyboard(inline=True)
-    DB = session()
-
-    buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.APOSTOL_ITEM_ID).first()
+    with session() as DB:
+        buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.APOSTOL_ITEM_ID).first()
     buffer_commands: List[BuffCmd] = buffer.buff_commands
     for cmd in buffer_commands:
 
@@ -46,9 +45,8 @@ def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None
 def warlock(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd = keyboard.VkKeyboard(inline=True)
-    DB = session()
-
-    buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.WARLOCK_ITEM_ID).first()
+    with session() as DB:
+        buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.WARLOCK_ITEM_ID).first()
     buffer_commands: List[BuffCmd] = buffer.buff_commands
 
     for cmd in buffer_commands:
@@ -66,9 +64,8 @@ def warlock(vk_id: int, msg_id: int, chat_id: int) -> str:
 def paladin(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd = keyboard.VkKeyboard(inline=True)
-    DB = session()
-
-    buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.PALADIN_ITEM_ID).first()
+    with session() as DB:
+        buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.PALADIN_ITEM_ID).first()
     buffer_commands: List[BuffCmd] = buffer.buff_commands
 
     buff = buffer_commands[0].buff_cmd_id
@@ -86,9 +83,8 @@ def paladin(vk_id: int, msg_id: int, chat_id: int) -> str:
 def crusader(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd = keyboard.VkKeyboard(inline=True)
-    DB = session()
-
-    buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.CRUSADER_ITEM_ID).first()
+    with session() as DB:
+        buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.CRUSADER_ITEM_ID).first()
     buffer_commands: List[BuffCmd] = buffer.buff_commands
 
     buff = buffer_commands[0].buff_cmd_id
@@ -110,9 +106,8 @@ def crusader(vk_id: int, msg_id: int, chat_id: int) -> str:
 def light_inc(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd = keyboard.VkKeyboard(inline=True)
-    DB = session()
-
-    buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.LIGHT_INC_ITEM_ID).first()
+    with session() as DB:
+        buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.LIGHT_INC_ITEM_ID).first()
     buffer_commands: List[BuffCmd] = buffer.buff_commands
 
     buff = buffer_commands[0].buff_cmd_id

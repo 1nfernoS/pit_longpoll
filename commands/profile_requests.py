@@ -26,8 +26,8 @@ class Price(Command):
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
 
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_balance:
             return
 
@@ -109,6 +109,7 @@ class Equip(Command):
             lvl = None
             if lvl:
                 message += f" - {lvl[0][0]} ({int(lvl[0][1] * 100)}%)"
+        s.close()
         return message
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
@@ -149,6 +150,7 @@ class Equip(Command):
                            for i in build]
         s.add(user)
         s.commit()
+        s.close()
 
         build = profile_api.get_build(inv)
 

@@ -50,10 +50,11 @@ class Apostol(Command):
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
 
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
             return
+        s.close()
 
         Logs(event.message.from_id, __class__.__name__).make_record()
 
@@ -91,8 +92,8 @@ class Warlock(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
             return
 
@@ -122,8 +123,8 @@ class PaladinStuff(Command):
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
 
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
             return
 

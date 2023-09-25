@@ -30,9 +30,8 @@ class Stats(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-
-        user: UserStats = s.query(UserStats).filter(UserStats.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserStats = s.query(UserStats).filter(UserStats.user_id == event.message.from_id).first()
 
         if user.user_info.user_role.role_can_moderate:
             if 'reply_message' in event.message.keys():
@@ -69,8 +68,8 @@ class Help(Command):
     def run(self, bot: "VkBot", event: "VkBotEvent"):
         message = 'Команды можно вводить как с префиксом, так и без\nВарианты использования - что делает\n'
 
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         role_access = {i.replace('role_can_', ''): bool(getattr(user.user_role, i))
                        for i in dir(user.user_role)
                        if i.startswith('role_can_')}
@@ -103,8 +102,8 @@ class Notes(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
             return
@@ -125,10 +124,10 @@ class Balance(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
-        if user is None:
+        if not user:
             bot.api.send_chat_msg(event.chat_id, "Хм... О вас нет записей, покажите профиль хотя бы раз!!")
             return
 
@@ -168,19 +167,17 @@ class Balance(Command):
 
         msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
 
-        print(msg_id)
 
         guild_roles = (0, 1, 2, 3, 4, 5, 6)
         users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
 
-        print(users)
         members = bot.api.get_members(GUILD_CHAT_ID)
         message = f'Баланс игроков гильдии {GUILD_NAME}:\n'
 
         message += '\n'.join(f"@id{user.user_id}: {user.balance}{gold}"
                              for user in users
                              if user.user_id in members)
-        print(users)
+
         bot.api.send_user_msg(event.message.from_id, message)
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Отправил список в лс')
         return
@@ -230,7 +227,7 @@ class Who(Command):
             if search.item_users else f'{item}{search.item_name}. Но этой книги ни у кого в билде нет'
 
         bot.api.send_chat_msg(event.chat_id, message)
-
+        s.close()
         return
 
 
@@ -302,6 +299,7 @@ class Transfer(Command):
         s.add(user_from)
         s.add(user_to)
         s.commit()
+        s.close()
 
         message = f"Перевел {gold}{money}\n"
         message += "Ваш долг: {gold}{-balance}(Положить {commission_price(-balance)})" if user_from.balance < 0 \
@@ -364,6 +362,8 @@ class Want(Command):
         search: Item = search[0]
 
         # TODO: move balance changes to group message
+
+        # TODO: Add equipment 1-30 level (weapons, armors, rings, etc)
 
         if search.item_id == items.gold:
             if not role.role_can_take_money:
@@ -432,6 +432,7 @@ class Want(Command):
 
         s.add(user)
         s.commit()
+        s.close()
 
         if answer:
             bot.api.send_chat_msg(event.chat_id, answer)

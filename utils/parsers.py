@@ -19,9 +19,10 @@ def parse_profile(text: str) -> dict:
 
     sep = t[1].find(',')
     class_name = t[1][16:sep]
-    DB = session()
-    class_item: Item = DB.query(Item).filter(Item.item_name.ilike(f"{class_name}")).first()
-    # class_id = get_item_by_name(class_name)
+
+    with session() as DB:
+        class_item: Item = DB.query(Item).filter(Item.item_name.ilike(f"{class_name}")).first()
+
     race = t[1][sep + 1:]
 
     guild = t[2][18:]
@@ -56,11 +57,10 @@ def parse_storage_action(text: str):
 
         count = int(re.findall(r'(?<=&#128216;|&#128213;)\d+(?=\*)', text)[0])
         item_name = re.findall(r'(?<=\*)\D+(?=!)', text)[0]
-        DB = session()
-        item: Item = DB.query(Item).filter(
-            Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name}.*$"),
-            Item.item_has_price == 1).first()
-        # item_id = search_item(item_name)['result'][0]['item_id']
+        with session() as DB:
+            item: Item = DB.query(Item).filter(
+                Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name}.*$"),
+                Item.item_has_price == 1).first()
 
         if not item:
             return
@@ -100,9 +100,9 @@ def guesser(text: str) -> list:
     text = text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     regexp = text.split('\n')[1].replace(emoji.empty, '[[:alnum:]]')
 
-    DB = session()
-    item_list: List[Item] = DB.query(Item).filter(
-        Item.item_name.op('regexp')(f"(Книга - |^){regexp}$")).all()
+    with session() as DB:
+        item_list: List[Item] = DB.query(Item).filter(
+            Item.item_name.op('regexp')(f"(Книга - |^){regexp}$")).all()
     res = []
     for i in item_list:
         if i.item_id in __possible or '-' in i.item_name:

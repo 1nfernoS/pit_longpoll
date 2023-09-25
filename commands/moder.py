@@ -34,6 +34,7 @@ def toggle_role(id_from: int, id_to: int, role_id: int, toggle_role_id: int) -> 
 
     s.add(user_to)
     s.commit()
+    s.close()
 
     return msg
 
@@ -76,6 +77,7 @@ class Kick(Command):
             kicked_user.role_id = blacklist
             s.add(kicked_user)
             s.commit()
+        s.close()
 
         bot.api.kick(event.chat_id, event.message.reply_message['from_id'])
         
@@ -92,9 +94,9 @@ class Pin(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
 
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_moderate:
             return
@@ -156,6 +158,7 @@ class Check(Command):
 
         s.add(changed_user)
         s.commit()
+        s.close()
 
         bot.api.send_chat_msg(event.chat_id, f"Готово, изменил баланс на {money}{gold}, "
                                              f"теперь счету {changed_user.balance}{gold}")
@@ -171,9 +174,8 @@ class ToggleLeader(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_utils:
             return
@@ -203,9 +205,8 @@ class ToggleOfficer(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_change_role:
             return
@@ -234,9 +235,8 @@ class ToggleGuildMember(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_change_role:
             return
@@ -265,9 +265,8 @@ class ToggleNewbie(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_change_role:
             return
@@ -296,9 +295,8 @@ class ToggleGuest(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_change_role:
             return

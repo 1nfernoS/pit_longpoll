@@ -86,8 +86,8 @@ def dark_vendor(self: "VkBot", event: "VkBotEvent"):
     item_name = fwd_split[0][11:]
     item_price = int(re.findall(r'\d+', fwd_split[1][9:])[0])
 
-    DB = session()
-    item_: Item = DB.query(Item).filter(Item.item_name.ilike(f"{item_name}%"), Item.item_has_price == 1).first()
+    with session() as DB:
+        item_: Item = DB.query(Item).filter(Item.item_name.ilike(f"{item_name}%"), Item.item_has_price == 1).first()
     if not item_:
         msg = 'Кажется, такой предмет не продается на аукционе'
         self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
@@ -222,6 +222,7 @@ def elites_response(self: "VkBot", event: "VkBotEvent"):
     user.elites_count += count
     s.add(user)
     s.commit()
+    s.close()
     msg = f"Добавил {count} к элитным трофеям! Сдано за месяц: {user.elites_count}\n"
     msg += f"Осталось сдать {limit - user.elites_count} штук" \
         if limit > user.elites_count \
@@ -255,6 +256,7 @@ def siege_report(self: "VkBot", event: "VkBotEvent"):
     user.siege_flag = True
     s.add(user)
     s.commit()
+    s.close()
     msg = f"Зарегистрировал твое участие в осаде за {data['name']}"
     self.api.send_chat_msg(event.chat_id, msg)
 

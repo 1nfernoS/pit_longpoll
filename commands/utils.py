@@ -21,8 +21,8 @@ class Ping(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
             return
@@ -42,8 +42,8 @@ class Grib(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
             return
@@ -107,8 +107,8 @@ class Role(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
             return
@@ -143,9 +143,8 @@ class Id(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_utils:
             return
@@ -172,8 +171,8 @@ class Emoji(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_utils:
             return
@@ -195,8 +194,8 @@ class Bill(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_withdraw_bill:
             return
@@ -219,8 +218,8 @@ class UpdateItems(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+        with session() as s:
+            user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_utils:
             return
