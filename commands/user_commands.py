@@ -1,6 +1,7 @@
 from typing import List, TYPE_CHECKING
 
 import vk_api
+from vk_api.bot_longpoll import CHAT_START_ID
 
 import profile_api
 from commands import Command, command_list
