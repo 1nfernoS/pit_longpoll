@@ -168,19 +168,17 @@ class Balance(Command):
 
         msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
 
-        print(msg_id)
 
         guild_roles = (0, 1, 2, 3, 4, 5, 6)
         users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
 
-        print(users)
         members = bot.api.get_members(GUILD_CHAT_ID)
         message = f'Баланс игроков гильдии {GUILD_NAME}:\n'
 
         message += '\n'.join(f"@id{user.user_id}: {user.balance}{gold}"
                              for user in users
                              if user.user_id in members)
-        print(users)
+
         bot.api.send_user_msg(event.message.from_id, message)
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Отправил список в лс')
         return
