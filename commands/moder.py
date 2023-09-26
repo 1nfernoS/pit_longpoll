@@ -157,7 +157,6 @@ class Check(Command):
 
         s.add(changed_user)
         s.commit()
-        s.close()
 
         bot.api.send_chat_msg(event.chat_id, f"Готово, изменил баланс на {money}{gold}, "
                                              f"теперь счету {changed_user.balance}{gold}")
