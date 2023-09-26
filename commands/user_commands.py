@@ -168,7 +168,6 @@ class Balance(Command):
 
         msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
 
-
         guild_roles = (0, 1, 2, 3, 4, 5, 6)
         users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
 
@@ -347,11 +346,10 @@ class Want(Command):
             Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name[:-2]}.*$"),
             Item.item_has_price == 1).all()
 
-        search = [i for i in search
-                  if i.item_id
-                  in items.valuables +
-                  items.ordinary_books_active + items.ordinary_books_passive +
-                  items.ingredients_drops + items.ingredients_special]
+        whitelist = {'gold': items.gold,
+                     'books': items.ordinary_books_active + items.ordinary_books_passive,
+                     'items': items.base_equipment + items.ingredients_drops + items.ingredients_special +
+                              items.materials_raw + items.materials_processed + items.maps}
 
         if not search:
             bot.api.send_chat_msg(event.chat_id, f'Что-то не могу найти {item_name}')
@@ -363,7 +361,7 @@ class Want(Command):
 
         # TODO: move balance changes to group message
 
-        if search.item_id == items.gold:
+        if search.item_id in whitelist['gold']:
             if not role.role_can_take_money:
                 return
 
@@ -379,7 +377,7 @@ class Want(Command):
             user.balance -= count
             answer = f"Осталось на счету: {gold}{user.balance}"
 
-        elif search.item_id in items.ordinary_books_active + items.ordinary_books_passive:
+        elif search.item_id in whitelist['books']:
             if not role.role_can_take_books:
                 return
 
@@ -405,7 +403,7 @@ class Want(Command):
             answer += f"\n[id{user.user_id}|Сейчас на счету]: {gold}{user.balance}"
             answer += f"\n(Если книга не выдалась, тегайте лидеров или напишите им в лс)"
 
-        elif search.item_id in items.ingredients_drops + items.ingredients_special:
+        elif search.item_id in whitelist['items']:
             if not role.role_can_take_ingredients:
                 return
 

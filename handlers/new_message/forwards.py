@@ -74,7 +74,7 @@ def forward_parse(self: "VkBot", event: "VkBotEvent"):
         return
 
     else:
-        Logs(event.message.from_id, 'other\t' + fwd_txt.replace('\n', ' | '))
+        Logs(event.message.from_id, 'other', on_message=fwd_txt.replace('\n', ' | '))
 
     return
 
