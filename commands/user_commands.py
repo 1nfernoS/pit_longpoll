@@ -346,7 +346,7 @@ class Want(Command):
             Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name[:-2]}.*$"),
             Item.item_has_price == 1).all()
 
-        whitelist = {'gold': items.gold,
+        whitelist = {'gold': [items.gold],
                      'books': items.ordinary_books_active + items.ordinary_books_passive,
                      'items': items.base_equipment + items.ingredients_drops + items.ingredients_special +
                               items.materials_raw + items.materials_processed + items.maps}
