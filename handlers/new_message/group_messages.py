@@ -157,7 +157,7 @@ def transfer_logging(self: "VkBot", event: "VkBotEvent"):
     _items_to_log = (items.valuables + items.adm_items + items.adm_ingredients +
                      items.ordinary_books_active + items.ordinary_books_passive)
     data = get_transfer(event.message.text)
-    from_name, to_name = self.api.get_names([data['id_from'], data['id_to']], 'nom').split(',')
+    from_name, to_name = self.api.get_names([data['from_id'], data['to_id']], 'nom').split(',')
     with session() as s:
         item: Item = s.query(Item).filter(Item.item_name == data['item_name'], Item.item_has_price == True).first()
     if item.item_id not in _items_to_log:
