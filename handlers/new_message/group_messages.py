@@ -42,7 +42,8 @@ def bot_message(self: "VkBot", event: "VkBotEvent"):
     if 'от игрока' in event.message.text:
         if event.chat_id == GUILD_CHAT_ID:
             Logs(event.message.from_id, 'Guild_Transfer', event.message.text).make_record()
-            transfer_logging(self, event)
+            # TODO Fix it
+            # transfer_logging(self, event)
             pass
     return
 
