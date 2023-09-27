@@ -31,15 +31,15 @@ def remind(bot: "VkBot", data: str):
 
 # weekly
 def siege(bot: "VkBot", data: str = None):
-    data = check_siege_report(bot)
     names = {i[0]: i[1] for i in zip(data.keys(), bot.api.get_names(list(data.keys()), 'nom').split(', '))}
+    data = check_siege_report(bot)
 
     statistics = {'reported': 0, 'not_reported': 0}
 
     msg = f"Статистика по осаде {datetime.date.today().strftime('%d.%m.%Y')}\n\n"
     for user_id in data:
         name = names[user_id]
-        msg += f"{e.cancel if data[user_id] else e.check}{name}\n"
+        msg += f"{e.check if data[user_id] else e.cancel}{name}\n"
         if data[user_id]:
             statistics['reported'] += 1
         else:
@@ -51,7 +51,7 @@ def siege(bot: "VkBot", data: str = None):
 
     next_run = datetime.datetime.now()
     next_run += datetime.timedelta(days=((7 + 3 - next_run.weekday()) % 7 - 1) if next_run.isoweekday() == 3 else 7)
-    next_run = next_run.replace(hour=23, minute=30, second=0, tzinfo=None)
+    next_run = next_run.replace(hour=1, minute=0, second=0, tzinfo=None)
 
     Task(next_run, siege, is_regular=True).add()
     return
