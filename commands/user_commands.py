@@ -160,7 +160,6 @@ class Balance(Command):
 
                     msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
 
-                    guild_roles = (0, 1, 2, 3, 4, 5, 6)
                     guild_roles = (roles.creator, roles.leader, roles.paymaster, roles.librarian,
                                    roles.officer, roles.guild_member, roles.officer_plus, roles.guild_newbie)
                     users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
