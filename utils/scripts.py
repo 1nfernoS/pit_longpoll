@@ -48,8 +48,11 @@ def check_siege_report(bot: "VkBot") -> Dict[int, bool]:
 
         result[user.user_id] = user.siege_flag
 
-        user.siege_flag = False
-        DB.add(user)
+    users = DB.query(UserInfo).all()
+    for u in users:
+        u.siege_flag = False
+        DB.add(u)
+    DB.commit()
     DB.close()
     return result
 
