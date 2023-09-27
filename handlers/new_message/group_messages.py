@@ -2,12 +2,13 @@ from datetime import datetime
 
 from config import GUILD_NAME, GUILD_CHAT_ID
 
-from ORM import session, UserInfo, UserStats, Logs
+from ORM import session, UserInfo, UserStats, Logs, Item
 
-from utils.parsers import parse_profile, parse_storage_action
+from utils.parsers import parse_profile, parse_storage_action, get_transfer
 from utils.formatters import str_datetime, datediff
 from utils.math import commission_price
 import dictionaries.emoji as emo
+from dictionaries import items
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -41,6 +42,7 @@ def bot_message(self: "VkBot", event: "VkBotEvent"):
     if 'от игрока' in event.message.text:
         if event.chat_id == GUILD_CHAT_ID:
             Logs(event.message.from_id, 'Guild_Transfer', event.message.text).make_record()
+            transfer_logging(self, event)
             pass
     return
 
@@ -148,4 +150,19 @@ def storage_reactions(self: "VkBot", event: "VkBotEvent"):
         self.api.send_chat_msg(event.chat_id, msg)
         return
     DB.close()
+    return
+
+
+def transfer_logging(self: "VkBot", event: "VkBotEvent"):
+    _items_to_log = (items.valuables + items.adm_items + items.adm_ingredients +
+                     items.ordinary_books_active + items.ordinary_books_passive)
+    data = get_transfer(event.message.text)
+    from_name, to_name = self.api.get_names([data['id_from'], data['id_to']], 'nom').split(',')
+    with session() as s:
+        item: Item = s.query(Item).filter(Item.item_name == data['item_name'], Item.item_has_price == True).first()
+    if item.item_id not in _items_to_log:
+        return
+
+    msg = f'{from_name} отправил {to_name}\n{item.item_name}\n'
+    self.api.send_log(msg)
     return

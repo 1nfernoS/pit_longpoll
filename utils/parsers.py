@@ -129,6 +129,22 @@ def get_siege(text: str) -> Dict[str, str]:
     return res
 
 
+def get_transfer(text: str) -> Dict[str, str]:
+    text = text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+    users = re.findall(r'(?<=id)\d+', text)
+    from_id = users[1]
+    to_id = users[0]
+    del users
+
+    item_name = text[text.split(':')[1].find(';')+1:text.find('от игрока')].strip()
+    res = {
+        'from_id': from_id,
+        'to_id': to_id,
+        'item_name': item_name
+    }
+    return res
+
+
 if __name__ == '__main__':
     sample = '&#128081;[id16191014|Юрий], Ваш профиль: | &#128100;Класс: клинок тьмы, человек-эльф | &#128101;Гильдия: Темная сторона | &#128578;Положительная карма | &#128128;Уровень: 90 | &#127881;Достижений: 32 | &#127765;Золото: 24819 | &#128074;295 &#128400;303 &#10084;314 &#127808;21 &#128481;107 &#128737;90'
     result = parse_profile(sample.replace(' | ', '\n'))

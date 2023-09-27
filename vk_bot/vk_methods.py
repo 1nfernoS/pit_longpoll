@@ -4,7 +4,7 @@ from typing import List
 from vk_api.exceptions import ApiError
 from vk_api.bot_longpoll import CHAT_START_ID
 
-from config import IGNORE_LIST, ERROR_CHAT_ID
+from config import IGNORE_LIST, ERROR_CHAT_ID, LOGS_CHAT_ID
 
 
 def _get_image() -> str:
@@ -66,6 +66,14 @@ class VkMethods:
     def send_error(self, msg: str):
         self._api.messages.send(
             peer_ids=[CHAT_START_ID + ERROR_CHAT_ID],
+            message=msg,
+            random_id=0,
+        )
+        return
+
+    def send_log(self, msg: str):
+        self._api.messages.send(
+            peer_ids=[CHAT_START_ID + LOGS_CHAT_ID],
             message=msg,
             random_id=0,
         )

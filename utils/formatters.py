@@ -3,7 +3,7 @@ from datetime import datetime
 
 def str_datetime(d: datetime) -> str:
     return '{:0>2}'.format(d.day) + '.' + '{:0>2}'.format(d.month) + '.' + '{:0>2}'.format(d.year % 100) + ' ' + \
-           '{:0>2}'.format(d.hour) + ':' + '{:0>2}'.format(d.minute)
+        '{:0>2}'.format(d.hour) + ':' + '{:0>2}'.format(d.minute)
 
 
 def datediff(d1: datetime, d2: datetime) -> str:

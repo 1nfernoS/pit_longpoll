@@ -47,6 +47,9 @@ def check_siege_report(bot: "VkBot") -> Dict[int, bool]:
             continue
 
         result[user.user_id] = user.siege_flag
+
+        user.siege_flag = False
+        DB.add(user)
     DB.close()
     return result
 
