@@ -10,14 +10,14 @@ from ORM import session, UserInfo, UserStats, Item, Logs, Role
 
 from config import creator_id, GUILD_CHAT_ID, GUILD_NAME, storager_token, storager_chat
 
-# from DB import user_data, users
+from dictionaries import roles
 from dictionaries.emoji import level, strength, agility, endurance, gold, item
 import dictionaries.items as items
 from utils.math import commission_price, discount_price
 from utils.keyboards import notes
 
 if TYPE_CHECKING:
-    from vk_api.bot_longpoll import VkBotEvent, CHAT_START_ID
+    from vk_api.bot_longpoll import VkBotEvent
     from vk_bot.vk_bot import VkBot
 
 
@@ -144,44 +144,42 @@ class Balance(Command):
              else event.message.from_id
              ).make_record()
 
-        if not user.user_role.role_can_check_all_balance:
-            message = f"Ваш долг: {gold}{-user.balance}(Положить {commission_price(-int(user.balance))})" \
-                if user.balance < 0 \
-                else f"Сейчас на счету: {gold}{user.balance}"
-            bot.api.send_chat_msg(event.chat_id, message)
-            return
+        if user.user_role.role_can_check_all_balance:
 
-        if 'reply_message' in event.message.keys():
-            reply_user: UserInfo = s.query(UserInfo).filter(
-                UserInfo.user_id == event.message.reply_message['from_id']).first()
+            if 'reply_message' in event.message.keys():
+                reply_user: UserInfo = s.query(UserInfo).filter(
+                    UserInfo.user_id == event.message.reply_message['from_id']).first()
 
-            message = f"Счет игрока: {reply_user.balance}" if reply_user is not None \
-                else "Нет записей, пусть сдаст профиль"
-            bot.api.send_chat_msg(event.chat_id, message)
-            return
+                message = f"Счет игрока: {reply_user.balance}" if reply_user is not None \
+                    else "Нет записей, пусть сдаст профиль"
+                bot.api.send_chat_msg(event.chat_id, message)
+                return
 
-        if len(event.message.text.split(' ')) != 2:
-            return
+            elif len(event.message.text.split(' ')) == 2:
+                if event.message.text.split(' ')[1] == 'все':
 
-        if event.message.text.split(' ')[1] != 'все':
-            return
+                    msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
 
-        msg_id = bot.api.send_chat_msg(event.chat_id, 'Собираю информацию')[0]
+                    guild_roles = (0, 1, 2, 3, 4, 5, 6)
+                    guild_roles = (roles.creator, roles.leader, roles.paymaster, roles.librarian,
+                                   roles.officer, roles.guild_member, roles.officer_plus, roles.guild_newbie)
+                    users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
 
-        guild_roles = (0, 1, 2, 3, 4, 5, 6)
-        users: List[UserInfo] = s.query(UserInfo).filter(UserInfo.role_id.in_(guild_roles)).all()
+                    members = bot.api.get_members(GUILD_CHAT_ID)
+                    message = f'Баланс игроков гильдии {GUILD_NAME}:\n'
 
-        members = bot.api.get_members(GUILD_CHAT_ID)
-        message = f'Баланс игроков гильдии {GUILD_NAME}:\n'
+                    message += '\n'.join(f"@id{user.user_id}: {user.balance}{gold}"
+                                         for user in users
+                                         if user.user_id in members)
 
-        message += '\n'.join(f"@id{user.user_id}: {user.balance}{gold}"
-                             for user in users
-                             if user.user_id in members)
+                    bot.api.send_user_msg(event.message.from_id, message)
+                    bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Отправил список в лс')
+                    return
 
-        bot.api.send_user_msg(event.message.from_id, message)
-        bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], 'Отправил список в лс')
-        return
-
+        message = f"Ваш долг: {gold}{-user.balance}(Положить {commission_price(-int(user.balance))})" \
+            if user.balance < 0 \
+            else f"Сейчас на счету: {gold}{user.balance}"
+        bot.api.send_chat_msg(event.chat_id, message)
         return
 
 
@@ -342,9 +340,9 @@ class Want(Command):
         if len(item_name) < 3:
             return
 
-        search: List[Item] = s.query(Item).filter(
+        search: Item = s.query(Item).filter(
             Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name[:-2]}.*$"),
-            Item.item_has_price == 1).all()
+            Item.item_has_price == 1).first()
 
         whitelist = {'gold': [items.gold],
                      'books': items.ordinary_books_active + items.ordinary_books_passive,
@@ -356,8 +354,6 @@ class Want(Command):
             return
 
         role: Role = user.user_role
-
-        search: Item = search[0]
 
         # TODO: move balance changes to group message
 
