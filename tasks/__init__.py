@@ -115,7 +115,7 @@ def elites(bot: "VkBot", data: str = None):
     bot.api.send_chat_msg(LEADER_CHAT_ID, msg)
 
     month = (datetime.date.today().month + 12) % 12 + 1
-    next_run = datetime.datetime.now().replace(day=2, month=month, hour=12, minute=30, second=0, tzinfo=None)
+    next_run = datetime.datetime.now().replace(day=2, month=month, hour=9, minute=30, second=0, tzinfo=None)
 
     Task(next_run, elites, is_regular=True).add()
     return

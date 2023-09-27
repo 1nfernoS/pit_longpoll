@@ -15,8 +15,8 @@ def init_tasks() -> None:
     CONST_TASKS = (
         Task(now.replace(day=15, month=next_month, hour=0, minute=0, second=0, tzinfo=None), bill, is_regular=True),
         Task(now.replace(day=1, month=next_month, hour=0, minute=0, second=0, tzinfo=None), bill2, is_regular=True),
-        Task(now.replace(day=2, month=next_month, hour=12, minute=30, second=0, tzinfo=None), elites, is_regular=True),
-        Task(next_siege.replace(hour=23, minute=30, second=0, tzinfo=None), siege, is_regular=True)  # siege (remind)
+        Task(now.replace(day=2, month=next_month, hour=9, minute=30, second=0, tzinfo=None), elites, is_regular=True),
+        Task(next_siege.replace(hour=1, minute=0, second=0, tzinfo=None), siege, is_regular=True)  # siege (remind)
         # TODO: Add message board (remind)
     )
 
