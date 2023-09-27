@@ -31,8 +31,8 @@ def remind(bot: "VkBot", data: str):
 
 # weekly
 def siege(bot: "VkBot", data: str = None):
-    names = {i[0]: i[1] for i in zip(data.keys(), bot.api.get_names(list(data.keys()), 'nom').split(', '))}
     data = check_siege_report(bot)
+    names = {i[0]: i[1] for i in zip(data.keys(), bot.api.get_names(list(data.keys()), 'nom').split(', '))}
 
     statistics = {'reported': 0, 'not_reported': 0}
 
