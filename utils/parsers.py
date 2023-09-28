@@ -145,6 +145,20 @@ def get_transfer(text: str) -> Dict[str, str]:
     return res
 
 
+def parse_cross_signs(text: str) -> str:
+    from dictionaries.puzzle_answers import cross_answers
+
+    keys = re.findall(r'\b(?<=\")([^\"]+)(?=\")', text.lower())
+    data1, data2 = cross_answers.get(keys[0], 'Неизвестно').split(','), cross_answers.get(keys[1], 'Неизвестно').split(',')
+    res = []
+    for a in data1:
+        if a in data2:
+            res.append(a)
+    return ', '.join(res) if res else ', '.join(set(data1 + data2))
+
+
+
+
 if __name__ == '__main__':
     sample = '&#128081;[id16191014|Юрий], Ваш профиль: | &#128100;Класс: клинок тьмы, человек-эльф | &#128101;Гильдия: Темная сторона | &#128578;Положительная карма | &#128128;Уровень: 90 | &#127881;Достижений: 32 | &#127765;Золото: 24819 | &#128074;295 &#128400;303 &#10084;314 &#127808;21 &#128481;107 &#128737;90'
     result = parse_profile(sample.replace(' | ', '\n'))

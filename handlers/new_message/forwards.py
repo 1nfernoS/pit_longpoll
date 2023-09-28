@@ -6,7 +6,7 @@ from utils.parsers import get_siege
 
 from config import GUILD_CHAT_ID, DISCOUNT_PERCENT, creator_id
 import utils.math
-from dictionaries.emoji import item, gold, empty
+from dictionaries.emoji import item, gold, empty, flag
 from utils import parsers
 from utils.formatters import translate
 from utils.words import frequent_letter
@@ -71,6 +71,11 @@ def forward_parse(self: "VkBot", event: "VkBotEvent"):
     if fwd_txt.startswith('Книгу целиком уже не спасти'):
         Logs(event.message.from_id, 'Book', on_message=event.message.fwd_messages[0]['text']).make_record()
         book_pages(self, event)
+        return
+
+    if 'Осталось выбрать, какому направлению последовать...' in fwd_txt:
+        Logs(event.message.from_id, 'Cross', on_message=event.message.fwd_messages[0]['text']).make_record()
+        cross_road(self, event)
         return
 
     else:
@@ -262,6 +267,21 @@ def siege_report(self: "VkBot", event: "VkBotEvent"):
     self.api.send_chat_msg(event.chat_id, msg)
 
     # TODO: logs in chat for logs
+    return
+
+
+def cross_road(self: "VkBot", event: "VkBotEvent"):
+    fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+    fwd_txt = translate(fwd_txt)
+
+    west, north, east = (parsers.parse_cross_signs(i) for i in fwd_txt.split('\n') if flag in i)
+    msg = "Направления ведут к\n"
+    msg += f"{flag} Запад - Это {west}\n"
+    msg += f"{flag} Север - Это {north}\n"
+    msg += f"{flag} Восток - Это {east}\n"
+
+    self.api.send_chat_msg(event.chat_id, msg)
+
     return
 
 
