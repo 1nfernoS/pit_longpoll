@@ -68,7 +68,7 @@ def forward_parse(self: "VkBot", event: "VkBotEvent"):
         door_solver(self, event)
         return
 
-    if fwd_txt.startswith('Книгу целиком уже не спасти'):
+    if 'Книгу целиком уже не спасти' in translate(fwd_txt):
         Logs(event.message.from_id, 'Book', on_message=event.message.fwd_messages[0]['text']).make_record()
         book_pages(self, event)
         return
