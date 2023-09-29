@@ -65,8 +65,9 @@ if __name__ == 'commands':
         module = importlib.import_module('commands.' + m)
         modules = [i for i in dir(module)
                    if not i.startswith('__') and type(getattr(module, i)) == type
-                   and i not in ('Command', 'VkBot', 'VkBotEvent', 'datetime')]
+                   and i not in ('Command', 'VkBot', 'VkBotEvent', 'datetime', 'ApiError')]
         for i in modules:
+            print(i)
             getattr(module, i)()
 
     print('\n' + 40 * '-',
