@@ -1,6 +1,7 @@
 from typing import List, TYPE_CHECKING
 
 import vk_api
+from vk_api.exceptions import ApiError
 from vk_api.bot_longpoll import CHAT_START_ID
 
 import profile_api
@@ -88,8 +89,12 @@ class Help(Command):
         message += f'\n За идеями/ошибками/вопросами обращаться [id{creator_id}|сюда], ' \
                    f'желательно с приставкой "по котику" или что-то в этом роде'
 
-        bot.api.send_user_msg(event.message.from_id, message)
-        bot.api.send_chat_msg(event.chat_id, "Отправил список доступных команд в лс!")
+        try:
+            bot.api.send_user_msg(event.message.from_id, message)
+            bot.api.send_chat_msg(event.chat_id, "Отправил список доступных команд в лс!")
+        except ApiError:
+            bot.api.send_chat_msg(event.chat_id, "Разреши сообщения, чтобы я мог отправить список команд")
+
         return
 
 
