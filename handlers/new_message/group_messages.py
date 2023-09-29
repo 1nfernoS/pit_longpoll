@@ -158,13 +158,23 @@ def transfer_logging(self: "VkBot", event: "VkBotEvent"):
     _items_to_log = (items.valuables + items.adm_items + items.adm_ingredients +
                      items.ordinary_books_active + items.ordinary_books_passive)
     data = get_transfer(event.message.text)
+
+    if data['id_to'] not in self.api.get_members(event.chat_id):
+        return
+
     with session() as s:
-        item: Item = s.query(Item).filter(Item.item_name == data['item_name']).first()
+        item: Item = s.query(Item).filter(
+                Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){data['item_name']}.*$"),
+                Item.item_has_price == 1).first()
+    if not item:
+        return
+
     if item.item_id not in _items_to_log:
-        if data['type'] != 'gold':
-            return
-        if data['count'] < 10000:
-            return
+        return
+
+    if data['type'] != 'gold' or data['count'] < 10000:
+        return
+
     if item.item_id not in items.adm_items + items.adm_ingredients and data['count'] < 5:
         return
 
