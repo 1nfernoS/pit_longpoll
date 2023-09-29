@@ -134,10 +134,10 @@ def get_transfer(text: str) -> Dict[str, str]:
     from dictionaries.emoji import gold, item
 
     data = {'type': 'gold' if gold in text else 'item' if item in text else 'other',
-            'user_from': (re.findall(r'\[id\d+\|[^]]+]', text))[0],
-            'user_to': (re.findall(r'\[id\d+\|[^]]+]', text))[1],
-            'id_from': ([int(i) for i in re.findall(r'(?<=id)\d+', text)])[0],
-            'id_to': ([int(i) for i in re.findall(r'(?<=id)\d+', text)])[1]}
+            'user_from': (re.findall(r'\[id\d+\|[^]]+]', text))[1],
+            'user_to': (re.findall(r'\[id\d+\|[^]]+]', text))[0],
+            'id_from': ([int(i) for i in re.findall(r'(?<=id)\d+', text)])[1],
+            'id_to': ([int(i) for i in re.findall(r'(?<=id)\d+', text)])[0]}
 
     if data['type'] == 'gold':
         count = 0
