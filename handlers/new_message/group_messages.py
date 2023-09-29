@@ -165,7 +165,7 @@ def transfer_logging(self: "VkBot", event: "VkBotEvent"):
             return
         if data['count'] < 10000:
             return
-    if data['count'] < 5:
+    if item.item_id not in items.adm_items + items.adm_ingredients and data['count'] < 5:
         return
 
     msg = f"{data['user_from']} отправил {data['user_to']}\n{data['count']}*{item.item_name}\n"
