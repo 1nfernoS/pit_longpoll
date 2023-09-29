@@ -11,6 +11,7 @@ import dictionaries.emoji as emo
 from dictionaries import items
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from vk_bot.vk_bot import VkBot
     from vk_api.bot_longpoll import VkBotEvent
@@ -29,7 +30,7 @@ def bot_message(self: "VkBot", event: "VkBotEvent"):
                 if 'photo' in event.message['attachments'][0]:
                     at = event.message['attachments'][0]
                     photo = f"photo{at['photo']['owner_id']}_{at['photo']['id']}_{at['photo']['access_key']}"
-            msg_id_del = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+            msg_del = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
             # self.api.del_msg(event.message.peer_id, msg_id_del)
         self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer,
                           attachment=photo if photo else None)
@@ -42,8 +43,7 @@ def bot_message(self: "VkBot", event: "VkBotEvent"):
     if 'от игрока' in event.message.text:
         if event.chat_id == GUILD_CHAT_ID:
             Logs(event.message.from_id, 'Guild_Transfer', event.message.text).make_record()
-            # TODO Fix it
-            # transfer_logging(self, event)
+            transfer_logging(self, event)
             pass
     return
 
@@ -158,12 +158,16 @@ def transfer_logging(self: "VkBot", event: "VkBotEvent"):
     _items_to_log = (items.valuables + items.adm_items + items.adm_ingredients +
                      items.ordinary_books_active + items.ordinary_books_passive)
     data = get_transfer(event.message.text)
-    from_name, to_name = self.api.get_names([data['from_id'], data['to_id']], 'nom').split(',')
     with session() as s:
         item: Item = s.query(Item).filter(Item.item_name == data['item_name'], Item.item_has_price == True).first()
     if item.item_id not in _items_to_log:
+        if data['type'] != 'gold':
+            return
+        if data['count'] < 10000:
+            return
+    if data['count'] < 5:
         return
 
-    msg = f'{from_name} отправил {to_name}\n{item.item_name}\n'
+    msg = f"{data['user_from']} отправил {data['user_to']}\n{data['count']}*{item.item_name}\n"
     self.api.send_log(msg)
     return

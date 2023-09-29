@@ -131,18 +131,32 @@ def get_siege(text: str) -> Dict[str, str]:
 
 def get_transfer(text: str) -> Dict[str, str]:
     text = text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
-    users = re.findall(r'(?<=id)\d+', text)
-    from_id = users[1]
-    to_id = users[0]
-    del users
+    from dictionaries.emoji import gold, item
 
-    item_name = text[text.split(':')[1].find(';')+1:text.find('от игрока')].strip()
-    res = {
-        'from_id': from_id,
-        'to_id': to_id,
-        'item_name': item_name
-    }
-    return res
+    data = {'type': 'gold' if gold in text else 'item' if item in text else 'other',
+            'user_from': (re.findall(r'\[id\d+\|[^]]+]', text))[0],
+            'user_to': (re.findall(r'\[id\d+\|[^]]+]', text))[1],
+            'id_from': ([int(i) for i in re.findall(r'(?<=id)\d+', text)])[0],
+            'id_to': ([int(i) for i in re.findall(r'(?<=id)\d+', text)])[1]}
+
+    if data['type'] == 'gold':
+        count = 0
+
+    # TODO: check other cases
+
+    if data['type'] == 'item':
+        text = text.replace(item, '')
+        item_name = re.findall(r'(?<=;).+(?= от игрока)', text)[0]
+        count = re.findall(r'\d+(?=\*)',text)
+        count = int(count[0]) if count else 1
+        data['count'] = count
+        data['item_name'] = item_name
+
+    if data['type'] == 'gold':
+        data['count'] = int(re.findall(r'\d+(?= золота)', text)[0])
+        data['item_name'] = 'золото'
+        pass
+    return data
 
 
 def parse_cross_signs(text: str) -> str:

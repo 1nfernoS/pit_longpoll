@@ -76,6 +76,7 @@ class VkMethods:
             peer_ids=[CHAT_START_ID + LOGS_CHAT_ID],
             message=msg,
             random_id=0,
+            disable_mentions=True
         )
         return
 

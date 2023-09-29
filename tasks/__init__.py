@@ -24,7 +24,7 @@ def remind(bot: "VkBot", data: str):
     if not all(key in data for key in __keys):
         raise ValueError(f"Task doesn't have enough/valid arguments to run ({data})")
     msg = f"[id{data['user_id']}|Напоминаю] {data['text']}"
-    bot.api.send_chat_msg(GUILD_CHAT_ID, msg, False,
+    bot.api.send_chat_msg(GUILD_CHAT_ID, msg, disable_mentions=False,
                           reply_to=data['msg_id'])
     return
 
