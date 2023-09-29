@@ -159,7 +159,7 @@ def transfer_logging(self: "VkBot", event: "VkBotEvent"):
                      items.ordinary_books_active + items.ordinary_books_passive)
     data = get_transfer(event.message.text)
     with session() as s:
-        item: Item = s.query(Item).filter(Item.item_name == data['item_name'], Item.item_has_price == True).first()
+        item: Item = s.query(Item).filter(Item.item_name == data['item_name']).first()
     if item.item_id not in _items_to_log:
         if data['type'] != 'gold':
             return

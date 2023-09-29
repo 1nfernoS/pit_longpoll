@@ -139,9 +139,6 @@ def get_transfer(text: str) -> Dict[str, str]:
             'id_from': ([int(i) for i in re.findall(r'(?<=id)\d+', text)])[1],
             'id_to': ([int(i) for i in re.findall(r'(?<=id)\d+', text)])[0]}
 
-    if data['type'] == 'gold':
-        count = 0
-
     # TODO: check other cases
 
     if data['type'] == 'item':
@@ -155,7 +152,7 @@ def get_transfer(text: str) -> Dict[str, str]:
     if data['type'] == 'gold':
         data['count'] = int(re.findall(r'\d+(?= золота)', text)[0])
         data['item_name'] = 'золото'
-        pass
+
     return data
 
 
