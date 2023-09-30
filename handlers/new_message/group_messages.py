@@ -159,7 +159,7 @@ def transfer_logging(self: "VkBot", event: "VkBotEvent"):
                      items.ordinary_books_active + items.ordinary_books_passive)
     data = get_transfer(event.message.text)
 
-    if data['id_to'] not in self.api.get_members(event.chat_id):
+    if data['id_to'] in self.api.get_members(event.chat_id):
         return
 
     with session() as s:
