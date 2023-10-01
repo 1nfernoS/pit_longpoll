@@ -64,10 +64,27 @@ def event_message(self: "VkBot", event: "VkBotEvent"):
         return
 
     elif action == 'remove':
-        self.api.del_msg(
-            event.object.peer_id,
-            self.api.get_conversation_msg(event.object.peer_id, event.object.conversation_message_id)['id']
-        )
+        try:
+            self.api.del_msg(
+                event.object.peer_id,
+                self.api.get_conversation_msg(event.object.peer_id, event.object.conversation_message_id)['id']
+            )
+        except VkApiError:
+            try:
+                msg = self.api.get_conversation_msg(event.object.peer_id, event.object.conversation_message_id)
+                self.api.send_error()
+                self.api.del_msg(
+                    event.object.peer_id,
+                    msg['id']
+                )
+            except VkApiError:
+                self.api.send_event(
+                    event.object.peer_id,
+                    event.object.event_id,
+                    event.object.user_id,
+                    json.dumps({'type': 'show_snackbar', 'text': 'Что-то пошло не так, попробуй еще раз'})
+                )
+                return
 
         self.api.send_event(
             event.object.peer_id,

@@ -9,6 +9,7 @@ from profile_api import get_name, price
 if TYPE_CHECKING:
     from vk_bot.vk_bot import VkBot
 
+
 def withdraw_bill(bot: "VkBot") -> None:
     members = bot.api.get_members(GUILD_CHAT_ID)
     DB = session()
@@ -22,7 +23,7 @@ def withdraw_bill(bot: "VkBot") -> None:
         if user.user_role.role_can_balance:
             if user.user_id == creator_id:
                 continue
-            user.balance -= user.user_stats.user_level*140
+            user.balance -= user.user_stats.user_level * 140
 
         DB.add(user)
 
