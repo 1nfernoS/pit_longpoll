@@ -70,7 +70,7 @@ class VkBot:
         return wrapper
 
     def start(self):
-        from dictionaries.tasks_list import init_tasks
+        from tasks import init_tasks
         if self._before_start:
             print('Starting up . . .')
             self._before_start(self)
@@ -107,15 +107,15 @@ class VkBot:
 
     def _tasks_check(self):
         from ORM import session, Task
-        import tasks
+        from tasks import exec_task
 
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
         s = session()
         task_list: List[Task] = s.query(Task).all()
         for t in task_list:
             if t.task_when > now:
                 continue
-            getattr(tasks, t.task_target)(self, t.task_args)
+            getattr(exec_task, t.task_target)(self, t.task_args)
             s.delete(t)
             s.commit()
         s.close()

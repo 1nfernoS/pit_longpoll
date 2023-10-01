@@ -4,7 +4,7 @@ from commands import Command
 
 from ORM import session, UserInfo, Task, Logs
 
-import tasks
+from tasks.exec_task import remind
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -28,13 +28,13 @@ class Remind(Command):
             return
 
         Logs(event.message.from_id, __class__.__name__,
-             reason=tasks.remind.__name__ + ': ' + event.message.text).make_record()
+             reason=remind.__name__ + ': ' + event.message.text).make_record()
         args = {
             'user_id': event.message.from_id,
             'text': ' '.join(event.message.text.split()[1:]),
             'msg_id': bot.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
         }
-        Task(datetime.now() + timedelta(hours=1), tasks.remind, args).add()
+        Task(datetime.now() + timedelta(hours=1), remind, args).add()
 
         bot.api.send_chat_msg(event.chat_id, 'Хорошо, напомню через часик')
         s.close()

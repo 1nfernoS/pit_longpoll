@@ -27,9 +27,16 @@ class VkMethods:
             message=msg,
             keyboard=kbd if kbd else None,
             random_id=0,
-            disable_mentions=disable_mentions,
+            disable_mentions=True,
             **kwargs
-        )
+        ) if disable_mentions else (
+            self._api.messages.send(
+                peer_ids=[CHAT_START_ID + chat_id],
+                message=msg,
+                keyboard=kbd if kbd else None,
+                random_id=0,
+                **kwargs
+            ))
 
     def send_user_msg(self, user_id: int, msg: str, kbd: (dict, None) = None, **kwargs) -> int:
         msg = _get_image() + msg
@@ -126,5 +133,6 @@ class VkMethods:
         return self._api.groups.getById(group_id=0)[0]['id']
 
     def get_conversation_msg(self, peer_id: int, conversation_message_ids: int) -> dict:
-        res = self._api.messages.getByConversationMessageId(peer_id=peer_id, conversation_message_ids=conversation_message_ids)
+        res = self._api.messages.getByConversationMessageId(peer_id=peer_id,
+                                                            conversation_message_ids=conversation_message_ids)
         return res['items'][0] if res['count'] > 0 else 0
