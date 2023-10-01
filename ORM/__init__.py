@@ -417,6 +417,9 @@ class Task(Base):
         return
 
     def add(self):
+        """
+        Adds task in database
+        """
         with session() as s:
             s.add(self)
             s.commit()

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 from typing import List, Dict
 
@@ -144,7 +144,7 @@ def get_transfer(text: str) -> Dict[str, str]:
     if data['type'] == 'item':
         text = text.replace(item, '')
         item_name = re.findall(r'(?<=;).+(?= от игрока)', text)[0]
-        count = re.findall(r'\d+(?=\*)',text)
+        count = re.findall(r'\d+(?=\*)', text)
         count = int(count[0]) if count else 1
         data['count'] = count
         data['item_name'] = item_name
@@ -167,6 +167,12 @@ def parse_cross_signs(text: str) -> str:
             res.append(a)
     return ', '.join(res) if res else ', '.join(set(data1 + data2))
 
+
+def parse_time(text: str) -> timedelta:
+    h = re.findall(r'\d+(?=\s*час\D)', text)
+    m = re.findall(r'\d+(?=\s*мин\D)', text)
+    s = re.findall(r'\d+(?=\s*сек\D)', text)
+    return timedelta(hours=int(h[0]) if h else 0, minutes=int(m[0]) if m else 0, seconds=int(s[0]) if s else 0)
 
 
 

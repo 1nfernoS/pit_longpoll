@@ -2,11 +2,12 @@ import re
 from typing import List, TYPE_CHECKING
 import datetime
 
-from utils.parsers import get_siege
+import tasks.exec_task
+from utils.parsers import get_siege, parse_time
 
 from config import GUILD_CHAT_ID, DISCOUNT_PERCENT, creator_id
 import utils.math
-from dictionaries.emoji import item, gold, empty, flag
+from dictionaries.emoji import item, gold, empty, flag, wait, heal_trauma, task
 from utils import parsers
 from utils.formatters import translate
 from utils.words import frequent_letter
@@ -32,9 +33,8 @@ def forward_parse(self: "VkBot", event: "VkBotEvent"):
     #     # TODO: make def for it
     #     return
 
-    if 'заданий больше не осталось' in fwd_txt:
-        Logs(event.message.from_id, 'guild_task_remind', on_message=event.message.fwd_messages[0]['text']).make_record()
-        # TODO: make def for it
+    if wait in fwd_txt:
+        wait_for(self, event)
         return
 
     if fwd_txt.startswith(f'{item}1*'):
@@ -285,7 +285,31 @@ def cross_road(self: "VkBot", event: "VkBotEvent"):
     return
 
 
-def task_reminder(self: "VkBot", event: "VkBotEvent"):
+def wait_for(self: "VkBot", event: "VkBotEvent"):
+    fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
+    fwd_txt = translate(fwd_txt)
+    if not any(i in fwd_txt for i in ('час', 'мин', 'сек')):
+        return
+    if 'около' in fwd_txt:
+        return
+
+    Logs(event.message.from_id, wait_for.__name__, on_message=fwd_txt)
+
+    event_start = datetime.datetime.utcfromtimestamp(event.message.fwd_messages[0]['date']) + datetime.timedelta(hours=3)
+    wait_time = parse_time(fwd_txt)
+    event_end = event_start + wait_time
+
+    if datetime.datetime.utcnow() + datetime.timedelta(hours=3) > event_end:
+        self.api.send_chat_msg(event.chat_id, f"Оно уже закончилось)")
+        return
+
+    args = {
+            'user_id': event.message.from_id,
+            'text': ' время вышло!',
+            'msg_id': self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+        }
+    Task(event_end, tasks.exec_task.remind, args).add()
+    self.api.send_chat_msg(event.chat_id, f"Хорошо, напомню как выйдет время (через {wait_time})")
     return
 
 
