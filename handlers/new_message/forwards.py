@@ -228,7 +228,6 @@ def elites_response(self: "VkBot", event: "VkBotEvent"):
     user.elites_count += count
     s.add(user)
     s.commit()
-    s.close()
     msg = f"Добавил {count} к элитным трофеям! Сдано за месяц: {user.elites_count}\n"
     msg += f"Осталось сдать {limit - user.elites_count} штук" \
         if limit > user.elites_count \
@@ -236,6 +235,7 @@ def elites_response(self: "VkBot", event: "VkBotEvent"):
     self.api.send_chat_msg(event.chat_id, msg)
 
     # TODO: logs in chat for logs
+    s.close()
     return
 
 
