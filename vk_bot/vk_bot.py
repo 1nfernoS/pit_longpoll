@@ -99,37 +99,37 @@ class VkBot:
             except ReadTimeout:
                 continue
             except:
-                try:
-                    etype, value, tb = sys.exc_info()
-                    err_msg = ''
-                    err_data = traceback.TracebackException(type(value), value, tb, capture_locals=True)
-                    for err in err_data.stack[1:]:
-                        a = {i: err.locals[i] for i in err.locals if not i.startswith('__')
-                             and i not in ('error', 'etype', 'tb', 'err_msg')
-                             and 'VkBot' not in err.locals[i]
-                             and 'vk_api' not in err.locals[i]
-                             and 'sqlalchemy' not in err.locals[i]}
-                        err_msg += f"{err.filename}:  {err.name}:{err.lineno}\n\t{err.line}"
-                        err_msg += f"\nargs: {a}" if a else ""
-                        err_msg += "\n" + "=" * 10 + "\n"
-                    msg_data = {i: err_data.stack[-1].locals[i].replace(
-                        ", 'client_info': {'button_actions': ['text', 'vkpay', 'open_app', 'location', 'open_link', "
-                        "'callback', 'intent_subscribe', 'intent_unsubscribe'], 'keyboard': True, 'inline_keyboard': "
-                        "True, 'carousel': True, 'lang_id': 0}", "")
-                                for i in err_data.stack[-1].locals if 'vk_api' in err_data.stack[-1].locals[i]}
-                    err_msg += str(msg_data)
-
-                    now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
-                    err_msg = f"[{now.strftime('%d.%m.%y %H:%M:%S')}] {list(err_data.format_exception_only())[0]}\n" + err_msg
-
-                    print(err_msg)
-
-                    print(f"\n\n\n\t[{now.strftime('%d.%m.%y %H:%M:%S')}] Restarting . . .")
-                    self.api.send_error(err_msg)
-                except:
-                    error = traceback.format_exc(-5)
-                    print(error)
-                    self.api.send_error(f"[{now.strftime('%d.%m.%y %H:%M:%S')}]\n\n" + error)
+                # try:
+                #     etype, value, tb = sys.exc_info()
+                #     err_msg = ''
+                #     err_data = traceback.TracebackException(type(value), value, tb, capture_locals=True)
+                #     for err in err_data.stack[1:]:
+                #         a = {i: err.locals[i] for i in err.locals if not i.startswith('__')
+                #              and i not in ('error', 'etype', 'tb', 'err_msg')
+                #              and 'VkBot' not in err.locals[i]
+                #              and 'vk_api' not in err.locals[i]
+                #              and 'sqlalchemy' not in err.locals[i]}
+                #         err_msg += f"{err.filename}:  {err.name}:{err.lineno}\n\t{err.line}"
+                #         err_msg += f"\nargs: {a}" if a else ""
+                #         err_msg += "\n" + "=" * 10 + "\n"
+                #     msg_data = {i: err_data.stack[-1].locals[i].replace(
+                #         ", 'client_info': {'button_actions': ['text', 'vkpay', 'open_app', 'location', 'open_link', "
+                #         "'callback', 'intent_subscribe', 'intent_unsubscribe'], 'keyboard': True, 'inline_keyboard': "
+                #         "True, 'carousel': True, 'lang_id': 0}", "")
+                #                 for i in err_data.stack[-1].locals if 'vk_api' in err_data.stack[-1].locals[i]}
+                #     err_msg += str(msg_data)
+                #
+                #     now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
+                #     err_msg = f"[{now.strftime('%d.%m.%y %H:%M:%S')}] {list(err_data.format_exception_only())[0]}\n" + err_msg
+                #
+                #     print(err_msg)
+                #
+                #     print(f"\n\n\n\t[{now.strftime('%d.%m.%y %H:%M:%S')}] Restarting . . .")
+                #     self.api.send_error(err_msg)
+                # except:
+                error = traceback.format_exc(-5)
+                print(error)
+                self.api.send_error(f"[{now.strftime('%d.%m.%y %H:%M:%S')}]\n\n" + error)
                 continue
         return
 
