@@ -127,6 +127,7 @@ class VkBot:
                 #     print(f"\n\n\n\t[{now.strftime('%d.%m.%y %H:%M:%S')}] Restarting . . .")
                 #     self.api.send_error(err_msg)
                 # except:
+                now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
                 error = traceback.format_exc(-5)
                 print(error)
                 self.api.send_error(f"[{now.strftime('%d.%m.%y %H:%M:%S')}]\n\n" + error)
