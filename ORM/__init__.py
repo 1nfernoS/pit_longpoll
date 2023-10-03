@@ -404,7 +404,7 @@ class Task(Base):
     def __init__(self, when: datetime, target: callable, args: Dict[str, Any] = None, is_regular: bool = False,
                  repeat_delay: datetime = 0, call_after: callable = None):
         super().__init__()
-        if when < datetime.now():
+        if when < datetime.utcnow():
             raise ValueError('Task can\'t be in past')
         self.task_when = when
 
