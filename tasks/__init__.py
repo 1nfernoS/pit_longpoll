@@ -11,7 +11,7 @@ def init_tasks() -> None:
 
     now = dt.datetime.utcnow() + dt.timedelta(hours=3)
     next_month = now.month % 12 + 1
-    next_siege = now + dt.timedelta(days=7 if now.isoweekday() == 3 else ((7 + 3 - now.isoweekday()) % 7 - 1))
+    next_siege = now + dt.timedelta(days=(7 + 3 - now.isoweekday()) % 7)
     CONST_TASKS = (
         Task(now.replace(day=15, month=next_month, hour=10, minute=30, second=0, tzinfo=None), bill, is_regular=True),
         Task(now.replace(day=1, month=next_month, hour=10, minute=30, second=0, tzinfo=None), bill2, is_regular=True),
