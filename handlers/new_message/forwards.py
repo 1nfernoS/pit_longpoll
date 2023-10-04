@@ -7,7 +7,7 @@ from utils.parsers import get_siege, parse_time
 
 from config import GUILD_CHAT_ID, DISCOUNT_PERCENT, creator_id
 import utils.math
-from dictionaries.emoji import item, gold, empty, flag, wait, heal_trauma, task
+from dictionaries import emoji
 from utils import parsers
 from utils.formatters import translate
 from utils.words import frequent_letter
@@ -23,21 +23,21 @@ if TYPE_CHECKING:
 def forward_parse(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
 
-    # if 'выловили рыбу' in fwd_txt:
-    #     Logs(event.message.from_id, 'Fishing', on_message=event.message.fwd_messages[0]['text']).make_record()
-    #     # TODO: make def for it
-    #     return
+    if emoji.bait in fwd_txt:
+        Logs(event.message.from_id, 'Fishing', on_message=event.message.fwd_messages[0]['text']).make_record()
+        fishing(self, event)
+        return
 
     # if 'обыск руин' in fwd_txt:
     #     Logs(event.message.from_id, 'Ruins', on_message=event.message.fwd_messages[0]['text']).make_record()
     #     # TODO: make def for it
     #     return
 
-    if wait in fwd_txt:
+    if emoji.wait in fwd_txt:
         wait_for(self, event)
-        return
 
-    if fwd_txt.startswith(f'{item}1*'):
+
+    if fwd_txt.startswith(f'{emoji.item}1*'):
         Logs(event.message.from_id, 'Dark_vendor', on_message=event.message.fwd_messages[0]['text']).make_record()
         dark_vendor(self, event)
         return
@@ -105,20 +105,20 @@ def dark_vendor(self: "VkBot", event: "VkBotEvent"):
         guild_price = utils.math.discount_price(auc_price)
         guild_commission_price = utils.math.commission_price(guild_price)
 
-        msg = f'Товар: {item}{item_name}\nЦена торговца: {gold}{item_price} ' \
-              f'({gold}{commission_price})' + \
-              f'\nЦена аукциона: {gold}{auc_price} (со скидкой гильдии {DISCOUNT_PERCENT}%: ' \
-              f'{gold}{guild_price}' \
-              f'({gold}{guild_commission_price})\n\n'
+        msg = f'Товар: {emoji.item}{item_name}\nЦена торговца: {emoji.gold}{item_price} ' \
+              f'({emoji.gold}{commission_price})' + \
+              f'\nЦена аукциона: {emoji.gold}{auc_price} (со скидкой гильдии {DISCOUNT_PERCENT}%: ' \
+              f'{emoji.gold}{guild_price}' \
+              f'({emoji.gold}{guild_commission_price})\n\n'
 
         if event.chat_id == GUILD_CHAT_ID:
             if item_name.startswith('Книга - ') and item_.item_users:
                 guild_roles = (0, 1, 2, 3, 4, 5, 6)
                 in_equip: List[UserInfo] = item_.item_users
-                msg += f'{item}В экипировке у ' \
+                msg += f'{emoji.item}В экипировке у ' \
                        f'{self.api.get_names([i.user_id for i in in_equip if i.user_role.role_id in guild_roles])}'
     else:
-        msg = f'Товар: {item}{item_name}\nЦена торговца: {gold}{item_price} ({gold}{commission_price})' + \
+        msg = f'Товар: {emoji.item}{item_name}\nЦена торговца: {emoji.gold}{item_price} ({emoji.gold}{commission_price})' + \
               f'\nВот только... Он не продается, Сам не знаю почему'
 
     self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
@@ -129,14 +129,14 @@ def dark_vendor(self: "VkBot", event: "VkBotEvent"):
 def symbol_guesser(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
 
-    if empty not in fwd_txt.split('\n')[1]:
+    if emoji.empty not in fwd_txt.split('\n')[1]:
         return
 
     msg_id = self.api.send_chat_msg(event.chat_id, 'Символы... Символы... Сейчас вспомню')[0]
     res_list = parsers.guesser(fwd_txt)
     best_guess = frequent_letter(res_list)
     if res_list:
-        if not fwd_txt.split('\n')[1].replace(empty, '').replace(' ', ''):
+        if not fwd_txt.split('\n')[1].replace(emoji.empty, '').replace(' ', ''):
             msg = f'Ну так не интересно! Попробуй букву {best_guess.upper()}\n'
         else:
             msg = 'Ну точно! Это наверняка что-то из этого:\n'
@@ -274,11 +274,11 @@ def cross_road(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     fwd_txt = translate(fwd_txt)
 
-    west, north, east = (parsers.parse_cross_signs(i) for i in fwd_txt.split('\n') if flag in i)
+    west, north, east = (parsers.parse_cross_signs(i) for i in fwd_txt.split('\n') if emoji.flag in i)
     msg = "Направления ведут к\n"
-    msg += f"{flag} Запад - Это {west}\n"
-    msg += f"{flag} Север - Это {north}\n"
-    msg += f"{flag} Восток - Это {east}\n"
+    msg += f"{emoji.flag} Запад - Это {west}\n"
+    msg += f"{emoji.flag} Север - Это {north}\n"
+    msg += f"{emoji.flag} Восток - Это {east}\n"
 
     self.api.send_chat_msg(event.chat_id, msg)
 
@@ -314,6 +314,26 @@ def wait_for(self: "VkBot", event: "VkBotEvent"):
 
 
 def fishing(self: "VkBot", event: "VkBotEvent"):
+    data = parsers.fishing(event.message.fwd_messages)
+    msg = f"Итоги рыбалки:\n"
+    if data['fish_trophy']:
+        msg += f"{emoji.sell_fish}: {data['fish_trophy']}\n"
+    if data['food']:
+        msg += f"{emoji.food_fish}: {data['food']}\n"
+    if data['trophy']:
+        msg += f"{emoji.level}: {data['trophy']}\n"
+    if data['gold']:
+        msg += f"{emoji.gold}: {data['gold']}\n"
+    if data['loot'].values():
+        msg += "\nПрочий лут:\n"
+        if data['loot']['shell']:
+            msg += f"{emoji.shell}: {data['loot']['shell']}\n"
+        if data['loot']['oil']:
+            msg += f"{emoji.fish_oil}: {data['loot']['oil']}\n"
+        if data['loot']['other']:
+            msg += f"{emoji.item}: {', '.join(data['loot']['other'])}\n"
+
+    self.api.send_chat_msg(event.chat_id, msg)
     return
 
 
