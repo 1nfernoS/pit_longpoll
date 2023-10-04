@@ -158,6 +158,8 @@ def transfer_logging(self: "VkBot", event: "VkBotEvent"):
     _items_to_log = (items.valuables + items.adm_items + items.adm_ingredients +
                      items.ordinary_books_active + items.ordinary_books_passive)
     data = get_transfer(event.message.text)
+    if data['item_name'] == 'Осколков Сердца':
+        data['item_name'] = 'Осколки Сердца'
 
     if data['id_to'] in self.api.get_members(event.chat_id):
         return
