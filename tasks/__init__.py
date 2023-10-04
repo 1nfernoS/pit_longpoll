@@ -11,12 +11,13 @@ def init_tasks() -> None:
 
     now = dt.datetime.utcnow() + dt.timedelta(hours=3)
     next_month = now.month % 12 + 1
-    next_siege = now + dt.timedelta(days=(7 + 3 - now.isoweekday()) % 7)
+    next_siege = now.replace(hour=22, minute=5, second=0)
+    next_siege += dt.timedelta(days=((7 + 3 - now.isoweekday()) % 7) if next_siege > now else 7)
     CONST_TASKS = (
         Task(now.replace(day=15, month=next_month, hour=10, minute=30, second=0, tzinfo=None), bill, is_regular=True),
         Task(now.replace(day=1, month=next_month, hour=10, minute=30, second=0, tzinfo=None), bill2, is_regular=True),
         Task(now.replace(day=2, month=next_month, hour=12, minute=30, second=0, tzinfo=None), elites, is_regular=True),
-        Task(next_siege.replace(hour=22, minute=5, second=0), siege, is_regular=True)
+        Task(next_siege, siege, is_regular=True)
         # TODO: Add message board (remind)
     )
 
