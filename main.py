@@ -43,6 +43,11 @@ def dummy(b: bot, e: VkBotEvent):
     return
 
 
+@bot.event_handler('MESSAGE_EVENT')
+def event(b: bot, e: VkBotEvent):
+    return event_message(b, e)
+
+
 @bot.task_check()
 def tasks_check(self: VkBot):
     from ORM import session, Task
