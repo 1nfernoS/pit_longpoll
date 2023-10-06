@@ -413,7 +413,7 @@ class Task(Base):
         self.task_is_regular = is_regular
         self.task_repeat_delay = repeat_delay
         self.task_call_after = call_after.__name__ if call_after else None
-        self.task_timestamp = datetime.now()
+        self.task_timestamp = datetime.utcnow() + timedelta(hours=3)
         return
 
     def add(self):
