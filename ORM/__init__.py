@@ -128,6 +128,30 @@ class Role(Base):
     def bin_access(self) -> str:
         return bin(self.role_level_access())[2:]
 
+    @staticmethod
+    def get_guild_roles() -> List["Role"]:
+        guild_roles = ['creator', 'leader',
+                       'paymaster', 'librarian',
+                       'captain', 'officer',
+                       'guild_member']
+        with session() as s:
+            return s.query(Role).filter(Role.role_name in guild_roles).all()
+
+    @staticmethod
+    def guild_role() -> "Role":
+        with session() as s:
+            return s.query(Role).filter(Role.role_name == 'guild_member').first()
+
+    @staticmethod
+    def other_role() -> "Role":
+        with session() as s:
+            return s.query(Role).filter(Role.role_name == 'others').first()
+
+    @staticmethod
+    def ban_role() -> "Role":
+        with session() as s:
+            return s.query(Role).filter(Role.role_name == 'blacklist').first()
+
     def __str__(self):
         return f"<Role {self.role_id}: {self.role_name} ({self.bin_access()})>"
 
