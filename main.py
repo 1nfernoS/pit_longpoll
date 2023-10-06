@@ -72,7 +72,6 @@ def init_task():
     init_tasks()
 
 
-
 if __name__ == '__main__':
     bot.start()
     pass
