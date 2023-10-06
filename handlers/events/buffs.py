@@ -39,32 +39,45 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
         forward_messages=str(msg_id)
     )
 
-    for i in range(3):
-        time.sleep(0.5)
-        for event in long_poll.check():
-            if event.type == VkEventType.MESSAGE_NEW and event.from_group and not event.from_me:
-                if not event.peer_id == OVERSEER_BOT:
-                    continue
-                if not any([msg in event.message for msg in POSSIBLE_ANSWERS]):
-                    continue
-                return event.message
+    for i in range(20):
+        time.sleep(0.1)
+        try:
+            events = long_poll.check()
+        except TypeError:
+            events = long_poll.check()
+            pass
+        for event in events:
+            if event.tpye != VkEventType.MESSAGE_NEW:
+                continue
+
+            if not event.from_group:
+                continue
+
+            if event.from_me:
+                continue
+
+            if not event.peer_id == OVERSEER_BOT:
+                continue
+
+            if not any([msg in event.message for msg in POSSIBLE_ANSWERS]):
+                continue
+            return event.message
 
     res = f"Наложено {msg.lower()}"
 
     # Change balance
-    if buffer.buff_type_id == 14264:
-        user_from: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == receiver).first()
-        user_to: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == buffer.buff_user_id).first()
+    user_from: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == receiver).first()
+    user_to: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == buffer.buff_user_id).first()
 
-        if user_from.user_role.role_can_balance:
-            user_from.balance -= APO_PAYMENT
+    if user_from.user_role.role_can_balance:
+        user_from.balance -= APO_PAYMENT
 
-        user_to.balance += APO_PAYMENT
-        DB.add(user_from)
-        DB.add(user_to)
+    user_to.balance += APO_PAYMENT
+    DB.add(user_from)
+    DB.add(user_to)
 
-        DB.commit()
+    DB.commit()
 
-        res += f"\n[id{user_from.user_id}|На счету]: {user_from.balance}{gold}"
+    res += f"\n[id{user_from.user_id}|На счету]: {user_from.balance}{gold}"
     DB.close()
     return res
