@@ -34,28 +34,6 @@ class Ping(Command):
         return
 
 
-class Grib(Command):
-    def __init__(self):
-        super().__init__(__class__.__name__, ('гриб', 'grib'))
-        self.desc = 'Проверка живой я или нет'
-        self.require_basic = True
-        # self.set_active(False)
-        return
-
-    def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
-        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
-
-        if not user.user_role.role_can_basic:
-            return
-
-        Logs(event.message.from_id, __class__.__name__).make_record()
-
-        bot.api.send_chat_msg(event.chat_id, '&#127812;')
-        s.close()
-        return
-
-
 class War(Command):
     def __init__(self):
         super().__init__(__class__.__name__, ('war', 'война'))

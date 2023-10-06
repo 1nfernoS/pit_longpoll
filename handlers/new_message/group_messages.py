@@ -2,7 +2,7 @@ from datetime import datetime
 
 from config import GUILD_NAME, GUILD_CHAT_ID
 
-from ORM import session, UserInfo, UserStats, Logs, Item
+from ORM import session, UserInfo, UserStats, Logs, Item, Role
 
 from utils.parsers import parse_profile, parse_storage_action, get_transfer
 from utils.formatters import str_datetime, datediff
@@ -87,19 +87,19 @@ def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
         stats.user_strength, stats.user_agility, stats.user_endurance, \
         stats.user_luck = new_data
 
-    in_guild_roles = [0, 1, 2, 3, 4, 5, 6, 7, 11]
+    in_guild_roles = Role.get_guild_roles()
 
     if data['guild'] == GUILD_NAME:
-        if info.role_id is None \
-                or info.role_id not in in_guild_roles:
+        if info.user_role is None \
+                or info.user_role not in in_guild_roles:
             answer = 'Обновил информацию гильдии!\n' + answer
-            info.role_id = role_guild = 5
+            info.role_id = Role.guild_role().role_id
     else:
         if info.role_id is None \
                 or info.role_id not in in_guild_roles:
             # if not banned and not in guild now
-            if info.role_id != 9:
-                info.role_id = other_role = 8
+            if info.role_id != Role.ban_role().role_id:
+                info.role_id = Role.other_role().role_id
 
     DB.add(info)
     DB.add(stats)
