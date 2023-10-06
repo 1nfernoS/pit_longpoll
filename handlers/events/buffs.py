@@ -47,7 +47,7 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
             events = long_poll.check()
             pass
         for event in events:
-            if event.tpye != VkEventType.MESSAGE_NEW:
+            if event.type != VkEventType.MESSAGE_NEW:
                 continue
 
             if not event.from_group:
