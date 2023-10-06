@@ -1,6 +1,5 @@
 import datetime
 import sys
-from typing import List
 
 from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll
@@ -29,6 +28,8 @@ class VkBot:
 
         self._before_start = None
         self._before_stop = None
+        self._tasks_check = None
+        self._init_tasks = None
 
         return
 
@@ -39,6 +40,20 @@ class VkBot:
     def startup(self):
         def wrapper(func: callable):
             self.set_start(func)
+            return
+
+        return wrapper
+
+    def task_check(self):
+        def wrapper(func: callable):
+            self._tasks_check = func
+            return
+
+        return wrapper
+
+    def task_init(self):
+        def wrapper(func: callable):
+            self._init_tasks = func
             return
 
         return wrapper
@@ -80,7 +95,8 @@ class VkBot:
         print(f"[{now.strftime('%d.%m.%y %H:%M:%S')}] "
               f"Bot {self._name} successfully started! Branch {os.environ.get('BRANCH', 'dev')}\n")
 
-        init_tasks()
+        if self._init_tasks:
+            self._init_tasks()
 
         # TODO: Find a proper way to stop bot without "kill -9"
         self._main_loop()
@@ -91,7 +107,8 @@ class VkBot:
         while True:
             try:
                 self._event_loop()
-                self._tasks_check()
+                if self._tasks_check:
+                    self._tasks_check(self)
             except KeyboardInterrupt:
                 print('\n', 'Stopping . . .', '\n')
                 self._before_stop(self) if self._before_stop else None
@@ -134,22 +151,6 @@ class VkBot:
                 finally:
                     pass
                 continue
-        return
-
-    def _tasks_check(self):
-        from ORM import session, Task
-        from tasks import exec_task
-
-        now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
-        s = session()
-        task_list: List[Task] = s.query(Task).all()
-        for t in task_list:
-            if t.task_when > now:
-                continue
-            getattr(exec_task, t.task_target)(self, t.task_args)
-            s.delete(t)
-            s.commit()
-        s.close()
         return
 
     def _event_loop(self):

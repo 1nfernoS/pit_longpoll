@@ -1,8 +1,12 @@
+from typing import List
+
 import config
+from tasks import init_tasks
 from vk_bot.vk_bot import VkBot
 
 from handlers.new_message import new_message
 from handlers.events import event_message
+
 
 from vk_api.bot_longpoll import VkBotEvent
 
@@ -39,9 +43,29 @@ def dummy(b: bot, e: VkBotEvent):
     return
 
 
-@bot.event_handler('MESSAGE_EVENT')
-def event(b: bot, e: VkBotEvent):
-    return event_message(b, e)
+@bot.task_check()
+def tasks_check(self: VkBot):
+    from ORM import session, Task
+    from tasks import exec_task
+    import datetime
+
+    now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
+    s = session()
+    task_list: List[Task] = s.query(Task).all()
+    for t in task_list:
+        if t.task_when > now:
+            continue
+        getattr(exec_task, t.task_target)(self, t.task_args)
+        s.delete(t)
+        s.commit()
+    s.close()
+    return
+
+
+@bot.task_init()
+def init_task():
+    init_tasks()
+
 
 
 if __name__ == '__main__':
