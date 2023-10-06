@@ -55,7 +55,7 @@ def load(branch_name: str):
         print(f"No branch '{branch_name}', loaded 'dev' branch")
         branch_name = 'dev'
 
-    if not load_dotenv('.env.' + branch_name):
+    if not load_dotenv('.env.' + branch_name, override=True):
         raise EnvironmentError(f'No .env.{branch_name} file')
 
     global group_token, db_data, ALLOWED_CHATS, storager_id, storager_chat, storager_token, \
