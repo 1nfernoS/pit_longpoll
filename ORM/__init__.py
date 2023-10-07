@@ -135,7 +135,7 @@ class Role(Base):
                        'captain', 'officer',
                        'guild_member']
         with session() as s:
-            return s.query(Role).filter(Role.role_name in guild_roles).all()
+            return s.query(Role).filter(Role.role_name.in_(guild_roles)).all()
 
     @staticmethod
     def guild_role() -> "Role":
