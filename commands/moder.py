@@ -187,10 +187,42 @@ class ToggleLeader(Command):
             msg = toggle_role(
                 user.user_id,
                 event.message.reply_message['from_id'],
-                leader,
-                guild_member
+                Role.leader_role().role_id,
+                Role.guild_role().role_id
             )
 
+            bot.api.send_chat_msg(event.chat_id, msg)
+        s.close()
+        return
+
+
+class ToggleCaptain(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('капитан', 'captain'))
+        self.desc = 'Назначить капитана. Для лидеров'
+        self.require_change_role = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
+        s = session()
+
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+
+        if not user.user_role.role_can_change_role:
+            return
+
+        if 'reply_message' in event.message.keys():
+
+            Logs(event.message.from_id, __class__.__name__, None, None,
+                 event.message.reply_message['from_id']).make_record()
+
+            msg = toggle_role(
+                event.message.from_id,
+                event.message.reply_message['from_id'],
+                Role.captain_role().role_id,
+                Role.guild_role().role_id
+            )
             bot.api.send_chat_msg(event.chat_id, msg)
         s.close()
         return
@@ -220,8 +252,8 @@ class ToggleOfficer(Command):
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],
-                officer,
-                guild_member
+                Role.officer_role().role_id,
+                Role.guild_role().role_id
             )
             bot.api.send_chat_msg(event.chat_id, msg)
         s.close()
@@ -252,8 +284,8 @@ class ToggleGuildMember(Command):
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],
-                guild_member,
-                others
+                Role.guild_role().role_id,
+                Role.other_role().role_id
             )
             bot.api.send_chat_msg(event.chat_id, msg)
         s.close()
@@ -284,8 +316,8 @@ class ToggleNewbie(Command):
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],
-                guild_newbie,
-                others
+                Role.newbie_role().role_id,
+                Role.other_role().role_id
             )
             bot.api.send_chat_msg(event.chat_id, msg)
         s.close()
@@ -316,8 +348,8 @@ class ToggleGuest(Command):
             msg = toggle_role(
                 event.message.from_id,
                 event.message.reply_message['from_id'],
-                guild_guests,
-                others
+                Role.guest_role().role_id,
+                Role.other_role().role_id
             )
             bot.api.send_chat_msg(event.chat_id, msg)
         s.close()

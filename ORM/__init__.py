@@ -138,9 +138,34 @@ class Role(Base):
             return s.query(Role).filter(Role.role_name.in_(guild_roles)).all()
 
     @staticmethod
+    def leader_role() -> "Role":
+        with session() as s:
+            return s.query(Role).filter(Role.role_name == 'leader').first()
+
+    @staticmethod
+    def captain_role() -> "Role":
+        with session() as s:
+            return s.query(Role).filter(Role.role_name == 'captain').first()
+
+    @staticmethod
+    def officer_role() -> "Role":
+        with session() as s:
+            return s.query(Role).filter(Role.role_name == 'officer').first()
+
+    @staticmethod
     def guild_role() -> "Role":
         with session() as s:
             return s.query(Role).filter(Role.role_name == 'guild_member').first()
+
+    @staticmethod
+    def newbie_role() -> "Role":
+        with session() as s:
+            return s.query(Role).filter(Role.role_name == 'guild_newbie').first()
+
+    @staticmethod
+    def guest_role() -> "Role":
+        with session() as s:
+            return s.query(Role).filter(Role.role_name == 'guild_guests').first()
 
     @staticmethod
     def other_role() -> "Role":
@@ -151,6 +176,11 @@ class Role(Base):
     def ban_role() -> "Role":
         with session() as s:
             return s.query(Role).filter(Role.role_name == 'blacklist').first()
+
+    def __eq__(self, other: "Role"):
+        if type(other) != Role:
+            return False
+        return self.role_id == other.role_id
 
     def __str__(self):
         return f"<Role {self.role_id}: {self.role_name} ({self.bin_access()})>"
