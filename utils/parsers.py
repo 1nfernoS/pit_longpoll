@@ -177,7 +177,9 @@ def parse_time(text: str) -> timedelta:
 
 def fishing(messages: List[str]) -> dict:
     messages = [msg['text'].encode('cp1251', 'xmlcharrefreplace').decode('cp1251') for msg in messages]
-    result = {'bait': 0, 'fish_trophy': 0, 'food': 0, 'loot': {'shell': 0, 'oil': 0, 'other': []}, 'trophy': 0, 'gold': 0, 'unknown': []}
+    result = {'bait': 0, 'fish_trophy': 0, 'food': 0,
+              'loot': {'shell': 0, 'oil': 0, 'other': []},
+              'trophy': 0, 'gold': 0, 'scatter': 0, 'unknown': []}
 
     for msg in messages:
         if emoji.cancel in msg:
@@ -198,6 +200,9 @@ def fishing(messages: List[str]) -> dict:
             continue
         if 'рыбий жир' in msg.lower():
             result['loot']['oil'] += 1
+            continue
+        if emoji.scatter in msg.lower():
+            result['scatter'] += 1
             continue
         if emoji.level in msg:
             result['trophy'] += int(re.findall(r'(?<=\s)\d+(?=\s)', msg.split('\n\n')[1])[0])

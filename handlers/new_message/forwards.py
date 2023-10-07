@@ -324,7 +324,9 @@ def fishing(self: "VkBot", event: "VkBotEvent"):
         msg += f"{emoji.level}: {data['trophy']}\n"
     if data['gold']:
         msg += f"{emoji.gold}: {data['gold']}\n"
-    if data['loot'].values():
+    if data['scatter']:
+        msg += f"{emoji.scatter}: {data['scatter']}\n"
+    if any(data['loot'].values()):
         msg += "\nПрочий лут:\n"
         if data['loot']['shell']:
             msg += f"{emoji.shell}: {data['loot']['shell']}\n"
