@@ -224,6 +224,8 @@ def ruins_parse(messages: List[str]) -> dict:
     for msg in messages:
         if emoji.cancel in msg or 'Прервать поиск' in msg:
             break
+        if emoji.wait in msg:
+            continue
         if emoji.scatter in msg.lower():
             result['scatter'] += 1
             continue
@@ -233,7 +235,7 @@ def ruins_parse(messages: List[str]) -> dict:
             if 'продан' in msg:
                 result['gold'] += int(re.findall(r'(?<=\s)\d+(?=\s)', msg.split('\n\n')[-1])[0])
             else:
-                result['loot'] += re.findall(r'(?<=;)[\w\s]+(?=!)', msg.split('\n\n')[-1])
+                result['loot'] += re.findall(r'(?<=;)[\w\s-]+(?=!)', msg.split('\n\n')[-1])
             continue
         result['unknown'].append(msg)
     return result
