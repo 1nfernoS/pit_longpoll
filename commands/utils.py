@@ -5,6 +5,8 @@ from ORM import session, UserInfo, Logs
 from config import GUILD_CHAT_ID, GUILD_NAME
 
 from utils.scripts import update_items
+from utils.math import commission_price, pure_price
+from dictionaries.emoji import gold
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -110,6 +112,66 @@ class Role(Command):
              event.message.reply_message['from_id']
              if 'reply_message' in event.message.keys()
              else event.message.from_id).make_record()
+        s.close()
+        return
+
+
+class Clear(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('чистыми', 'clear'))
+        self.desc = 'Узнать цену чистыми'
+        self.require_basic = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+
+        if not user.user_role.role_can_basic:
+            return
+        Logs(event.message.from_id, __class__.__name__, None, None,
+             event.message.reply_message['from_id']
+             if 'reply_message' in event.message.keys()
+             else event.message.from_id).make_record()
+
+        try:
+            money = int(event.message.text.split(' ')[1])
+        except ValueError:
+            bot.api.send_chat_msg(event.chat_id, 'Это не число')
+            return
+
+        bot.api.send_chat_msg(event.chat_id, f'{gold}{pure_price(money)}')
+        s.close()
+        return
+
+
+class Dirty(Command):
+    def __init__(self):
+        super().__init__(__class__.__name__, ('грязными', 'dirty'))
+        self.desc = 'Узнать цену чистыми'
+        self.require_basic = True
+        # self.set_active(False)
+        return
+
+    def run(self, bot: "VkBot", event: "VkBotEvent"):
+        s = session()
+        user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
+
+        if not user.user_role.role_can_basic:
+            return
+        Logs(event.message.from_id, __class__.__name__, None, None,
+             event.message.reply_message['from_id']
+             if 'reply_message' in event.message.keys()
+             else event.message.from_id).make_record()
+
+        try:
+            money = int(event.message.text.split(' ')[1])
+        except ValueError:
+            bot.api.send_chat_msg(event.chat_id, 'Это не число')
+            return
+
+        bot.api.send_chat_msg(event.chat_id, f'{gold}{commission_price(money)}')
         s.close()
         return
 
