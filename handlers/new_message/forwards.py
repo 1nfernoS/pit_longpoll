@@ -28,10 +28,10 @@ def forward_parse(self: "VkBot", event: "VkBotEvent"):
         fishing(self, event)
         return
 
-    # if 'обыск руин' in fwd_txt:
-    #     Logs(event.message.from_id, 'Ruins', on_message=event.message.fwd_messages[0]['text']).make_record()
-    #     # TODO: make def for it
-    #     return
+    if 'обыск руин' in fwd_txt:
+        Logs(event.message.from_id, 'Ruins', on_message=event.message.fwd_messages[0]['text']).make_record()
+        ruins(self, event)
+        return
 
     if emoji.wait in fwd_txt:
         wait_for(self, event)
@@ -340,4 +340,18 @@ def fishing(self: "VkBot", event: "VkBotEvent"):
 
 
 def ruins(self: "VkBot", event: "VkBotEvent"):
+    data = parsers.ruins_parse(event.message.fwd_messages)
+    msg = f"Итоги обыска руин:\n"
+    if data['trophy']:
+        msg += f"{emoji.level}: {data['trophy']}\n"
+    if data['gold']:
+        msg += f"{emoji.gold}: {data['gold']}\n"
+    if data['scatter']:
+        msg += f"{emoji.scatter}: {data['scatter']}\n"
+    if any(data['loot']):
+        msg += "\nПрочий лут:\n"
+        if data['loot']:
+            msg += f"{emoji.item}: {', '.join(data['loot'])}\n"
+
+    self.api.send_chat_msg(event.chat_id, msg)
     return

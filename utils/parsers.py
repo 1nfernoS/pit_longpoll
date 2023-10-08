@@ -216,6 +216,28 @@ def fishing(messages: List[str]) -> dict:
     return result
 
 
+def ruins_parse(messages: List[str]) -> dict:
+    messages = [msg['text'].encode('cp1251', 'xmlcharrefreplace').decode('cp1251') for msg in messages]
+    result = {'loot': [],
+              'trophy': 0, 'gold': 0, 'scatter': 0, 'unknown': []}
+
+    for msg in messages:
+        if emoji.cancel in msg or 'Прервать поиск' in msg:
+            break
+        if emoji.scatter in msg.lower():
+            result['scatter'] += 1
+            continue
+        if emoji.level in msg:
+            result['trophy'] += int(re.findall(r'(?<=\s)\d+(?=\s)', msg.split('\n\n')[0])[0])
+        if emoji.item in msg:
+            if 'продан' in msg:
+                result['gold'] += int(re.findall(r'(?<=\s)\d+(?=\s)', msg.split('\n\n')[-1])[0])
+            else:
+                result['loot'] += re.findall(r'(?<=;)[\w\s]+(?=!)', msg.split('\n\n')[-1])
+            continue
+        result['unknown'].append(msg)
+    return result
+
 if __name__ == '__main__':
     sample = '&#128081;[id16191014|Юрий], Ваш профиль: | &#128100;Класс: клинок тьмы, человек-эльф | &#128101;Гильдия: Темная сторона | &#128578;Положительная карма | &#128128;Уровень: 90 | &#127881;Достижений: 32 | &#127765;Золото: 24819 | &#128074;295 &#128400;303 &#10084;314 &#127808;21 &#128481;107 &#128737;90'
     result = parse_profile(sample.replace(' | ', '\n'))
