@@ -141,7 +141,7 @@ class Clear(Command):
             bot.api.send_chat_msg(event.chat_id, 'Это не число')
             return
 
-        bot.api.send_chat_msg(event.chat_id, f'{gold}{pure_price(money)}')
+        bot.api.send_chat_msg(event.chat_id, f'{gold}{commission_price(money)}')
         s.close()
         return
 
@@ -171,7 +171,7 @@ class Dirty(Command):
             bot.api.send_chat_msg(event.chat_id, 'Это не число')
             return
 
-        bot.api.send_chat_msg(event.chat_id, f'{gold}{commission_price(money)}')
+        bot.api.send_chat_msg(event.chat_id, f'{gold}{pure_price(money)}')
         s.close()
         return
 
