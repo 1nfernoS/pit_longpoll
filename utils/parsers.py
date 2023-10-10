@@ -15,21 +15,23 @@ def parse_profile(text: str) -> dict:
     t = text.split('\n')
 
     id_vk = int(re.findall(r'(?<=id)\d+', t[0])[0])
-    name = t[0][:t[0].find(',')].replace('&#128081;', '')
+    name = re.findall(r'(?<=\|)[\s\w]+(?=])', t[0])[0]
 
-    sep = t[1].find(',')
-    class_name = t[1][16:sep]
+    class_name = re.findall(r'(?<=:)[\w\s]+(?=,)', t[1])[0].strip()
 
-    DB = session()
-    class_item: Item = DB.query(Item).filter(Item.item_name.ilike(f"{class_name}")).first()
+    race = re.findall(r'(?<=,)[\w\s-]+', t[1])[0].strip()
 
-    race = t[1][sep + 1:]
+    guild = re.findall(r'(?<=:)[\s\w]+', t[2])[0].strip()
+    is_officer = officer_emoji in t[2]
 
-    guild = t[2][18:]
-    is_officer = guild.endswith(officer_emoji)
-    guild = guild[:-len(officer_emoji)] if is_officer else guild
+    karma = re.findall(r'&#\d+;', t[3])[0]
 
-    level = int(re.findall(r' \d+', t[4])[0])
+    level = int(re.findall(r'(?<=: )\d+', t[4])[0])
+
+    achievements = int(re.findall(r'(?<=: )\d+', t[5])[0])
+
+    gold = int(re.findall(f'(?<={emoji.gold})\\d+', t[6])[0])
+    scatter = int(re.findall(f'(?<={emoji.scatter})\\d+', t[6])[0])
 
     strength = int(re.findall(r'(?<=&#128074;)\d+', t[7])[0])
     agility = int(re.findall(r'(?<=&#128400;)\d+', t[7])[0])
@@ -38,12 +40,18 @@ def parse_profile(text: str) -> dict:
     attack = int(re.findall(r'(?<=&#128481;)\d+', t[7])[0])
     defence = int(re.findall(r'(?<=&#128737;)\d+', t[7])[0])
 
-    res = {'id_vk': id_vk, 'guild': guild, 'is_officer': is_officer,
-           'class_id': class_item.item_id if class_item else None,
-           'level': level, 'strength': strength, 'agility': agility, 'endurance': endurance, 'luck': luck,
-           'attack': attack, 'defence': defence, 'last_update': datetime.now(), 'class_name': class_name,
-           'race': race, 'name': name}
+    DB = session()
+    class_item: Item = DB.query(Item).filter(Item.item_name.ilike(f"{class_name}")).first()
     DB.close()
+
+    res = {
+        'id_vk': id_vk, 'name': name,
+        'class_id': class_item.item_id if class_item else None, 'class_name': class_name, 'race': race,
+        'guild': guild, 'is_officer': is_officer, 'karma': karma, 'level': level, 'achievements': achievements,
+        'gold': gold, 'scatter': scatter, 'strength': strength, 'agility': agility, 'endurance': endurance,
+        'luck': luck, 'attack': attack, 'defence': defence,
+        'last_update': datetime.utcnow() + timedelta(hours=3)
+    }
     return res
 
 
@@ -103,7 +111,7 @@ def guesser(text: str) -> list:
 
     DB = session()
     item_list: List[Item] = DB.query(Item).filter(
-            Item.item_name.op('regexp')(f"(Книга - |^){regexp}$")).all()
+        Item.item_name.op('regexp')(f"(Книга - |^){regexp}$")).all()
     res = []
     for i in item_list:
         if i.item_id in __possible or '-' in i.item_name:
@@ -160,7 +168,8 @@ def parse_cross_signs(text: str) -> str:
     from dictionaries.puzzle_answers import cross_answers
 
     keys = re.findall(r'\b(?<=\")([^\"]+)(?=\")', text.lower())
-    data1, data2 = cross_answers.get(keys[0], 'Неизвестно').split(','), cross_answers.get(keys[1], 'Неизвестно').split(',')
+    data1, data2 = cross_answers.get(keys[0], 'Неизвестно').split(','), cross_answers.get(keys[1], 'Неизвестно').split(
+        ',')
     res = []
     for a in data1:
         if a in data2:
@@ -239,6 +248,7 @@ def ruins_parse(messages: List[str]) -> dict:
             continue
         result['unknown'].append(msg)
     return result
+
 
 if __name__ == '__main__':
     sample = '&#128081;[id16191014|Юрий], Ваш профиль: | &#128100;Класс: клинок тьмы, человек-эльф | &#128101;Гильдия: Темная сторона | &#128578;Положительная карма | &#128128;Уровень: 90 | &#127881;Достижений: 32 | &#127765;Золото: 24819 | &#128074;295 &#128400;303 &#10084;314 &#127808;21 &#128481;107 &#128737;90'

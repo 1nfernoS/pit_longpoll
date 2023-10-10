@@ -31,7 +31,7 @@ def bot_message(self: "VkBot", event: "VkBotEvent"):
                     at = event.message['attachments'][0]
                     photo = f"photo{at['photo']['owner_id']}_{at['photo']['id']}_{at['photo']['access_key']}"
             msg_del = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
-            # self.api.del_msg(event.message.peer_id, msg_id_del)
+            self.api.del_msg(event.message.peer_id, msg_del)
         self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], answer,
                           attachment=photo if photo else None)
 
@@ -59,8 +59,11 @@ def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
     if info:
         stats: UserStats = info.user_stats
 
-        answer = f"{data['name']}, статы обновлены! ({datediff(stats.last_update, datetime.now())} с {str_datetime(stats.last_update)})\n" \
-                 f"[ {data['class_name']} | {data['race']} ]\n" \
+        answer = f"{data['name']}, статы обновлены! \n" \
+                 f"({datediff(stats.last_update, datetime.now())} с {str_datetime(stats.last_update)})\n" \
+                 f"({data['karma']}) {emo.gold}: {data['gold']} {emo.scatter}: {data['scatter']} " \
+                 f"{emo.achievement}: {data['achievements']}\n" \
+                 f"{data['class_name']} | {data['race']}\n" \
                  f"{emo.level}{data['level']}({data['level'] - stats.user_level}) " \
                  f"{emo.attack}{data['attack']}({data['attack'] - stats.user_attack}) " \
                  f"{emo.defence}{data['defence']}({data['defence'] - stats.user_defence})\n" \
@@ -76,7 +79,9 @@ def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
         stats = UserStats(user_id=data['id_vk'])
 
         answer = f"{data['name']}, статы записаны!\n" \
-                 f"[ {data['class_name']} | {data['race']} ]\n" \
+                 f"({data['karma']}) {emo.gold}: {data['gold']} {emo.scatter}: {data['scatter']} " \
+                 f"{emo.achievement}: {data['achievements']}\n" \
+                 f"{data['class_name']} | {data['race']}\n" \
                  f"{emo.level}{data['level']} {emo.attack}{data['attack']} {emo.defence}{data['defence']} " \
                  f"{emo.strength}{data['strength']} {emo.agility}{data['agility']} {emo.endurance}{data['endurance']} " \
                  f"{emo.luck}{data['luck']}\n" \
