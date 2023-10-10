@@ -110,19 +110,18 @@ def dark_vendor(self: "VkBot", event: "VkBotEvent"):
               f'\nЦена аукциона: {emoji.gold}{auc_price} (со скидкой гильдии {DISCOUNT_PERCENT}%: ' \
               f'{emoji.gold}{guild_price}' \
               f'({emoji.gold}{guild_commission_price})\n\n'
-
-        if event.chat_id == GUILD_CHAT_ID:
-            if item_name.startswith('Книга - ') and item_.item_users:
-                guild_roles = (0, 1, 2, 3, 4, 5, 6)
-                in_equip: List[UserInfo] = item_.item_users
-                msg += f'{emoji.item}В экипировке у ' \
-                       f'{self.api.get_names([i.user_id for i in in_equip if i.user_role.role_id in guild_roles])}'
+        #
+        # if event.chat_id == GUILD_CHAT_ID:
+        #     if item_name.startswith('Книга - ') and item_.item_users:
+        #         guild_roles = (0, 1, 2, 3, 4, 5, 6)
+        #         in_equip: List[UserInfo] = item_.item_users
+        #         msg += f'{emoji.item}В экипировке у ' \
+        #                f'{self.api.get_names([i.user_id for i in in_equip if i.user_role.role_id in guild_roles])}'
     else:
         msg = f'Товар: {emoji.item}{item_name}\nЦена торговца: {emoji.gold}{item_price} ({emoji.gold}{commission_price})' + \
               f'\nВот только... Он не продается, Сам не знаю почему'
 
-    msg_reply = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
-    self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg, reply_to=msg_reply)
+    self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
     DB.close()
     return
 
@@ -145,8 +144,7 @@ def symbol_guesser(self: "VkBot", event: "VkBotEvent"):
     else:
         msg = 'Что-то не пойму, что это может быть'
 
-    msg_reply = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
-    self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg, reply_to=msg_reply)
+    self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
     return
 
 
