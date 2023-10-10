@@ -63,8 +63,7 @@ def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
                  f"({datediff(stats.last_update, datetime.now())} с {str_datetime(stats.last_update)})\n" \
                  f"({data['karma']}) {emo.gold}: {data['gold']} {emo.scatter}: {data['scatter']} " \
                  f"{emo.achievement}: {data['achievements']}\n" \
-                 f"Гильдия {data['guild']}" \
-                 f"{data['class_name']} | {data['race']}\n" \
+                 f"Гильдия {data['guild']} | {data['class_name']} | {data['race']}\n" \
                  f"{emo.level}{data['level']}({data['level'] - stats.user_level}) " \
                  f"{emo.attack}{data['attack']}({data['attack'] - stats.user_attack}) " \
                  f"{emo.defence}{data['defence']}({data['defence'] - stats.user_defence})\n" \
@@ -82,8 +81,7 @@ def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
         answer = f"[id{data['id_vk']}|{data['name']}], статы записаны!\n" \
                  f"({data['karma']}) {emo.gold}: {data['gold']} {emo.scatter}: {data['scatter']} " \
                  f"{emo.achievement}: {data['achievements']}\n" \
-                 f"Гильдия {data['guild']}" \
-                 f"{data['class_name']} | {data['race']}\n" \
+                 f"Гильдия {data['guild']} | {data['class_name']} | {data['race']}\n" \
                  f"{emo.level}{data['level']} {emo.attack}{data['attack']} {emo.defence}{data['defence']} " \
                  f"{emo.strength}{data['strength']} {emo.agility}{data['agility']} {emo.endurance}{data['endurance']} " \
                  f"{emo.luck}{data['luck']}\n" \
