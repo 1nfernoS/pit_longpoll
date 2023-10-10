@@ -121,7 +121,8 @@ def dark_vendor(self: "VkBot", event: "VkBotEvent"):
         msg = f'Товар: {emoji.item}{item_name}\nЦена торговца: {emoji.gold}{item_price} ({emoji.gold}{commission_price})' + \
               f'\nВот только... Он не продается, Сам не знаю почему'
 
-    self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
+    msg_reply = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+    self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg, reply_to=msg_reply)
     DB.close()
     return
 
@@ -143,7 +144,9 @@ def symbol_guesser(self: "VkBot", event: "VkBotEvent"):
             msg += '\n'.join(res_list)
     else:
         msg = 'Что-то не пойму, что это может быть'
-    self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg)
+
+    msg_reply = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+    self.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], msg, reply_to=msg_reply)
     return
 
 
@@ -163,7 +166,9 @@ def travel_check(self: "VkBot", event: "VkBotEvent"):
     else:
         answer = f"(+?) Неизвестное событие, сообщите в полигон или [id{creator_id}|ему]"
 
-    self.api.send_chat_msg(event.chat_id, answer)
+    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+    self.api.send_chat_msg(event.chat_id, answer, reply_to=msg_id)
+    self.api.del_msg(event.message.peer_id, msg_id)
     return
 
 
@@ -173,12 +178,17 @@ def door_solver(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     fwd_txt = translate(fwd_txt)
 
+    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+
     for answer in door_answers:
         if answer in fwd_txt:
-            self.api.send_chat_msg(event.chat_id, 'Открываем дверь, а там ответ: ' + door_answers[answer])
+            self.api.send_chat_msg(event.chat_id, 'Открываем дверь, а там ответ: ' + door_answers[answer],
+                                   reply_to=msg_id)
+            self.api.del_msg(event.message.peer_id, msg_id)
             return
 
-    self.api.send_chat_msg(event.chat_id, f"Ой, а я не знаю ответ\nCообщите в полигон или [id{creator_id}|ему]")
+    self.api.send_chat_msg(event.chat_id, f"Ой, а я не знаю ответ\nCообщите в полигон или [id{creator_id}|ему]",
+                           reply_to=msg_id)
     return
 
 
@@ -188,20 +198,22 @@ def book_pages(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     fwd_txt = translate(fwd_txt)
 
+    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
     for puzzle in book_pages:
         if puzzle in fwd_txt:
-            self.api.send_chat_msg(event.chat_id, 'Это страница из книги ' + book_pages[puzzle])
+            self.api.send_chat_msg(event.chat_id, 'Это страница из книги ' + book_pages[puzzle], reply_to=msg_id)
+            self.api.del_msg(event.message.peer_id, msg_id)
             return
 
-    self.api.send_chat_msg(event.chat_id, f"Ой, а я не знаю ответ\nCообщите в полигон или [id{creator_id}|ему]")
-
+    self.api.send_chat_msg(event.chat_id, f"Ой, а я не знаю ответ\nCообщите в полигон или [id{creator_id}|ему]",
+                           reply_to=msg_id)
     return
 
 
 def elites_response(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     date = datetime.datetime.fromtimestamp(event.message.fwd_messages[0]['date'])
-    now = datetime.datetime.now(tz=None)
+    now = datetime.datetime.utcnow()
 
     s = session()
     user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -232,7 +244,9 @@ def elites_response(self: "VkBot", event: "VkBotEvent"):
     msg += f"Осталось сдать {limit - user.elites_count} штук" \
         if limit > user.elites_count \
         else f"Сданы все необходимые трофеи"
-    self.api.send_chat_msg(event.chat_id, msg)
+
+    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+    self.api.send_chat_msg(event.chat_id, msg, reply_to=msg_id)
 
     # TODO: logs in chat for logs
     s.close()
@@ -242,7 +256,7 @@ def elites_response(self: "VkBot", event: "VkBotEvent"):
 def siege_report(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     date = datetime.datetime.fromtimestamp(event.message.fwd_messages[0]['date'])
-    now = datetime.datetime.now(tz=None)
+    now = datetime.datetime.utcnow()
 
     s = session()
     user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
@@ -264,7 +278,9 @@ def siege_report(self: "VkBot", event: "VkBotEvent"):
     s.commit()
     s.close()
     msg = f"Зарегистрировал твое участие в осаде за {data['name']}"
-    self.api.send_chat_msg(event.chat_id, msg)
+
+    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+    self.api.send_chat_msg(event.chat_id, msg, reply_to=msg_id)
 
     # TODO: logs in chat for logs
     return
@@ -280,8 +296,9 @@ def cross_road(self: "VkBot", event: "VkBotEvent"):
     msg += f"{emoji.flag} Север - Это {north}\n"
     msg += f"{emoji.flag} Восток - Это {east}\n"
 
-    self.api.send_chat_msg(event.chat_id, msg)
-
+    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+    self.api.send_chat_msg(event.chat_id, msg, reply_to=msg_id)
+    self.api.del_msg(event.message.peer_id, msg_id)
     return
 
 
@@ -309,7 +326,8 @@ def wait_for(self: "VkBot", event: "VkBotEvent"):
             'msg_id': self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
         }
     Task(event_end, tasks.exec_task.remind, args).add()
-    self.api.send_chat_msg(event.chat_id, f"Хорошо, напомню как выйдет время (через {wait_time})")
+    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+    self.api.send_chat_msg(event.chat_id, f"Хорошо, напомню как выйдет время (через {wait_time})",  reply_to=msg_id)
     return
 
 
@@ -335,7 +353,9 @@ def fishing(self: "VkBot", event: "VkBotEvent"):
         if data['loot']['other']:
             msg += f"{emoji.item}: {', '.join(data['loot']['other'])}\n"
 
-    self.api.send_chat_msg(event.chat_id, msg)
+    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+    self.api.send_chat_msg(event.chat_id, msg, reply_to=msg_id)
+    self.api.del_msg(event.message.peer_id, msg_id)
     return
 
 
@@ -352,6 +372,7 @@ def ruins(self: "VkBot", event: "VkBotEvent"):
         msg += "\nПрочий лут:\n"
         if data['loot']:
             msg += f"{emoji.item}: {', '.join(data['loot'])}\n"
-
-    self.api.send_chat_msg(event.chat_id, msg)
+    msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+    self.api.send_chat_msg(event.chat_id, msg, reply_to=msg_id)
+    self.api.del_msg(event.message.peer_id, msg_id)
     return
