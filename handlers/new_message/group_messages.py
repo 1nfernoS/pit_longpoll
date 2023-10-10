@@ -59,7 +59,7 @@ def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
     if info:
         stats: UserStats = info.user_stats
 
-        answer = f"{data['name']}, статы обновлены! \n" \
+        answer = f"[id{data['id_vk']}|{data['name']}], статы обновлены! \n" \
                  f"({datediff(stats.last_update, datetime.now())} с {str_datetime(stats.last_update)})\n" \
                  f"({data['karma']}) {emo.gold}: {data['gold']} {emo.scatter}: {data['scatter']} " \
                  f"{emo.achievement}: {data['achievements']}\n" \
@@ -78,7 +78,7 @@ def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
 
         stats = UserStats(user_id=data['id_vk'])
 
-        answer = f"{data['name']}, статы записаны!\n" \
+        answer = f"[id{data['id_vk']}|{data['name']}], статы записаны!\n" \
                  f"({data['karma']}) {emo.gold}: {data['gold']} {emo.scatter}: {data['scatter']} " \
                  f"{emo.achievement}: {data['achievements']}\n" \
                  f"{data['class_name']} | {data['race']}\n" \
