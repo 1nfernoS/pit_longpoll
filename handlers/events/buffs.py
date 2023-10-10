@@ -83,6 +83,6 @@ def read(lp: VkLongPoll) -> str:
             if not event.peer_id == OVERSEER_BOT:
                 continue
 
-            if not any([msg in event.message for msg in POSSIBLE_ANSWERS + SUCCESS_ANSWER]):
+            if not any([msg in event.message for msg in POSSIBLE_ANSWERS + (SUCCESS_ANSWER,)]):
                 continue
             return event.message
