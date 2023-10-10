@@ -6,7 +6,7 @@ from vk_api.longpoll import VkEventType, VkLongPoll, CHAT_START_ID
 from ORM import session
 import ORM
 
-from dictionaries.buffs import POSSIBLE_ANSWERS, BUFF_RACE
+from dictionaries.buffs import POSSIBLE_ANSWERS, BUFF_RACE, SUCCESS_ANSWER
 from dictionaries.emoji import gold
 
 from config import OVERSEER_BOT, APO_PAYMENT
@@ -39,31 +39,10 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
         forward_messages=str(msg_id)
     )
 
-    for i in range(20):
-        time.sleep(0.1)
-        try:
-            events = long_poll.check()
-        except TypeError:
-            events = long_poll.check()
-            pass
-        for event in events:
-            if event.type != VkEventType.MESSAGE_NEW:
-                continue
-
-            if not event.from_group:
-                continue
-
-            if event.from_me:
-                continue
-
-            if not event.peer_id == OVERSEER_BOT:
-                continue
-
-            if not any([msg in event.message for msg in POSSIBLE_ANSWERS]):
-                continue
-            return event.message
-
-    res = f"Наложено {msg.lower()}"
+    res = read(long_poll)
+    if SUCCESS_ANSWER not in res:
+        return res
+    res = res.split('\n')[0]
 
     # Change balance
     user_from: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == receiver).first()
@@ -81,3 +60,29 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
     res += f"\n[id{user_from.user_id}|На счету]: {user_from.balance}{gold}"
     DB.close()
     return res
+
+
+def read(lp: VkLongPoll) -> str:
+    for i in range(4):
+        time.sleep(0.5)
+        try:
+            events = lp.check()
+        except TypeError:
+            events = lp.check()
+            pass
+        for event in events:
+            if event.type != VkEventType.MESSAGE_NEW:
+                continue
+
+            if not event.from_group:
+                continue
+
+            if event.from_me:
+                continue
+
+            if not event.peer_id == OVERSEER_BOT:
+                continue
+
+            if not any([msg in event.message for msg in POSSIBLE_ANSWERS + SUCCESS_ANSWER]):
+                continue
+            return event.message
