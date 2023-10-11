@@ -40,6 +40,8 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
     )
 
     res = read(long_poll)
+    if not res:
+        return
     if SUCCESS_ANSWER not in res:
         return res
     res = res.split('\n')[0]
@@ -63,7 +65,7 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
 
 
 def read(lp: VkLongPoll) -> str:
-    for i in range(4):
+    for i in range(6):
         time.sleep(0.5)
         try:
             events = lp.check()

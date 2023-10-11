@@ -51,7 +51,8 @@ def event_message(self: "VkBot", event: "VkBotEvent"):
 
         # TODO in other thread
         res = buff(pl['from'], pl['chat_id'], pl['msg_id'], pl['buff'], receiver)
-
+        if not res:
+            return
         # Message may be deleted before editing
         try:
             self.api.edit_msg(
