@@ -153,7 +153,7 @@ def get_transfer(text: str) -> Dict[str, str]:
         text = text.replace(item, '')
         item_name = re.findall(r'(?<=;).+(?= от игрока)', text)[0]
         count = re.findall(r'\d+(?=\*)', item_name)
-        item_name = re.findall(r'(?<=\*).+', item_name)[0]
+        item_name = re.findall(r'(?<=\*).+', item_name)[0] if '*' in item_name else item_name
         count = int(count[0]) if count else 1
         data['count'] = count
         data['item_name'] = item_name
