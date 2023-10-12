@@ -36,7 +36,6 @@ def forward_parse(self: "VkBot", event: "VkBotEvent"):
     if emoji.wait in fwd_txt:
         wait_for(self, event)
 
-
     if fwd_txt.startswith(f'{emoji.item}1*'):
         Logs(event.message.from_id, 'Dark_vendor', on_message=event.message.fwd_messages[0]['text']).make_record()
         dark_vendor(self, event)
@@ -308,7 +307,7 @@ def wait_for(self: "VkBot", event: "VkBotEvent"):
     if 'около' in fwd_txt:
         return
 
-    Logs(event.message.from_id, wait_for.__name__, on_message=fwd_txt)
+    Logs(event.message.from_id, wait_for.__name__, on_message=fwd_txt).make_record()
 
     event_start = datetime.datetime.utcfromtimestamp(event.message.fwd_messages[0]['date']) + datetime.timedelta(hours=3)
     wait_time = parse_time(fwd_txt)
@@ -321,8 +320,17 @@ def wait_for(self: "VkBot", event: "VkBotEvent"):
     args = {
             'user_id': event.message.from_id,
             'text': ' время вышло!',
-            'msg_id': self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
-        }
+            'msg_id': self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id'],
+            'type': 'remind'
+    }
+    if 'Еда' in fwd_txt:
+        args['type'] = 'eat_tavern'
+    if 'Награда' in fwd_txt:
+        args['type'] = 'stats_action'
+    if any(i in fwd_txt for i in ('гильдии раз в сутки', 'статую лепрекона')):
+        args['type'] = 'guild_goods'
+    if 'задание' in fwd_txt:
+        args['type'] = 'tasks'
     Task(event_end, tasks.exec_task.remind, args).add()
     msg_id = self.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
     self.api.send_chat_msg(event.chat_id, f"Хорошо, напомню как выйдет время (через {wait_time})",  reply_to=msg_id)

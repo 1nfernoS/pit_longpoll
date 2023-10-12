@@ -9,6 +9,7 @@ import json
 from config import GUILD_CHAT_ID, LEADER_CHAT_ID
 from utils.scripts import withdraw_bill, check_elites, check_siege_report
 from dictionaries import emoji as e
+from dictionaries import tasks as tasks_dicts
 
 from ORM import Task
 
@@ -19,11 +20,14 @@ if TYPE_CHECKING:
 
 
 def remind(bot: "VkBot", data: str):
-    __keys = ('user_id', 'text', 'msg_id')
+    __keys = ('user_id', 'text', 'msg_id', 'type')
     data = json.loads(data)
     if not all(key in data for key in __keys):
         raise ValueError(f"Task doesn't have enough/valid arguments to run ({data})")
-    msg = f"@id{data['user_id']}(Напоминаю) {data['text']}"
+    if data['type'] not in tasks_dicts.remind_text.keys():
+        msg = f"@id{data['user_id']}(Напоминаю) {data['text']}"
+    else:
+        msg = f"{tasks_dicts.remind_text[data['type']]}\n@id{data['user_id']}(Напоминаю) {data['text']}"
     bot.api.send_chat_msg(GUILD_CHAT_ID, msg, disable_mentions=False,
                           reply_to=data['msg_id'])
     return

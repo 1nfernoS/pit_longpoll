@@ -32,7 +32,8 @@ class Remind(Command):
         args = {
             'user_id': event.message.from_id,
             'text': ' '.join(event.message.text.split()[1:]),
-            'msg_id': bot.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id']
+            'msg_id': bot.api.get_conversation_msg(event.message.peer_id, event.message.conversation_message_id)['id'],
+            'type': 'remind'
         }
         Task(datetime.utcnow() + timedelta(hours=1+3), remind, args).add()
 
