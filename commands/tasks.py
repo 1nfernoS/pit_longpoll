@@ -46,7 +46,7 @@ class Remind(Command):
 class Announce(Command):
     def __init__(self):
         super().__init__(__class__.__name__, ('объява', 'объявы', 'объявление', 'announce'))
-        self.desc = '"добавить текст" или "удалить число". управление объявлениями в гильдии'
+        self.desc = '"добавить текст" или "удалить число" или "список/мои". Управление объявлениями в гильдии'
         self.require_basic = True
         # self.set_active(False)
         return
@@ -71,7 +71,7 @@ class Announce(Command):
             bot.api.send_chat_msg(event.chat_id, 'Я могу удалить и добавить объявление, проверь команду')
             return
 
-        Logs(event.message.from_id, __class__.__name__, reason=event.message.text).make_record()
+        Logs(event.message.from_id, __class__.__name__, reason=event.message.text[:200]+'...').make_record()
 
         if msg[1].lower() in adding:
             Notes(event.message.from_id, ' '.join(msg[2:])).create()
