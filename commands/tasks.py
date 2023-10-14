@@ -74,7 +74,13 @@ class Announce(Command):
         Logs(event.message.from_id, __class__.__name__, reason=event.message.text[:200]+'...').make_record()
 
         if msg[1].lower() in adding:
-            Notes(event.message.from_id, ' '.join(msg[2:])).create()
+            note = ' '.join(msg[2:])
+            if len(note) > 255:
+                bot.api.send_chat_msg(event.chat_id,
+                                      f"Максимум 255 символов в объявлении, у вас {len(note)} (эмодзи едят по 6-10 символов)")
+                s.close()
+                return
+            Notes(event.message.from_id, note).create()
             bot.api.send_chat_msg(event.chat_id, "Добавил твое объявление в газету!")
 
         elif msg[1].lower() in deletion:
