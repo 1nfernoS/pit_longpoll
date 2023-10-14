@@ -56,6 +56,7 @@ class Announce(Command):
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
+            s.close()
             return
 
         adding = ('добавить', 'add')
@@ -63,12 +64,18 @@ class Announce(Command):
         listing = ('мои', 'список', 'list')
 
         msg = event.message.text.split()
-        if len(msg) < 3 and msg[1].lower() not in listing:
+        if len(msg) < 2:
             bot.api.send_chat_msg(event.chat_id, "Не хватает аргументов")
+            s.close()
             return
 
         if msg[1].lower() not in adding+deletion+listing:
             bot.api.send_chat_msg(event.chat_id, 'Я могу удалить и добавить объявление, проверь команду')
+            s.close()
+            return
+        if len(msg) < 3 and msg[1].lower() not in listing:
+            bot.api.send_chat_msg(event.chat_id, "Не хватает аргументов")
+            s.close()
             return
 
         Logs(event.message.from_id, __class__.__name__, reason=event.message.text[:200]+'...').make_record()
