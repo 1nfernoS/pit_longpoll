@@ -6,15 +6,19 @@ They are just executes only with data, not creates task
 import datetime
 import json
 
+from vk_api import ApiError
+
 from config import GUILD_CHAT_ID, LEADER_CHAT_ID
 from utils.scripts import withdraw_bill, check_elites, check_siege_report
+from utils.keyboards import announce_restore
 from dictionaries import emoji as e
 from dictionaries import tasks as tasks_dicts
 
-from ORM import Task
+from ORM import Task, Notes, session
 
 # import for typing hints
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
+
 if TYPE_CHECKING:
     from vk_bot.vk_bot import VkBot
 
@@ -119,7 +123,42 @@ def elites(bot: "VkBot", data: str = None):
     bot.api.send_chat_msg(LEADER_CHAT_ID, msg)
 
     month = datetime.datetime.utcnow().month % 12 + 1
-    next_run = datetime.datetime.now().replace(day=2, month=month, hour=12, minute=30, second=0)
+    next_run = datetime.datetime.utcnow().replace(day=2, month=month, hour=12, minute=30, second=0)
 
     Task(next_run, elites, is_regular=True).add()
+    return
+
+
+def send_notes(bot: "VkBot", data: str = None):
+    s = session()
+    notes: List[Notes] = s.query(Notes).filter(Notes.is_active).all()
+
+    now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
+    next_run = now + datetime.timedelta(hours=2)
+    Task(next_run, send_notes, is_regular=True).add()
+
+    user_ids = tuple(i.note_author for i in notes)
+    user_names = {a: b for a, b in zip(user_ids, bot.api.get_names(user_ids, 'nom').split(','))}
+
+    msg = f"{e.task} Объявления гильдии!"
+
+    for note in notes:
+        if now > note.expires_in:
+            note.is_active = False
+            s.add(note)
+            notify = (f'Ваше объявление {note.note_id} истекло - {note.note_text}\n'
+                   f'Чтобы вернуть его нажмите кнопку ниже')
+            kbd = announce_restore(note.note_id)
+            try:
+                bot.api.send_user_msg(note.note_author, notify, kbd)
+            except ApiError:
+                notify = f"{user_names[note.note_author]}, разрешите сообщения, чтобы я уведомлял об этом в лс\n"+notify
+                bot.api.send_chat_msg(GUILD_CHAT_ID, notify, kbd)
+            continue
+        msg += f"\n -{e.tab}{user_names[note.note_author]}: {note.note_text}"
+    s.commit()
+    s.close()
+
+    if notes:
+        bot.api.send_chat_msg(GUILD_CHAT_ID, msg)
     return

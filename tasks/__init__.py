@@ -1,7 +1,7 @@
 import datetime as dt
 
 from ORM import Task, session
-from .exec_task import bill, bill2, elites, siege
+from .exec_task import bill, bill2, elites, siege, send_notes
 
 
 def init_tasks() -> None:
@@ -17,7 +17,8 @@ def init_tasks() -> None:
         Task(now.replace(day=15, month=next_month, hour=10, minute=30, second=0, tzinfo=None), bill, is_regular=True),
         Task(now.replace(day=1, month=next_month, hour=10, minute=30, second=0, tzinfo=None), bill2, is_regular=True),
         Task(now.replace(day=2, month=next_month, hour=12, minute=30, second=0, tzinfo=None), elites, is_regular=True),
-        Task(next_siege, siege, is_regular=True)
+        Task(next_siege, siege, is_regular=True),
+        Task(now + dt.timedelta(hours=2), send_notes, is_regular=True)
         # TODO: Add message board (remind)
     )
 

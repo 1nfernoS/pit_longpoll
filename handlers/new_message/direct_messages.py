@@ -1,5 +1,7 @@
 from config import GUILD_CHAT_ID
 
+from .buttons import payloads
+
 from ORM import session, UserInfo, UserStats, Item, Logs, BuffUser
 
 from profile_api import get_profile, get_books
@@ -11,6 +13,11 @@ if TYPE_CHECKING:
 
 
 def user_message(self: "VkBot", event: "VkBotEvent"):
+
+    if 'payload' in event.message.keys():
+        payloads(self, event)
+        return
+
     # direct message from user
     if len(event.message.attachments) != 0:
         at = event.message.attachments[0]

@@ -133,3 +133,9 @@ def notes() -> str:
     kbd.add_openlink_button('Все статьи', NOTE_ALL)
 
     return kbd.get_keyboard()
+
+
+def announce_restore(note_id: int) -> str:
+    kbd = keyboard.VkKeyboard(inline=True)
+    kbd.add_button('Восстановить', keyboard.VkKeyboardColor.POSITIVE, {'restore': note_id})
+    return kbd.get_keyboard()
