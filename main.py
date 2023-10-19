@@ -60,7 +60,10 @@ def tasks_check(self: VkBot):
     for t in task_list:
         if t.task_when > now:
             continue
-        getattr(exec_task, t.task_target)(self, t.task_args)
+        try:
+            getattr(exec_task, t.task_target)(self, t.task_args)
+        except ...:
+            self.api.send_error(f"Error on task {t.task_target}" + f" t.task_args: {t.task_args}" if t.task_args else "")
         s.delete(t)
         s.commit()
     s.close()

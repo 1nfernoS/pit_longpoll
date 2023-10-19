@@ -134,8 +134,6 @@ def send_notes(bot: "VkBot", data: str = None):
     notes: List[Notes] = s.query(Notes).filter(Notes.is_active).all()
 
     now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
-    next_run = now + datetime.timedelta(hours=2)
-    Task(next_run, send_notes, is_regular=True).add()
 
     user_ids = tuple(i.note_author for i in notes)
     user_names = {a: b for a, b in zip(user_ids, bot.api.get_names(user_ids, 'nom').split(','))}
@@ -156,6 +154,10 @@ def send_notes(bot: "VkBot", data: str = None):
                 bot.api.send_chat_msg(GUILD_CHAT_ID, notify, kbd)
             continue
         msg += f"\n -{e.tab}{user_names[note.note_author]}: {note.note_text}"
+
+    next_run = now + datetime.timedelta(hours=2)
+    Task(next_run, send_notes.__name__, is_regular=True).add()
+
     s.commit()
     s.close()
 
