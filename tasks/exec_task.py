@@ -145,18 +145,18 @@ def send_notes(bot: "VkBot", data: str = None):
             note.is_active = False
             s.add(note)
             notify = (f'Ваше объявление {note.note_id} истекло - {note.note_text}\n'
-                   f'Чтобы вернуть его нажмите кнопку ниже')
+                      f'Чтобы вернуть его нажмите кнопку ниже')
             kbd = announce_restore(note.note_id)
             try:
                 bot.api.send_user_msg(note.note_author, notify, kbd)
             except ApiError:
-                notify = f"{user_names[note.note_author]}, разрешите сообщения, чтобы я уведомлял об этом в лс\n"+notify
+                notify = f"{user_names[note.note_author]}, разрешите сообщения, чтобы я уведомлял об этом в лс\n" + notify
                 bot.api.send_chat_msg(GUILD_CHAT_ID, notify, kbd)
             continue
         msg += f"\n -{e.tab}{user_names[note.note_author]}: {note.note_text}"
 
     next_run = now + datetime.timedelta(hours=2)
-    Task(next_run, send_notes.__name__, is_regular=True).add()
+    Task(next_run, send_notes, is_regular=True).add()
 
     s.commit()
     s.close()

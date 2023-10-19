@@ -62,7 +62,7 @@ def tasks_check(self: VkBot):
             continue
         try:
             getattr(exec_task, t.task_target)(self, t.task_args)
-        except ...:
+        except:
             self.api.send_error(f"Error on task {t.task_target}" + f" t.task_args: {t.task_args}" if t.task_args else "")
         s.delete(t)
         s.commit()
