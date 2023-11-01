@@ -209,7 +209,7 @@ def book_pages(self: "VkBot", event: "VkBotEvent"):
 
 def elites_response(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
-    date = datetime.datetime.fromtimestamp(event.message.fwd_messages[0]['date'])
+    date = datetime.datetime.utcfromtimestamp(event.message.fwd_messages[0]['date'])
     now = datetime.datetime.utcnow()
 
     s = session()
@@ -252,7 +252,7 @@ def elites_response(self: "VkBot", event: "VkBotEvent"):
 
 def siege_report(self: "VkBot", event: "VkBotEvent"):
     fwd_txt = str(event.message.fwd_messages[0]['text']).encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
-    date = datetime.datetime.fromtimestamp(event.message.fwd_messages[0]['date'])
+    date = datetime.datetime.utcfromtimestamp(event.message.fwd_messages[0]['date'])
     now = datetime.datetime.utcnow()
 
     s = session()
