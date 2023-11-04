@@ -521,6 +521,12 @@ class Notes(Base):
             s.commit()
         return
 
+    def __str__(self):
+        return f"<Note({int(self.note_author)}): {self.note_text[:25]}<{self.expires_in}]>"
+
+    def __repr__(self):
+        return f"<Note({int(self.note_author)}): {self.note_text[:25]}<{self.expires_in}]>"
+
 
 if __name__ == '__main__':
     pass

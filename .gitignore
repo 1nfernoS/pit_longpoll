@@ -11,3 +11,4 @@ pic_bot.py
 *.sql
 *.log
 start_bot.sh
+.ddls/

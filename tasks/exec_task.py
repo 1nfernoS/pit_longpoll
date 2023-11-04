@@ -135,7 +135,7 @@ def send_notes(bot: "VkBot", data: str = None):
 
     now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
 
-    user_ids = tuple(i.note_author for i in notes)
+    user_ids = tuple(set(i.note_author for i in notes))
     user_names = {a: b for a, b in zip(user_ids, bot.api.get_names(user_ids, 'nom').split(','))}
 
     msg = f"{e.task} Объявления гильдии!"
