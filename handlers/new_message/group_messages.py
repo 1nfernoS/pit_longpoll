@@ -163,8 +163,8 @@ def transfer_logging(self: "VkBot", event: "VkBotEvent"):
     _items_to_log = (items.valuables + items.adm_items + items.adm_ingredients +
                      items.ordinary_books_active + items.ordinary_books_passive)
     data = get_transfer(event.message.text)
-    if data['item_name'] == 'Осколков Сердца':
-        data['item_name'] = 'Осколки Сердца'
+    if data['item_name'] == 'осколков сердца':
+        data['item_name'] = 'осколки сердца'
 
     if data['id_to'] in self.api.get_members(event.chat_id):
         return
@@ -182,7 +182,7 @@ def transfer_logging(self: "VkBot", event: "VkBotEvent"):
     if data['type'] == 'gold' and data['count'] < 10000:
         return
 
-    if item.item_id not in items.adm_items + items.adm_ingredients and data['count'] < 5:
+    if item.item_id not in items.valuables + items.adm_items + items.adm_ingredients and data['count'] < 5:
         return
 
     msg = f"{data['user_from']} отправил {data['user_to']}\n{data['count']}*{item.item_name}\n"

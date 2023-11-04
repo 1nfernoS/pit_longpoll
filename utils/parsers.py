@@ -141,7 +141,10 @@ def get_transfer(text: str) -> Dict[str, str]:
     text = text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     from dictionaries.emoji import gold, item
 
-    data = {'type': 'gold' if gold in text else 'item' if item in text else 'other',
+    data = {'type': 'gold' if gold in text
+            else 'item' if item in text
+            else 'scatter' if emoji.scatter in text
+            else 'other',
             'user_from': (re.findall(r'\[id\d+\|[^]]+]', text))[1],
             'user_to': (re.findall(r'\[id\d+\|[^]]+]', text))[0],
             'id_from': ([int(i) for i in re.findall(r'(?<=id)\d+', text)])[1],
@@ -161,6 +164,10 @@ def get_transfer(text: str) -> Dict[str, str]:
     if data['type'] == 'gold':
         data['count'] = int(re.findall(r'\d+(?= золота)', text)[0])
         data['item_name'] = 'золото'
+
+    if data['type'] == 'scatter':
+        data['count'] = int(re.findall(r'\d+(?= осколков)', text)[0])
+        data['item_name'] = 'осколки сердца'
 
     return data
 
