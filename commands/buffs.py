@@ -116,7 +116,7 @@ class Warlock(Command):
 
 class PaladinStuff(Command):
     def __init__(self):
-        super().__init__(__class__.__name__, ('травма', 'травмы', 'очистка', 'trauma', 'clear'))
+        super().__init__(__class__.__name__, ('травма', 'травмы', 'очистка', 'trauma'))
         self.desc = 'Паладины и производные классы и их заклинания. Только для членов гильдии'
         # self.set_active(False)
         return
