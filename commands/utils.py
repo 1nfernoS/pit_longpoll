@@ -9,6 +9,7 @@ from utils.math import commission_price, pure_price
 from dictionaries.emoji import gold
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from vk_api.bot_longpoll import VkBotEvent
     from vk_bot.vk_bot import VkBot
@@ -100,7 +101,7 @@ class Role(Command):
             return
 
         if 'reply_message' in event.message.keys():
-            user_reply: UserInfo = s.query(UserInfo).\
+            user_reply: UserInfo = s.query(UserInfo). \
                 filter(UserInfo.user_id == event.message.reply_message['from_id']).first()
             answer = f'Роль id{user_reply.user_id}: {user_reply.user_role.role_name}' \
                 if user_reply else 'Нет такого пользователя'
@@ -129,6 +130,8 @@ class Clear(Command):
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
+            return
+        if len(event.message.text.split() == 1):
             return
         Logs(event.message.from_id, __class__.__name__, None, None,
              event.message.reply_message['from_id']
@@ -159,6 +162,8 @@ class Dirty(Command):
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
+            return
+        if len(event.message.text.split() == 1):
             return
         Logs(event.message.from_id, __class__.__name__, None, None,
              event.message.reply_message['from_id']
