@@ -106,11 +106,11 @@ class Equip(Command):
             lvl = None
             if "(А) " in b_item.item_name:
                 book_name = b_item.item_name.replace("(А) ", f"{tab}{active_book}")
-                lvl = [v for k, v in skills['active'].items() if b_item.item_name[4:].startswith(k)]
+                lvl = [v for k, v in skills['active'].items() if b_item.item_name[4:].startswith(k[:-1])]
                 
             if "(П) " in b_item.item_name:
                 book_name = b_item.item_name.replace("(П) ", f"{tab}{passive_book}")
-                lvl = [v for k, v in skills['passive'].items() if b_item.item_name[4:].startswith(k)]
+                lvl = [v for k, v in skills['passive'].items() if b_item.item_name[4:].startswith(k[:-1])]
             message += '\n' + f'{book_name}'
             if lvl:
                 message += f" - {lvl[0]} ({(round((int(lvl[0]) / 10) ** 0.5 * 10) + 100)}%)"
