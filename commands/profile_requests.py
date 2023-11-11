@@ -152,7 +152,7 @@ class Equip(Command):
         s.commit()
         build = profile_api.get_build(inv)
 
-        # skills = profile_api.lvl_active(user.user_profile_key, user.user_id)
+        # skills = profile_api.lvl_skills(user.user_profile_key, user.user_id)
         # skills.update(profile_api.lvl_passive(user.user_profile_key, user.user_id))
 
         # TODO: use new page of skill_level

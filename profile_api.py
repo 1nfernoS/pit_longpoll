@@ -18,6 +18,17 @@ def get_name(item_id: int) -> str:
         return ''
 
 
+def lvl_skills(auth_key: str, user_id: int) -> Dict[str, Dict[str, int]]:
+    import re
+    url = f'https://vip3.activeusers.ru/app.php?act=pages&id=702&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214'
+
+    soup = BeautifulSoup(requests.get(url).content, 'html.parser')
+    a = soup.body.find_all('div', {'class': 'element-box'})[0]
+    active, passive = a.find_all('p')
+    p_level = {i.split(':')[0]: int(re.findall(r'\d+', i.split(':')[1])[0]) for i in passive.get_text().split('\n')}
+    a_level = {i.split(':')[0]: int(re.findall(r'\d+', i.split(':')[1])[0]) for i in active.get_text().split('\n')}
+    return {'active': a_level, 'passive': p_level}
+
 def lvl_active(auth_key: str, user_id: int) -> Dict[str, List[Union[int, float]]]:
     url = f'https://vip3.activeusers.ru/app.php?act=pages&id=620&auth_key={auth_key}&viewer_id={user_id}&group_id=182985865&api_id=7055214'
 
