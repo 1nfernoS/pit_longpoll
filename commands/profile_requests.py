@@ -103,12 +103,17 @@ class Equip(Command):
         for book in item_list:
             b_item: Item = s.query(Item).filter(Item.item_id == book).first()
 
-            book_name = b_item.item_name.replace("(А) ", f"{tab}{active_book}").replace("(П) ", f"{tab}{passive_book}")
-            message += '\n' + f'{book_name}'
-            # lvl = [v for k, v in skills.items() if b_item.item_name[4:].startswith(k)]
             lvl = None
+            if "(А) " in b_item.item_name:
+                book_name = b_item.item_name.replace("(А) ", f"{tab}{active_book}")
+                lvl = [v for k, v in skills['active'].items() if b_item.item_name[4:].startswith(k)]
+                
+            if "(П) " in b_item.item_name:
+                book_name = b_item.item_name.replace("(П) ", f"{tab}{passive_book}")
+                lvl = [v for k, v in skills['passive'].items() if b_item.item_name[4:].startswith(k)]
+            message += '\n' + f'{book_name}'
             if lvl:
-                message += f" - {lvl[0][0]} ({int(lvl[0][1] * 100)}%)"
+                message += f" - {lvl[0]} ({(round((int(lvl[0]) / 10) ** 0.5 * 10) + 100)}%)"
         s.close()
         return message
 
@@ -148,24 +153,28 @@ class Equip(Command):
 
         user.user_items = [s.query(Item).filter(Item.item_id == i).first()
                            for i in build]
-        s.add(user)
-        s.commit()
+        print('inv')
         build = profile_api.get_build(inv)
+        print('build')
 
-        # skills = profile_api.lvl_skills(user.user_profile_key, user.user_id)
+        skills = profile_api.lvl_skills(user.user_profile_key, user.user_id)
+        print('skills')
         # skills.update(profile_api.lvl_passive(user.user_profile_key, user.user_id))
 
         # TODO: use new page of skill_level
         message = f'Билд {bot.api.get_names([user.user_id])}:'
         if build['books']:
             message += '\nКниги:'
-            message += self.__get_list(build['books'], None)
+            message += self.__get_list(build['books'], skills)
+        print('books')
 
         if build['adms']:
             message += '\nВ адмах:'
-            message += self.__get_list(build['adms'], None)
-
+            message += self.__get_list(build['adms'], skills)
+        print(message)
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], message)
 
+        s.add(user)
+        s.commit()
         s.close()
         return
