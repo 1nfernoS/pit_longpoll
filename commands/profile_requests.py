@@ -153,25 +153,18 @@ class Equip(Command):
 
         user.user_items = [s.query(Item).filter(Item.item_id == i).first()
                            for i in build]
-        print('inv')
         build = profile_api.get_build(inv)
-        print('build')
 
         skills = profile_api.lvl_skills(user.user_profile_key, user.user_id)
-        print('skills')
-        # skills.update(profile_api.lvl_passive(user.user_profile_key, user.user_id))
 
-        # TODO: use new page of skill_level
         message = f'Билд {bot.api.get_names([user.user_id])}:'
         if build['books']:
             message += '\nКниги:'
             message += self.__get_list(build['books'], skills)
-        print('books')
 
         if build['adms']:
             message += '\nВ адмах:'
             message += self.__get_list(build['adms'], skills)
-        print(message)
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], message)
 
         s.add(user)

@@ -100,7 +100,7 @@ def get_profile(auth: str, id_vk: int) -> dict:
 def get_books(item_list: list) -> list:
     __BOOK_LIST = items.equipped_to_ordinary_active.copy()
     __BOOK_LIST.update(items.equipped_to_ordinary_passive.copy())
-    __ADM_DICT = items.adm_to_equipped_books
+    __ADM_DICT = items.adm_to_ordinary_books.copy()
     res = list()
     for item in item_list:
         if item in __BOOK_LIST.keys():
