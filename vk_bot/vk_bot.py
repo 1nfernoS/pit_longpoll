@@ -10,6 +10,7 @@ import traceback
 import os
 from signal import signal, SIGTERM
 
+import config
 from vk_bot.vk_methods import VkMethods
 from vk_bot.vk_events import VkEvent
 
@@ -46,14 +47,16 @@ class VkBot:
 
     def task_check(self):
         def wrapper(func: callable):
-            self._tasks_check = func
+            if config.branch != 'dev':
+                self._tasks_check = func
             return
 
         return wrapper
 
     def task_init(self):
         def wrapper(func: callable):
-            self._init_tasks = func
+            if config.branch != 'dev':
+                self._init_tasks = func
             return
 
         return wrapper
