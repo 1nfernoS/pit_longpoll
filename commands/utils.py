@@ -117,9 +117,9 @@ class Role(Command):
         return
 
 
-class Clear(Command):
+class Clean(Command):
     def __init__(self):
-        super().__init__(__class__.__name__, ('чистыми', 'clear'))
+        super().__init__(__class__.__name__, ('чистыми', 'clean'))
         self.desc = 'Узнать цену чистыми'
         self.require_basic = True
         # self.set_active(False)
@@ -131,7 +131,7 @@ class Clear(Command):
 
         if not user.user_role.role_can_basic:
             return
-        if len(event.message.text.split() == 1):
+        if len(event.message.text.split()) == 1:
             return
         Logs(event.message.from_id, __class__.__name__, None, None,
              event.message.reply_message['from_id']
@@ -163,7 +163,7 @@ class Dirty(Command):
 
         if not user.user_role.role_can_basic:
             return
-        if len(event.message.text.split() == 1):
+        if len(event.message.text.split()) == 1:
             return
         Logs(event.message.from_id, __class__.__name__, None, None,
              event.message.reply_message['from_id']
