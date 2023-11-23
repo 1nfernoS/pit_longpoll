@@ -360,7 +360,7 @@ class Want(Command):
             return
 
         search: Item = s.query(Item).filter(
-            Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name[:-2]}.*$"),
+            Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name}.*$"),
             Item.item_has_price == 1).first()
 
         whitelist = {'gold': [items.gold],
