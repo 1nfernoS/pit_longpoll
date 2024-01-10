@@ -18,8 +18,8 @@ def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None
     buffer_commands: List[BuffCmd] = buffer.buff_commands
     for cmd in buffer_commands:
 
-        # if cmd.buff_cmd_id == 12:
-        #     continue
+        if cmd.buff_cmd_id == 12:
+            continue
 
         if len(kbd.lines[-1]) // 3 == 1:
             kbd.add_line()
