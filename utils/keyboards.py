@@ -1,5 +1,7 @@
 from typing import List
 
+from datetime import datetime as dt
+
 import vk_api.keyboard as keyboard
 
 from ORM import session, BuffType, BuffCmd
@@ -19,7 +21,11 @@ def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None
     for cmd in buffer_commands:
 
         if cmd.buff_cmd_id == 12:
-            continue
+            if ((dt.utcnow().date().month == 12
+                    and dt.utcnow().date().day < 20)  # from xxx0-12-20
+                or (dt.utcnow().date().month == 1
+                    and dt.utcnow().date().day > 7)):  # to xxx1-01-07
+                continue
 
         if len(kbd.lines[-1]) // 3 == 1:
             kbd.add_line()
