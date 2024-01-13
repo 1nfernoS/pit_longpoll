@@ -90,7 +90,7 @@ class Notes(Base):
         return
 
     def __str__(self):
-        return f"<Note({int(self.note_author)}): {self.note_text[:25]}<{self.expires_in}]>"
+        return f"<Note({int(self.note_author)}): {self.note_text[:20] + '...' if len(self.note_text) > 20 else ''}<{self.expires_in}]>"
 
     def __repr__(self):
-        return f"<Note({int(self.note_author)}): {self.note_text[:25]}<{self.expires_in}]>"
+        return f"<Note({int(self.note_author)}): {self.note_text[:20] + '...' if len(self.note_text) > 20 else ''}<{self.expires_in}]>"
