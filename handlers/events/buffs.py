@@ -3,8 +3,7 @@ import time
 import vk_api
 from vk_api.longpoll import VkEventType, VkLongPoll, CHAT_START_ID
 
-from ORM import session
-import ORM
+from ORM import session, BuffUser, BuffCmd, UserInfo
 
 from dictionaries.buffs import POSSIBLE_ANSWERS, BUFF_RACE, SUCCESS_ANSWER
 from dictionaries.emoji import gold
@@ -14,8 +13,8 @@ from config import OVERSEER_BOT, APO_PAYMENT
 
 def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
     DB = session()
-    buffer: ORM.BuffUser = DB.query(ORM.BuffUser).filter(ORM.BuffUser.buff_user_id == vk_id).first()
-    cmd: ORM.BuffCmd = DB.query(ORM.BuffCmd).filter(ORM.BuffCmd.buff_cmd_id == command).first()
+    buffer: BuffUser = DB.query(BuffUser).filter(BuffUser.buff_user_id == vk_id).first()
+    cmd: BuffCmd = DB.query(BuffCmd).filter(BuffCmd.buff_cmd_id == command).first()
     msg = cmd.buff_cmd_text
     if 'race1' in msg:
         msg = msg.replace('race1', BUFF_RACE[buffer.buff_user_race1])
@@ -47,8 +46,8 @@ def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
     res = res.split('\n')[0]
 
     # Change balance
-    user_from: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == receiver).first()
-    user_to: ORM.UserInfo = DB.query(ORM.UserInfo).filter(ORM.UserInfo.user_id == buffer.buff_user_id).first()
+    user_from: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == receiver).first()
+    user_to: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == buffer.buff_user_id).first()
 
     if user_from.user_role.role_can_balance:
         user_from.balance -= APO_PAYMENT

@@ -131,7 +131,7 @@ def elites(bot: "VkBot", data: str = None):
 
 def send_notes(bot: "VkBot", data: str = None):
     s = session()
-    notes: List[Notes] = s.query(Notes).filter(Notes.is_active).all()
+    notes: List[Notes] = s.query(Notes).filter(Notes.is_active).order_by(Notes.expires_in).all()
 
     now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
 
