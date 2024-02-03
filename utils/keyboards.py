@@ -21,10 +21,10 @@ def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None
     for cmd in buffer_commands:
 
         if cmd.buff_cmd_id == 12:
-            if ((dt.utcnow().date().month == 12
-                    and dt.utcnow().date().day < 20)  # from xxx0-12-20
+            if not ((dt.utcnow().date().month == 12
+                    and dt.utcnow().date().day > 20)  # from xxx0-12-20
                 or (dt.utcnow().date().month == 1
-                    and dt.utcnow().date().day > 7)):  # to xxx1-01-07
+                    and dt.utcnow().date().day < 7)):  # to xxx1-01-07
                 continue
 
         if len(kbd.lines[-1]) // 3 == 1:
