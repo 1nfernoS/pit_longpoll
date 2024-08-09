@@ -159,7 +159,7 @@ class Check(Command):
         s.commit()
 
         bot.api.send_chat_msg(event.chat_id, f"Готово, изменил баланс на {money}{gold}, "
-                                             f"теперь счету {changed_user.balance}{gold}")
+                                             f"теперь на счету {changed_user.balance}{gold}")
         return
 
 
@@ -294,7 +294,7 @@ class ToggleGuildMember(Command):
 
 class ToggleNewbie(Command):
     def __init__(self):
-        super().__init__(__class__.__name__, ('новичек', 'испытательный', 'newbie'))
+        super().__init__(__class__.__name__, ('новичок', 'испытательный', 'newbie'))
         self.desc = 'Назначить роль новичка. Для лидеров и офицеров'
         self.require_change_role = True
         # self.set_active(False)
