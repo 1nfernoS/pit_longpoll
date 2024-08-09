@@ -15,7 +15,7 @@ def parse_profile(text: str) -> dict:
     t = text.split('\n')
 
     id_vk = int(re.findall(r'(?<=id)\d+', t[0])[0])
-    name = re.findall(r'(?<=\|)[\s\w]+(?=])', t[0])[0]
+    name = re.findall(r'(?<=\|)[\s\w-]+(?=])', t[0])[0]
 
     class_name = re.findall(r'(?<=:)[\w\s]+(?=, | \()', t[1])[0].strip()
 
