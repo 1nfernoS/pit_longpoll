@@ -89,17 +89,15 @@ class VkBot:
 
     def event_handler(self, event_type: str):
         # decorator for set_handler
-        def wrapper(handler: callable, *args, **kwargs):
+        def wrapper(handler: callable):
             self.set_handler(event_type, handler)
 
         return wrapper
 
     def start(self):
-        from tasks import init_tasks
-        if self._before_start:
-            print('Starting up . . .')
-            self._before_start(self)
-            print('Started up')
+        print('Starting up . . .')
+        self._before_start(self) if self._before_start else None
+        print('Started up')
 
         now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
         print(f"[{now.strftime('%d.%m.%y %H:%M:%S')}] "
@@ -108,7 +106,6 @@ class VkBot:
         if self._init_tasks:
             self._init_tasks()
 
-        # TODO: Find a proper way to stop bot without "kill -9"
         self._main_loop()
 
         return
