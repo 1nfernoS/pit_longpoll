@@ -8,7 +8,7 @@ from requests.exceptions import ReadTimeout
 
 import traceback
 import os
-from signal import signal, SIGTERM
+import signal
 
 import config
 from vk_bot.vk_methods import VkMethods
@@ -31,6 +31,14 @@ class VkBot:
         self._before_stop = None
         self._tasks_check = None
         self._init_tasks = None
+        
+        self._loop = True
+        if os.name == 'nt':
+            signal.signal(signal.SIGTERM, self._exit)
+            signal.signal(signal.SIGINT, self._exit)
+        if os.name == 'posix':
+            signal.signal(signal.SIGQUIT, self._before_stop)
+            signal.signal(signal.SIGHUP, self._before_stop)
 
         return
 
@@ -63,7 +71,6 @@ class VkBot:
 
     def set_stop(self, func: callable):
         self._before_stop = func
-        signal(SIGTERM, self._before_stop)
         return
 
     def on_stop(self):
@@ -107,15 +114,15 @@ class VkBot:
         return
 
     def _main_loop(self):
-        while True:
+        while self._loop:
             try:
                 self._event_loop()
                 if self._tasks_check:
                     self._tasks_check(self)
             except KeyboardInterrupt:
                 print('\n', 'Stopping . . .', '\n')
-                self._before_stop(self) if self._before_stop else None
-                return
+                self._exit()
+                continue
             except ReadTimeout:
                 continue
             except:
@@ -125,7 +132,10 @@ class VkBot:
                     err_msg = ''
                     err_data = traceback.TracebackException(type(value), value, tb, capture_locals=True)
                     for err in err_data.stack[1:]:
-                        a = {i: err.locals[i] for i in err.locals if not i.startswith('__')
+                        if 'venv' in err.filename:
+                            continue
+                        a = {i: err.locals[i] for i in err.locals
+                             if not i.startswith('__')
                              and i not in ('error', 'etype', 'tb', 'err_msg')
                              and 'VkBot' not in err.locals[i]
                              and 'vk_api' not in err.locals[i]
@@ -155,7 +165,12 @@ class VkBot:
                     pass
                 continue
         return
-
+    
+    def _exit(self, *args, **kwargs):
+        self._before_stop(self) if self._before_stop else None
+        self._loop = False
+        return
+    
     def _event_loop(self):
         for event in self._long_poll.check():
             # Call def with same name as event type
