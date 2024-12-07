@@ -132,7 +132,8 @@ class VkBot:
                     err_msg = ''
                     err_data = traceback.TracebackException(type(value), value, tb, capture_locals=True)
                     for err in err_data.stack[1:]:
-                        if 'venv' in err.filename:
+                        if 'venv' in err.filename\
+                                or 'lib' in err.filename:
                             continue
                         a = {i: err.locals[i] for i in err.locals
                              if not i.startswith('__')
