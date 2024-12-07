@@ -74,11 +74,11 @@ def check_elites(bot: "VkBot") -> Dict[int, Dict[str, int]]:
             continue
 
         if user.user_stats.user_level < 100:
-            limit = 50
+            limit = 40
         elif user.user_stats.user_level < 250:
-            limit = 120
+            limit = 90
         else:
-            limit = 150
+            limit = 120
 
         result[user.user_id] = {
             'level': user.user_stats.user_level,
