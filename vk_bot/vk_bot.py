@@ -37,6 +37,8 @@ class VkBot:
             signal.signal(signal.SIGTERM, self._exit)
             signal.signal(signal.SIGINT, self._exit)
         if os.name == 'posix':
+            signal.signal(signal.SIGTERM, self._exit)
+            signal.signal(signal.SIGINT, self._exit)
             signal.signal(signal.SIGQUIT, self._exit)
             signal.signal(signal.SIGHUP, self._exit)
 
