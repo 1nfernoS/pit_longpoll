@@ -236,7 +236,7 @@ class Emoji(Command):
 
 class Bill(Command):
     def __init__(self):
-        super().__init__(__class__.__name__, ('налоговая',))
+        super().__init__(__class__.__name__, ('bill', 'nalog', 'nolog'))
         self.desc = 'Списать налог с баланса. Только для казначея'
         self.require_withdraw_bill = True
         # self.set_active(False)

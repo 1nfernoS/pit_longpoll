@@ -10,7 +10,7 @@ def init_tasks() -> None:
     task_list_names = [t.task_target for t in task_list]
 
     now = dt.datetime.utcnow() + dt.timedelta(hours=3)
-    next_month = now.replace(month=now.month % 12+1, year=now.year + (now.month // 12))
+    next_month = now.replace(day=1, month=now.month % 12+1, year=now.year + (now.month // 12))
     next_siege = now.replace(hour=22, minute=5, second=0)
     next_siege += dt.timedelta(days=((7 + 3 - now.isoweekday()) % 7) if next_siege > now else 7)
     CONST_TASKS = (

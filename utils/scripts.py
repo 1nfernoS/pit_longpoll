@@ -23,7 +23,7 @@ def withdraw_bill(bot: "VkBot") -> None:
         if user.user_role.role_can_balance:
             if user.user_id == creator_id:
                 continue
-            user.balance -= user.user_stats.user_level * 140
+            user.balance -= user.user_stats.user_level * 200
 
         DB.add(user)
 
@@ -101,7 +101,7 @@ def get_chat_id(token: str):
     dialogs = api.messages.getConversations()
     chats = [i for i in dialogs['items'] if i['conversation']['peer']['type'] == 'chat']
     for chat in chats:
-        if chat['conversation']['chat_settings']['title'] == 'Чат Гильдии "Тёмная сторона"':
+        if chat['conversation']['chat_settings']['title'] == 'Рынок Тёмной стороны':
             return chat['conversation']['peer']['local_id']
 
 

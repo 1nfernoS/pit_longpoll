@@ -113,12 +113,16 @@ def get_books(item_list: list) -> list:
 def get_build(item_list: list) -> dict:
     __BOOK_LIST = items.equipped_books_active + items.equipped_books_passive
     __ADM_DICT = items.adm_to_equipped_books
-    res = {'books': [], 'adms': []}
+    __WEAPON_DICT = items.adm_weapons_to_equipped_books
+    __WEAPON_DICT.update(items.ordinary_weapons_to_equipped_books)
+    res = {'books': [], 'adms': [], 'weapons': []}
     for item in item_list:
         if item in __BOOK_LIST:
             res['books'].append(item)
         if item in __ADM_DICT.keys():
             res['adms'] += __ADM_DICT[item]
+        if item in __WEAPON_DICT.keys():
+            res['weapons'] += __WEAPON_DICT[item]
     return res
 
 

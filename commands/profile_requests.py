@@ -165,6 +165,11 @@ class Equip(Command):
         if build['adms']:
             message += '\nВ адмах:'
             message += self.__get_list(build['adms'], skills)
+            
+        if build['weapons']:
+            message += '\nВ оружии:'
+            message += self.__get_list(build['weapons'], skills)
+            
         bot.api.edit_msg(msg_id['peer_id'], msg_id['conversation_message_id'], message)
 
         s.add(user)
