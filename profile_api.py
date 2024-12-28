@@ -154,7 +154,10 @@ def price(item: int) -> int:
         t1 = soup.body
         try:
             t2 = t1.find_all('div', class_='portlet')[1]
-            t3 = t2.find_all('script')[0]
+            try:
+                t3 = t2.find_all('script')[1]
+            except IndexError:
+                t3 = t2.find_all('script')[0]
             t4 = str(t3)[str(t3).find('window.graph_data'):]
             t5 = json.loads(t4[20:t4.find(';')])
             return round(sum([i[1] for i in t5]) / len(t5))
