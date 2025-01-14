@@ -3,7 +3,7 @@ import time
 import vk_api
 from vk_api.longpoll import VkEventType, VkLongPoll, CHAT_START_ID
 
-from ORM import session, BuffUser, BuffCmd, UserInfo
+from ORM import Session, BuffUser, BuffCmd, UserInfo
 
 from dictionaries.buffs import POSSIBLE_ANSWERS, BUFF_RACE, SUCCESS_ANSWER
 from dictionaries.emoji import gold
@@ -12,7 +12,7 @@ from config import OVERSEER_BOT, APO_PAYMENT
 
 
 def buff(vk_id: int, chat_id: int, msg_id: int, command: int, receiver: int):
-    DB = session()
+    DB = Session()
     buffer: BuffUser = DB.query(BuffUser).filter(BuffUser.buff_user_id == vk_id).first()
     cmd: BuffCmd = DB.query(BuffCmd).filter(BuffCmd.buff_cmd_id == command).first()
     msg = cmd.buff_cmd_text

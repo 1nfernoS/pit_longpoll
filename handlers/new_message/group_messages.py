@@ -2,7 +2,7 @@ from datetime import datetime
 
 from config import GUILD_NAME, GUILD_CHAT_ID
 
-from ORM import session, UserInfo, UserStats, Logs, Item, Role
+from ORM import Session, UserInfo, UserStats, Logs, Item, Role
 
 from utils.parsers import parse_profile, parse_storage_action, get_transfer
 from utils.formatters import str_datetime, datediff
@@ -49,7 +49,7 @@ def bot_message(self: "VkBot", event: "VkBotEvent"):
 
 
 def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
-    DB = session()
+    DB = Session()
     data = parse_profile(event.message.text)
     info: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == data['id_vk']).first()
 
@@ -117,7 +117,7 @@ def storage_reactions(self: "VkBot", event: "VkBotEvent"):
     data = parse_storage_action(event.message.text)
     if data['item_type'] == 'item':
         return
-    DB = session()
+    DB = Session()
     user: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == data['id_vk']).first()
     if data['item_type'] == 'book':
         user.balance += data['result_price'] * data['count']
@@ -169,7 +169,7 @@ def transfer_logging(self: "VkBot", event: "VkBotEvent"):
     if data['id_to'] in self.api.get_members(event.chat_id):
         return
 
-    with session() as s:
+    with Session() as s:
         item: Item = s.query(Item).filter(
                 Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){data['item_name']}.*$"),
                 Item.item_has_price == 1).first()

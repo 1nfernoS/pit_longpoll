@@ -4,7 +4,7 @@ from typing import List, Dict
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ORM import Base, session
+from ORM import Base, Session
 
 __all__ = ["Item", "Role", "UserStats", "UserInfo", "Equipment"]
 
@@ -119,51 +119,51 @@ class Role(Base):
                        'paymaster', 'librarian',
                        'captain', 'officer',
                        'guild_member']
-        with session() as s:
+        with Session() as s:
             return s.query(Role).filter(Role.role_name.in_(guild_roles)).all()
 
     @staticmethod
     def leader_role() -> "Role":
-        with session() as s:
+        with Session() as s:
             return s.query(Role).filter(Role.role_name == 'leader').first()
 
     @staticmethod
     def captain_role() -> "Role":
-        with session() as s:
+        with Session() as s:
             return s.query(Role).filter(Role.role_name == 'captain').first()
 
     @staticmethod
     def officer_role() -> "Role":
-        with session() as s:
+        with Session() as s:
             return s.query(Role).filter(Role.role_name == 'officer').first()
 
     @staticmethod
     def guild_role() -> "Role":
-        with session() as s:
+        with Session() as s:
             return s.query(Role).filter(Role.role_name == 'guild_member').first()
 
     @staticmethod
     def newbie_role() -> "Role":
-        with session() as s:
+        with Session() as s:
             return s.query(Role).filter(Role.role_name == 'guild_newbie').first()
 
     @staticmethod
     def guest_role() -> "Role":
-        with session() as s:
+        with Session() as s:
             return s.query(Role).filter(Role.role_name == 'guild_guests').first()
 
     @staticmethod
     def other_role() -> "Role":
-        with session() as s:
+        with Session() as s:
             return s.query(Role).filter(Role.role_name == 'others').first()
 
     @staticmethod
     def ban_role() -> "Role":
-        with session() as s:
+        with Session() as s:
             return s.query(Role).filter(Role.role_name == 'blacklist').first()
 
     def __eq__(self, other: "Role"):
-        if type(other) != Role:
+        if isinstance(other, Role):
             return False
         return self.role_id == other.role_id
 

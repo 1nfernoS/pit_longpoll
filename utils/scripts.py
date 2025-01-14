@@ -2,7 +2,7 @@ from typing import Dict, TYPE_CHECKING
 
 from config import GUILD_CHAT_ID, creator_id
 
-from ORM import session, UserInfo, Item
+from ORM import Session, UserInfo, Item
 
 from profile_api import get_name, price
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 def withdraw_bill(bot: "VkBot") -> None:
     members = bot.api.get_members(GUILD_CHAT_ID)
-    DB = session()
+    DB = Session()
     for user_id in members:
         if user_id < 0:
             continue
@@ -35,7 +35,7 @@ def withdraw_bill(bot: "VkBot") -> None:
 def check_siege_report(bot: "VkBot") -> Dict[int, bool]:
     members = bot.api.get_members(GUILD_CHAT_ID)
     result = {}
-    DB = session()
+    DB = Session()
     for user_id in members:
         if user_id < 0:
             continue
@@ -61,7 +61,7 @@ def check_siege_report(bot: "VkBot") -> Dict[int, bool]:
 def check_elites(bot: "VkBot") -> Dict[int, Dict[str, int]]:
     members = bot.api.get_members(GUILD_CHAT_ID)
     result = {}
-    DB = session()
+    DB = Session()
     for user_id in members:
         if user_id < 0:
             continue
@@ -106,7 +106,7 @@ def get_chat_id(token: str):
 
 
 def update_items(start_id: int, stop_id: int) -> None:
-    with session() as db:
+    with Session() as db:
         item_list = {}
         for i in range(start_id, stop_id):
             n = get_name(i)

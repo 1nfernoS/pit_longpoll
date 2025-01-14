@@ -4,7 +4,7 @@ from datetime import datetime as dt
 
 import vk_api.keyboard as keyboard
 
-from ORM import session, BuffType, BuffCmd
+from ORM import Session, BuffType, BuffCmd
 
 from dictionaries import buffs
 from dictionaries.emoji import cancel, clear, heal_trauma, take_trauma
@@ -15,7 +15,7 @@ from config import NOTE_ALL, NOTE_RULES
 def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None) -> str:
 
     kbd = keyboard.VkKeyboard(inline=True)
-    DB = session()
+    DB = Session()
     buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.APOSTOL_ITEM_ID).first()
     buffer_commands: List[BuffCmd] = buffer.buff_commands
     for cmd in buffer_commands:
@@ -51,7 +51,7 @@ def apostol(vk_id: int, msg_id: int, chat_id: int, race1: int, race2: int = None
 def warlock(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd = keyboard.VkKeyboard(inline=True)
-    DB = session()
+    DB = Session()
     buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.WARLOCK_ITEM_ID).first()
     buffer_commands: List[BuffCmd] = buffer.buff_commands
 
@@ -70,7 +70,7 @@ def warlock(vk_id: int, msg_id: int, chat_id: int) -> str:
 def paladin(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd = keyboard.VkKeyboard(inline=True)
-    DB = session()
+    DB = Session()
     buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.PALADIN_ITEM_ID).first()
     buffer_commands: List[BuffCmd] = buffer.buff_commands
 
@@ -89,7 +89,7 @@ def paladin(vk_id: int, msg_id: int, chat_id: int) -> str:
 def crusader(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd = keyboard.VkKeyboard(inline=True)
-    DB = session()
+    DB = Session()
     buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.CRUSADER_ITEM_ID).first()
     buffer_commands: List[BuffCmd] = buffer.buff_commands
 
@@ -112,7 +112,7 @@ def crusader(vk_id: int, msg_id: int, chat_id: int) -> str:
 def light_inc(vk_id: int, msg_id: int, chat_id: int) -> str:
 
     kbd = keyboard.VkKeyboard(inline=True)
-    DB = session()
+    DB = Session()
     buffer: BuffType = DB.query(BuffType).filter(BuffType.buff_type_id == buffs.LIGHT_INC_ITEM_ID).first()
     buffer_commands: List[BuffCmd] = buffer.buff_commands
 

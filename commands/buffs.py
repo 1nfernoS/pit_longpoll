@@ -1,6 +1,6 @@
 from typing import List, TYPE_CHECKING
 
-from ORM import session, UserInfo, BuffUser, Logs
+from ORM import Session, UserInfo, BuffUser, Logs
 from commands import Command
 from config import creator_id
 
@@ -33,7 +33,7 @@ class ToggleBuffer(Command):
 
         Logs(event.message.from_id, __class__.__name__, on_user_id=user_id).make_record()
 
-        with session() as s:
+        with Session() as s:
             buffer: BuffUser = s.query(BuffUser).filter(BuffUser.buff_user_id == user_id).first()
             buffer.buff_user_is_active = int(not bool(buffer.buff_user_is_active))
             s.add(buffer)
@@ -53,7 +53,7 @@ class Apostol(Command):
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
 
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
             return
@@ -93,7 +93,7 @@ class Warlock(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
             return
@@ -133,7 +133,7 @@ class PaladinStuff(Command):
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
 
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_get_buff:
             return

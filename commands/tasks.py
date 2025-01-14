@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from commands import Command
 
 import dictionaries.emoji as e
-from ORM import session, UserInfo, Task, Logs, Notes
+from ORM import Session, UserInfo, Task, Logs, Notes
 
 from tasks.exec_task import remind
 
@@ -22,7 +22,7 @@ class Remind(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
@@ -52,7 +52,7 @@ class Announce(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:

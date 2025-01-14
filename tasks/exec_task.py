@@ -14,7 +14,7 @@ from utils.keyboards import announce_restore
 from dictionaries import emoji as e
 from dictionaries import tasks as tasks_dicts
 
-from ORM import Task, Notes, session
+from ORM import Task, Notes, Session
 
 # import for typing hints
 from typing import TYPE_CHECKING, List
@@ -130,7 +130,7 @@ def elites(bot: "VkBot", data: str = None):
 
 
 def send_notes(bot: "VkBot", data: str = None):
-    s = session()
+    s = Session()
     notes: List[Notes] = s.query(Notes).filter(Notes.is_active).order_by(Notes.expires_in).all()
 
     now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)

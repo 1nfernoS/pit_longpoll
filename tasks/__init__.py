@@ -1,11 +1,11 @@
 import datetime as dt
 
-from ORM import Task, session
+from ORM import Task, Session
 from .exec_task import bill, bill2, elites, siege, send_notes
 
 
 def init_tasks() -> None:
-    with session() as s:
+    with Session() as s:
         task_list = s.query(Task).all()
     task_list_names = [t.task_target for t in task_list]
 

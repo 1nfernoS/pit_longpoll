@@ -50,12 +50,12 @@ def event(b: bot, e: VkBotEvent):
 
 @bot.task_check()
 def tasks_check(self: VkBot):
-    from ORM import session, Task
+    from ORM import Session, Task
     from tasks import exec_task
     import datetime
 
     now = datetime.datetime.utcnow() + datetime.timedelta(hours=3)
-    s = session()
+    s = Session()
     task_list: List[Task] = s.query(Task).all()
     for t in task_list:
         if t.task_when > now:

@@ -4,7 +4,7 @@ from typing import List, Dict
 
 from config import DISCOUNT_PERCENT
 
-from ORM import session, Item
+from ORM import Session, Item
 
 from dictionaries import emoji, items
 
@@ -40,7 +40,7 @@ def parse_profile(text: str) -> dict:
     attack = int(re.findall(r'(?<=&#128481;)\d+', t[7])[0])
     defence = int(re.findall(r'(?<=&#128737;)\d+', t[7])[0])
 
-    DB = session()
+    DB = Session()
     class_item: Item = DB.query(Item).filter(Item.item_name.ilike(f"{class_name}")).first()
     DB.close()
 
@@ -66,7 +66,7 @@ def parse_storage_action(text: str):
 
         count = int(re.findall(r'(?<=&#128216;|&#128213;)\d+(?=\*)', text)[0])
         item_name = re.findall(r'(?<=\*)\D+(?=!)', text)[0]
-        with session() as DB:
+        with Session() as DB:
             item: Item = DB.query(Item).filter(
                 Item.item_name.op('regexp')(f"(Книга - |Книга - [[:alnum:]]+ |^[[:alnum:]]+ |^){item_name}.*$"),
                 Item.item_has_price == 1).first()
@@ -109,7 +109,7 @@ def guesser(text: str) -> list:
     text = text.encode('cp1251', 'xmlcharrefreplace').decode('cp1251')
     regexp = text.split('\n')[1].replace(emoji.empty, '[[:alnum:]]')
 
-    DB = session()
+    DB = Session()
     item_list: List[Item] = DB.query(Item).filter(
         Item.item_name.op('regexp')(f"(Книга - |^){regexp}$")).all()
     res = []

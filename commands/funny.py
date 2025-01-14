@@ -1,6 +1,6 @@
 from commands import Command
 
-from ORM import session, UserInfo, Task, Logs
+from ORM import Session, UserInfo, Task, Logs
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ class Grib(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
@@ -39,7 +39,7 @@ class Pinok(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:

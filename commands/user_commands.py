@@ -7,7 +7,7 @@ from vk_api.bot_longpoll import CHAT_START_ID
 import profile_api
 from commands import Command, command_list
 
-from ORM import session, UserInfo, UserStats, Item, Logs, Role
+from ORM import Session, UserInfo, UserStats, Item, Logs, Role
 
 from config import creator_id, GUILD_CHAT_ID, GUILD_NAME, storager_token, storager_chat
 
@@ -31,7 +31,7 @@ class Stats(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
 
         user: UserStats = s.query(UserStats).filter(UserStats.user_id == event.message.from_id).first()
 
@@ -70,7 +70,7 @@ class Help(Command):
     def run(self, bot: "VkBot", event: "VkBotEvent"):
         message = 'Команды можно вводить как с префиксом, так и без\nВарианты использования - что делает\n'
 
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         role_access = {i.replace('role_can_', ''): bool(getattr(user.user_role, i))
                        for i in dir(user.user_role)
@@ -123,7 +123,7 @@ class Notes(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:
@@ -145,7 +145,7 @@ class Balance(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if user is None:
@@ -211,7 +211,7 @@ class Who(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if user is None:
@@ -257,7 +257,7 @@ class Transfer(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
         user_from: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if user_from is None:
@@ -335,7 +335,7 @@ class Want(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
         if not user.user_role.role_can_basic:

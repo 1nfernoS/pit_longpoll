@@ -2,7 +2,7 @@ from typing import List, TYPE_CHECKING
 
 from commands import Command
 
-from ORM import session, UserInfo, Item, Logs
+from ORM import Session, UserInfo, Item, Logs
 
 from config import GUILD_NAME, DISCOUNT_PERCENT
 
@@ -26,7 +26,7 @@ class Price(Command):
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
 
-        s = session()
+        s = Session()
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
         if not user.user_role.role_can_balance:
             return
@@ -98,7 +98,7 @@ class Equip(Command):
     @staticmethod
     def __get_list(item_list: list, skills: dict) -> str:
         message = ''
-        s = session()
+        s = Session()
 
         for book in item_list:
             b_item: Item = s.query(Item).filter(Item.item_id == book).first()
@@ -118,7 +118,7 @@ class Equip(Command):
         return message
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 

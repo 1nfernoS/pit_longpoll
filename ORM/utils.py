@@ -4,7 +4,7 @@ from typing import Dict, Any
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from ORM import Base, session
+from ORM import Base, Session
 
 
 __all__ = ["Task", "Notes"]
@@ -42,7 +42,7 @@ class Task(Base):
         """
         Adds task in database
         """
-        with session() as s:
+        with Session() as s:
             s.add(self)
             s.commit()
             return
@@ -72,7 +72,7 @@ class Notes(Base):
         return
 
     def create(self):
-        with session() as s:
+        with Session() as s:
             s.add(self)
             s.commit()
 
@@ -84,7 +84,7 @@ class Notes(Base):
 
     def remove(self):
         self.is_active = False
-        with session() as s:
+        with Session() as s:
             s.add(self)
             s.commit()
         return

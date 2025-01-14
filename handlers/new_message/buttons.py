@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
-from ORM import session, Notes
+from ORM import Session, Notes
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -19,7 +19,7 @@ def payloads(self: "VkBot", event: "VkBotEvent"):
 def restore_announce(self: "VkBot", event: "VkBotEvent"):
     pl = json.loads(event.message.payload)
 
-    s = session()
+    s = Session()
 
     note: Notes = s.query(Notes).filter(Notes.note_id == pl['restore']).first()
     if not note:

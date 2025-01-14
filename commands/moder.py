@@ -1,6 +1,6 @@
 from commands import Command
 
-from ORM import session, UserInfo, Role, Logs
+from ORM import Session, UserInfo, Role, Logs
 
 from dictionaries.emoji import gold
 from dictionaries.roles import *
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 def toggle_role(id_from: int, id_to: int, role_id: int, toggle_role_id: int) -> str:
-    s = session()
+    s = Session()
     user_from: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == id_from).first()
 
     if not user_from.user_role.role_can_change_role:
@@ -49,7 +49,7 @@ class Kick(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -92,7 +92,7 @@ class Pin(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -118,7 +118,7 @@ class Check(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -172,7 +172,7 @@ class ToggleLeader(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -205,7 +205,7 @@ class ToggleCaptain(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -237,7 +237,7 @@ class ToggleOfficer(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -269,7 +269,7 @@ class ToggleGuildMember(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -301,7 +301,7 @@ class ToggleNewbie(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
@@ -333,7 +333,7 @@ class ToggleGuest(Command):
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
-        s = session()
+        s = Session()
 
         user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 

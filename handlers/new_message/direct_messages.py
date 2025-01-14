@@ -2,7 +2,7 @@ from config import GUILD_CHAT_ID
 
 from .buttons import payloads
 
-from ORM import session, UserInfo, UserStats, Item, Logs, BuffUser
+from ORM import Session, UserInfo, UserStats, Item, Logs, BuffUser
 
 from profile_api import get_profile, get_books
 
@@ -53,7 +53,7 @@ def reg_pit_profile(self: "VkBot", event: "VkBotEvent"):
     auth = s[s.find('auth_key') + 9:s.find('auth_key') + 41]
     profile = get_profile(auth, event.message.from_id)
 
-    DB = session()
+    DB = Session()
 
     inv = [int(i) for i in profile['items']]
     class_id = inv[0] if inv[0] != 14108 else inv[1]
@@ -156,7 +156,7 @@ def reg_pit_buffer(self: "VkBot", event: "VkBotEvent"):
     from utils.scripts import get_chat_id
     chat_id = get_chat_id(vk_data['access_token'])
 
-    DB = session()
+    DB = Session()
     buffer: BuffUser = DB.query(BuffUser).filter(BuffUser.buff_user_id == event.message.from_id).first()
     if not buffer:
         buffer = BuffUser(vk_data['user_id'], True,

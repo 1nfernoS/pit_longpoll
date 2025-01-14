@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from ORM import Base, session
+from ORM import Base, Session
 
 
 __all__ = ["LogsType", "Logs"]
@@ -20,7 +20,7 @@ class LogsType(Base):
         return
 
     def register(self):
-        with session() as s:
+        with Session() as s:
             s.add(self)
             s.commit()
         return
@@ -47,11 +47,11 @@ class Logs(Base):
                  on_message: str = None, on_user_id: int = None):
         super().__init__()
 
-        with session() as s:
+        with Session() as s:
             type_id: LogsType = s.query(LogsType).filter(LogsType.logs_type_name == action).first()
         if not type_id:
             LogsType(action).register()
-            s = session()
+            s = Session()
             type_id: LogsType = s.query(LogsType).filter(LogsType.logs_type_name == action).first()
             s.close()
 
@@ -64,7 +64,7 @@ class Logs(Base):
         return
 
     def make_record(self):
-        with session() as s:
+        with Session() as s:
             s.add(self)
             s.commit()
         return

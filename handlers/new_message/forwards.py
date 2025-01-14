@@ -13,7 +13,7 @@ from utils.formatters import translate
 from utils.words import frequent_letter
 import profile_api
 
-from ORM import session, UserInfo, Item, Logs, Task
+from ORM import Session, UserInfo, Item, Logs, Task
 
 if TYPE_CHECKING:
     from vk_bot.vk_bot import VkBot
@@ -90,7 +90,7 @@ def dark_vendor(self: "VkBot", event: "VkBotEvent"):
     item_name = fwd_split[0][11:]
     item_price = int(re.findall(r'\d+', fwd_split[1][9:])[0])
 
-    DB = session()
+    DB = Session()
     item_: Item = DB.query(Item).filter(Item.item_name.ilike(f"{item_name}%"), Item.item_has_price == 1).first()
     if not item_:
         msg = 'Кажется, такой предмет не продается на аукционе'
@@ -212,7 +212,7 @@ def elites_response(self: "VkBot", event: "VkBotEvent"):
     date = datetime.datetime.utcfromtimestamp(event.message.fwd_messages[0]['date'])
     now = datetime.datetime.utcnow()
 
-    s = session()
+    s = Session()
     user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
     if not user:
@@ -255,7 +255,7 @@ def siege_report(self: "VkBot", event: "VkBotEvent"):
     date = datetime.datetime.utcfromtimestamp(event.message.fwd_messages[0]['date'])
     now = datetime.datetime.utcnow()
 
-    s = session()
+    s = Session()
     user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == event.message.from_id).first()
 
     if not user:
