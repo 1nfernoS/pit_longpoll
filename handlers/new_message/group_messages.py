@@ -49,9 +49,9 @@ def bot_message(self: "VkBot", event: "VkBotEvent"):
 
 
 def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
-    DB = Session()
+    s = Session()
     data = parse_profile(event.message.text)
-    info: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == data['id_vk']).first()
+    info: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == data['id_vk']).first()
 
     new_data = (data['level'], data['attack'], data['defence'],
                 data['strength'], data['agility'], data['endurance'],
@@ -100,16 +100,16 @@ def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
             answer = 'Обновил информацию гильдии!\n' + answer
             info.role_id = Role.guild_role().role_id
     else:
-        if info.role_id is None \
-                or info.role_id not in in_guild_roles:
+        if info.user_role is None \
+                or info.user_role not in in_guild_roles:
             # if not banned and not in guild now
-            if info.role_id != Role.ban_role().role_id:
-                info.role_id = Role.other_role().role_id
+            if info.user_role != Role.ban_role():
+                info.user_role = Role.other_role()
 
-    DB.add(info)
-    DB.add(stats)
-    DB.commit()
-    DB.close()
+    s.add(info)
+    s.add(stats)
+    s.commit()
+    s.close()
     return answer
 
 
@@ -117,12 +117,12 @@ def storage_reactions(self: "VkBot", event: "VkBotEvent"):
     data = parse_storage_action(event.message.text)
     if data['item_type'] == 'item':
         return
-    DB = Session()
-    user: UserInfo = DB.query(UserInfo).filter(UserInfo.user_id == data['id_vk']).first()
+    s = Session()
+    user: UserInfo = s.query(UserInfo).filter(UserInfo.user_id == data['id_vk']).first()
     if data['item_type'] == 'book':
         user.balance += data['result_price'] * data['count']
-        DB.add(user)
-        DB.commit()
+        s.add(user)
+        s.commit()
 
         Logs(user.user_id, 'Storage',
              f"-{data['count']}*{data['item_name']}; +{data['result_price']}"
@@ -142,8 +142,8 @@ def storage_reactions(self: "VkBot", event: "VkBotEvent"):
 
     if data['item_type'] == 'gold':
         user.balance += data['count']
-        DB.add(user)
-        DB.commit()
+        s.add(user)
+        s.commit()
         Logs(user.user_id, 'Storage',
              data['count'],
              on_user_id=user.user_id).make_record()
@@ -155,7 +155,7 @@ def storage_reactions(self: "VkBot", event: "VkBotEvent"):
             if user.balance < 0 else f"Сейчас на счету: {emo.gold}{user.balance}"
         self.api.send_chat_msg(event.chat_id, msg)
         return
-    DB.close()
+    s.close()
     return
 
 
