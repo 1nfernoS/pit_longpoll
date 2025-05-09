@@ -94,17 +94,9 @@ def profile_message(self: "VkBot", event: "VkBotEvent") -> str:
 
     in_guild_roles = Role.get_guild_roles()
 
-    if data['guild'] == GUILD_NAME:
-        if info.user_role is None \
-                or info.user_role not in in_guild_roles:
-            answer = 'Обновил информацию гильдии!\n' + answer
-            info.role_id = Role.guild_role().role_id
-    else:
-        if info.user_role is None \
-                or info.user_role not in in_guild_roles:
-            # if not banned and not in guild now
-            if info.user_role != Role.ban_role():
-                info.user_role = Role.other_role()
+    if info.user_role is None and data['guild'] == GUILD_NAME:
+        answer = 'Обновил информацию гильдии!\n' + answer
+        info.role_id = Role.guild_role().role_id
 
     s.add(info)
     s.add(stats)
