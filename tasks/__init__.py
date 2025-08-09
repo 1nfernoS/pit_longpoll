@@ -18,7 +18,7 @@ def init_tasks() -> None:
         # Task(next_month.replace(day=1, hour=10, minute=30, second=0, tzinfo=None), bill2, is_regular=True),
         # Task(next_month.replace(day=2, hour=12, minute=30, second=0, tzinfo=None), elites, is_regular=True),
         # Task(next_siege, siege, is_regular=True),
-        Task(now + dt.timedelta(hours=2), send_notes, is_regular=True)
+        Task(now + dt.timedelta(hours=2), send_notes, is_regular=True),
         # TODO: Add message board (remind)
     )
 
