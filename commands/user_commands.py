@@ -141,7 +141,7 @@ class Balance(Command):
         super().__init__(__class__.__name__, ('баланс', 'деньги', 'balance', 'wallet', 'money'))
         self.desc = 'Узнать свой баланс. Только для членов гильдии'
         self.require_balance = True
-        # self.set_active(False)
+        self.set_active(False)
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):
@@ -253,7 +253,7 @@ class Transfer(Command):
         super().__init__(__class__.__name__, ('перевести', 'transfer'))
         self.desc = 'Перевести деньги со своего счета по реплаю'
         self.require_balance = True
-        # self.set_active(False)
+        self.set_active(False)
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):

@@ -114,7 +114,7 @@ class Check(Command):
         super().__init__(__class__.__name__, ('счет', 'check', 'чек'))
         self.desc = 'Изменить баланс по реплаю на число (или -число). Доступно казначею и лидерам гильдии'
         self.require_change_balance = True
-        # self.set_active(False)
+        self.set_active(False)
         return
 
     def run(self, bot: "VkBot", event: "VkBotEvent"):

@@ -92,7 +92,7 @@ class Equip(Command):
         super().__init__(__class__.__name__, ('экип', 'билд', 'equip', 'build'))
         self.desc = 'Показать свою экипировку. Доступно членам гильдии, которые сдавали ссылку на профиль в лс бота'
         self.require_profile_app_check = True
-        # self.set_active(False)
+        self.set_active(False)
         return
 
     @staticmethod
