@@ -44,12 +44,12 @@ def forward_parse(self: "VkBot", event: "VkBotEvent"):
     if 'присоединились к осадному лагерю' in fwd_txt:
         Logs(event.message.from_id, 'Siege',
              on_message='\n'.join([msg['text'] for msg in event.message.fwd_messages])).make_record()
-        siege_report(self, event)
+        # siege_report(self, event)
         return
 
     if 'обменяли элитные трофеи' in fwd_txt:
         Logs(event.message.from_id, 'Elites', on_message=event.message.fwd_messages[0]['text']).make_record()
-        elites_response(self, event)
+        # elites_response(self, event)
         return
 
     if 'Символы' in fwd_txt:
